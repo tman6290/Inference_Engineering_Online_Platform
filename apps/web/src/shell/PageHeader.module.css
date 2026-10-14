@@ -1,0 +1,40 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.text {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.title {
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: anywhere;
+}
+
+.description {
+  max-width: 62ch;
+  color: var(--text-mute);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+/* The top bar carries its own theme toggle on small screens. */
+@media (max-width: 899px) {
+  .themeToggle {
+    display: none;
+  }
+}

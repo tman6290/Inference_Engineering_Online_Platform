@@ -1,0 +1,42 @@
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-20);
+  background: var(--surface);
+  color: var(--text);
+  min-width: 0;
+}
+
+.md {
+  padding: 24px;
+}
+
+.lg {
+  padding: 32px 40px;
+}
+
+.paper {
+  background: var(--surface);
+}
+
+.dark {
+  border-color: transparent;
+  border-radius: var(--radius-24);
+  background: var(--ink-green);
+}
+
+.tinted {
+  border-color: transparent;
+  background: var(--ok-bg);
+  color: var(--text);
+}
+
+.dashed {
+  border-style: dashed;
+  background: transparent;
+}
+
+@media (max-width: 600px) {
+  .lg {
+    padding: 24px;
+  }
+}

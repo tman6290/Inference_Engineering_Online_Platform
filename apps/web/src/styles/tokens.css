@@ -1,13 +1,20 @@
+/*
+ * Design tokens. Raw palette first, then semantic roles that components read.
+ * Paper surfaces are for reading; dark surfaces are "the machine talking".
+ * Lime is the dark-surface primary and never sits on paper.
+ */
+
 :root {
-  /* Dark surfaces: app chrome and "the machine talking" */
+  /* Palette: dark */
   --ink-green: #0d2a1d;
   --moss: #163a29;
   --deep: #0a2117;
   --line-dark: #1e4532;
   --mute-dark: #9fb3a6;
-  --lime: #c9f25e; /* dark surfaces only, never on paper */
+  --lime: #c9f25e;
+  --lime-hover: #b8e244;
 
-  /* Paper surfaces: reading */
+  /* Palette: paper */
   --paper: #f3f1e8;
   --card: #fbfaf5;
   --line: #dcd9cc;
@@ -16,7 +23,7 @@
   --forest: #1b6a44;
   --forest-hover: #0f4a2e;
 
-  /* States */
+  /* Palette: states */
   --mint: #ddf3e6;
   --mint-text: #0f4a2e;
   --cream: #fff6e2;
@@ -25,15 +32,126 @@
   --butter: #f5c864;
 
   /* Type */
-  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display:
+    'Bricolage Grotesque', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --text-body: 17px;
+  --leading-body: 1.65;
+  --tracking-eyebrow: 0.14em;
+  --tracking-display: -0.035em;
 
-  /* Radii */
+  /* Shape */
   --radius-12: 12px;
   --radius-16: 16px;
   --radius-20: 20px;
   --radius-24: 24px;
   --radius-pill: 999px;
-
   --touch: 44px;
+  --stroke-icon: 1.6;
+
+  /* Layout */
+  --sidebar-width: 264px;
+  --rail-width: 76px;
+  --topbar-height: 64px;
+
+  /* Semantic roles: light paper (default) */
+  --bg: var(--paper);
+  --surface: var(--card);
+  --surface-raised: #ffffff;
+  --border: var(--line);
+  --text: var(--ink);
+  --text-mute: var(--mute);
+  --focus: var(--forest);
+
+  --action-bg: var(--forest);
+  --action-bg-hover: var(--forest-hover);
+  --action-text: var(--card);
+
+  --track: #e6e3d7;
+  --fill: var(--forest);
+
+  --ok-bg: var(--mint);
+  --ok-text: var(--mint-text);
+  --ok-border: var(--forest);
+  --warn-bg: var(--cream);
+  --warn-text: var(--cream-text);
+  --warn-border: var(--amber);
+  --neutral-bg: #e9e7dd;
+  --neutral-text: var(--mute);
+  --reading-bg: var(--forest);
+  --reading-text: var(--card);
+
+  --link: var(--forest);
+  --link-hover: var(--forest-hover);
+
+  color-scheme: light;
+}
+
+/* Dark reading theme: same hues, paper becomes ink-based. */
+[data-theme='dark'] {
+  --bg: var(--ink);
+  --surface: #142a1f;
+  --surface-raised: #183224;
+  --border: #284634;
+  --text: #ebeee6;
+  --text-mute: var(--mute-dark);
+  --focus: var(--lime);
+
+  --action-bg: var(--lime);
+  --action-bg-hover: var(--lime-hover);
+  --action-text: var(--ink-green);
+
+  --track: #24402f;
+  --fill: var(--lime);
+
+  --ok-bg: #173a2a;
+  --ok-text: #bdebd0;
+  --ok-border: #3f9a6c;
+  --warn-bg: #3a2b10;
+  --warn-text: var(--butter);
+  --warn-border: var(--amber);
+  --neutral-bg: #1f3829;
+  --neutral-text: var(--mute-dark);
+  --reading-bg: var(--lime);
+  --reading-text: var(--ink-green);
+
+  --link: var(--lime);
+  --link-hover: var(--lime-hover);
+
+  color-scheme: dark;
+}
+
+/* Dark surfaces inside either theme: chrome, verdicts, worked examples. */
+[data-surface='dark'] {
+  --surface: var(--moss);
+  --surface-raised: var(--moss);
+  --border: var(--line-dark);
+  --text: var(--paper);
+  --text-mute: var(--mute-dark);
+  --focus: var(--lime);
+
+  --action-bg: var(--lime);
+  --action-bg-hover: var(--lime-hover);
+  --action-text: var(--ink-green);
+
+  --track: var(--line-dark);
+  --fill: var(--lime);
+
+  --ok-bg: #173a2a;
+  --ok-text: #bdebd0;
+  --ok-border: #3f9a6c;
+  --warn-bg: #3a2b10;
+  --warn-text: var(--butter);
+  --warn-border: var(--amber);
+  --neutral-bg: var(--moss);
+  --neutral-text: var(--mute-dark);
+  --reading-bg: var(--lime);
+  --reading-text: var(--ink-green);
+
+  --link: var(--lime);
+  --link-hover: var(--lime-hover);
+
+  color: var(--text);
 }

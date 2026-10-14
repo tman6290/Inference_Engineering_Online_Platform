@@ -1,0 +1,40 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 200px;
+}
+
+.value {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  margin-left: 2px;
+  font-size: 0.55em;
+  font-weight: 500;
+  color: var(--text-mute);
+}
+
+.caption {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text-mute);
+}
+
+.bar {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 15px;
+}

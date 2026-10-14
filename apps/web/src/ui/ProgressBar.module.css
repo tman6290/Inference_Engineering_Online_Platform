@@ -1,0 +1,61 @@
+.root {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-mute);
+}
+
+.track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--track);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--fill);
+  transition: width 240ms ease;
+}
+
+.segments {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.segment {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--track);
+}
+
+.accepted {
+  background: var(--fill);
+}
+
+/* Amber is darker than lime and lighter than forest, so the states differ in lightness too. */
+.retry {
+  background: var(--amber);
+}
+
+.current {
+  background: var(--text);
+}
+
+.empty {
+  background: var(--track);
+}

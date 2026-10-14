@@ -1,0 +1,21 @@
+.plan {
+  display: grid;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-mute);
+}
+
+.status {
+  margin-bottom: 24px;
+}
+
+.cta {
+  margin-bottom: 24px;
+}

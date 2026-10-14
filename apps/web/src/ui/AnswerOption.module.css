@@ -1,0 +1,83 @@
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-12);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.option:hover {
+  border-color: var(--text-mute);
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.option:has(.input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.option:has(.input:checked) {
+  border-color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--text);
+}
+
+.option:has(.input:disabled) {
+  cursor: not-allowed;
+}
+
+.letter {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-mute);
+}
+
+.label {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.mark {
+  flex: none;
+}
+
+.accepted,
+.accepted:hover,
+.accepted:has(.input:checked) {
+  border-color: var(--ok-border);
+  background: var(--ok-bg);
+  color: var(--ok-text);
+  box-shadow: none;
+}
+
+.rejected,
+.rejected:hover,
+.rejected:has(.input:checked) {
+  border-color: var(--warn-border);
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  box-shadow: none;
+}
+
+.accepted .letter {
+  color: var(--ok-text);
+}
+
+.rejected .letter {
+  color: var(--warn-text);
+}

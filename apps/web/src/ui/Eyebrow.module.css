@@ -1,0 +1,17 @@
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.mute {
+  color: var(--text-mute);
+}
+
+.accent {
+  color: var(--link);
+}
