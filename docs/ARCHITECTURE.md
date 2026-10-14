@@ -5,7 +5,7 @@ TypeScript.
 
 ## The parts
 
-**apps/web** is the React 18 front end, built with Vite. React Router handles pages, TanStack
+**apps/web** is the React 19 front end, built with Vite. React Router handles pages, TanStack
 Query handles server state, and CSS Modules read from one `tokens.css`. It never talks to an LLM
 or the database. In development, Vite proxies `/api/*` to the API so the browser sees one origin
 and the session cookie stays first party.

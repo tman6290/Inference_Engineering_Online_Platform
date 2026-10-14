@@ -25,3 +25,15 @@ boundary; Vitest for tests; Docker Compose for Postgres and the check runner.
 **Trade-offs.** Express has no built-in validation or typing of routes, so every route parses its
 input with zod by hand. Prisma 7 needs a driver adapter (`@prisma/adapter-pg`) and a
 `prisma.config.ts`, which adds a little setup in exchange for a client with no native engine.
+
+## 2026-10-14: React 19 and React Router 8
+
+**Decision.** The web app moves from React 18 to React 19, and from React Router 7 to 8.
+
+**Why.** React 19 is the supported line, and React Router 8 requires it. The app was only a shell
+and a set of UI primitives when I switched, so the move cost nothing: no code changes, and every
+test and accessibility check passed unchanged. Staying on 18 would have meant a bigger migration
+later, once real features depend on it.
+
+**Trade-offs.** The production bundle grows by about 23 kB gzipped (110 kB to 133 kB), mostly from
+React DOM 19 and the newer router.
