@@ -1,0 +1,9 @@
+node_modules
+dist
+pnpm-lock.yaml
+content/book
+content/figures
+uploads
+runner-jobs
+backups
+apps/api/prisma/migrations

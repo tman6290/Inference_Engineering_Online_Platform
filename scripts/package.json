@@ -1,0 +1,14 @@
+{
+  "name": "@forward-pass/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@forward-pass/llm": "workspace:*",
+    "@forward-pass/shared": "workspace:*",
+    "dotenv": "^18.0.7"
+  }
+}

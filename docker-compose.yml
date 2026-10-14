@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-forwardpass}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forwardpass}
+      POSTGRES_DB: ${POSTGRES_DB:-forwardpass}
+      TZ: Africa/Lagos
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  runner:
+    build:
+      context: .
+      dockerfile: apps/runner/Dockerfile
+    restart: unless-stopped
+    environment:
+      RUNNER_PORT: 4100
+      TZ: Africa/Lagos
+    ports:
+      - '4100:4100'
+    volumes:
+      # The runner starts one sandbox container per check (CPU only, no network).
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./runner-jobs:/runner-jobs
+
+volumes:
+  pgdata:

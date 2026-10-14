@@ -1,0 +1,11 @@
+// Models arrive with the features that need them (users, sections, checkpoints, ...).
+
+generator client {
+  provider = "prisma-client"
+  // Kept under node_modules so generated code never lands in git.
+  output   = "../node_modules/.prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}

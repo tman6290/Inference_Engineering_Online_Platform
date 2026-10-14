@@ -1,0 +1,39 @@
+:root {
+  /* Dark surfaces: app chrome and "the machine talking" */
+  --ink-green: #0d2a1d;
+  --moss: #163a29;
+  --deep: #0a2117;
+  --line-dark: #1e4532;
+  --mute-dark: #9fb3a6;
+  --lime: #c9f25e; /* dark surfaces only, never on paper */
+
+  /* Paper surfaces: reading */
+  --paper: #f3f1e8;
+  --card: #fbfaf5;
+  --line: #dcd9cc;
+  --ink: #0f1f17;
+  --mute: #5b6b61;
+  --forest: #1b6a44;
+  --forest-hover: #0f4a2e;
+
+  /* States */
+  --mint: #ddf3e6;
+  --mint-text: #0f4a2e;
+  --cream: #fff6e2;
+  --cream-text: #7a4a05;
+  --amber: #c77b0f;
+  --butter: #f5c864;
+
+  /* Type */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Radii */
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-pill: 999px;
+
+  --touch: 44px;
+}

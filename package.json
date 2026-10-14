@@ -1,0 +1,35 @@
+{
+  "name": "forward-pass",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.7",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n web,api -c green,cyan \"pnpm --filter @forward-pass/web dev\" \"pnpm --filter @forward-pass/api dev\"",
+    "build": "pnpm -r build",
+    "lint": "eslint . && prettier --check \"**/*.{ts,tsx,js,json,css,yml,yaml}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,css,yml,yaml}\"",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "db:migrate": "pnpm --filter @forward-pass/api db:migrate",
+    "db:seed": "tsx scripts/seed.ts",
+    "content:ingest": "tsx scripts/ingest-book.ts",
+    "content:digests": "tsx scripts/generate-digests.ts",
+    "content:checkpoints": "tsx scripts/generate-checkpoints.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.12.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^5.0.4"
+  }
+}
