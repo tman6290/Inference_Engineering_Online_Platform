@@ -37,3 +37,25 @@ later, once real features depend on it.
 
 **Trade-offs.** The production bundle grows by about 23 kB gzipped (110 kB to 133 kB), mostly from
 React DOM 19 and the newer router.
+
+## 2026-11-02: Authored content, AI only for critiques
+
+**Decision.** Every chapter is written ahead of time and committed: section notes, worked
+examples, checkpoint banks with answer keys and explanations, exercises with solutions, and
+project specs with checks and tests. Checkpoints and exercises are graded in code against their
+keys. The only runtime model call is the project critique, through `packages/llm`.
+
+**Why.**
+
+- Studying should never wait on a model or depend on one being up. Ready-made material behaves
+  the same for both of us, every time, which matters for duels and for comparing acceptance rates.
+- Answer keys make grading cheap, instant and testable. A question either has a defensible key or
+  it gets rewritten; that discipline improves the questions.
+- Critiques are the one place where judgement on open-ended work earns its cost: a project is a
+  repo, a README and numbers, not a single right answer.
+
+**Trade-offs.** Writing 42 sections of notes, banks of 20+ questions and exercises with solutions
+is the bulk of the work, and short answers have to be phrased so they have checkable answers
+(a number with a unit, a term, a choice). Questions that only a free-form judgement could grade
+move into projects instead. The `content:digests` and `content:checkpoints` generation scripts are
+replaced by `content:validate`.

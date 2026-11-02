@@ -11,21 +11,28 @@ or the database. In development, Vite proxies `/api/*` to the API so the browser
 and the session cookie stays first party.
 
 **apps/api** is an Express server. It owns the session cookie (httpOnly), validates every request
-body with zod schemas from `packages/shared`, and reads and writes Postgres through Prisma. Grading
-and critique happen here: the API loads the relevant book sections, calls `packages/llm`, and
-stores the structured result.
+body with zod schemas from `packages/shared`, and reads and writes Postgres through Prisma. It
+grades checkpoints and exercises against their answer keys, and runs project critiques, the one
+place it calls `packages/llm`.
 
 **apps/runner** runs project checks. It receives a job from the API, starts a throwaway container
 per check (CPU only, no network, hard timeout), and returns logs and exit status. It is the only
 service with the Docker socket mounted. Today it exposes `GET /health` and nothing else.
 
-**scripts/** holds one-off jobs run by hand: fetching the book into `content/book/`, generating
-section digests and checkpoint banks, and seeding the database. Each script is idempotent.
+**content/** holds the course itself. Every chapter is written ahead of time and committed: section
+notes, worked examples, checkpoint banks with answer keys and explanations, exercises with
+solutions, and project specs with their checks and tests. Nothing is generated while someone
+studies. The book text is the exception: it is fetched into `content/book/` at setup and never
+committed.
+
+**scripts/** holds one-off jobs run by hand: fetching the book, validating authored content
+against the shared schemas, and seeding the database. Each script is idempotent.
 
 **packages/shared** holds zod schemas, inferred types and constants that more than one part
 needs. A schema defined here validates the same payload on both sides of the wire.
 
-**packages/llm** is the only code that talks to a model vendor. It exposes one call,
+**packages/llm** is the only code that talks to a model vendor, and only project critiques use
+it. It exposes one call,
 `complete({ system, messages, schema, temperature, maxTokens })`, which returns JSON already
 validated against the zod schema. `LLM_PROVIDER` picks the adapter (`anthropic` or
 `openai-compatible`). The client retries once when the output fails validation, and logs tokens
@@ -39,17 +46,17 @@ A learner submits a checkpoint answer:
    (prod) forwards it to the API.
 2. Express checks the session, then parses the body with the shared zod schema. Bad input stops
    here with a 400.
-3. The route handler loads what it needs through Prisma: the question, the learner's attempt
-   history, and the section text from `content/book/`.
-4. Questions with an exact answer are graded in code. Open answers go to `packages/llm` with the
-   section text in the prompt, `temperature: 0`, and a response schema.
+3. The route handler loads the question and its answer key, plus the learner's attempt history.
+4. The answer is graded in code against the key: a choice, a number within tolerance, or text
+   after normalisation. The response carries the explanation and the section to re-read.
 5. The result is written to Postgres and returned. TanStack Query updates the cache and the page
    re-renders.
 
 Project submissions follow the same path, with one extra hop: the API sends the repo to the
-runner, waits for the check results, and only then asks the LLM for a critique. The critique
-prompt includes the runner output and the learner's `results.json`, so claims in a README can be
-checked against evidence.
+runner, waits for the check results and the project's tests, and only then asks the LLM for a
+critique. The critique prompt includes the relevant book sections, the runner output and the
+learner's `results.json`, so claims in a README can be checked against evidence. This is the only
+step that waits on a model.
 
 ## Local services
 

@@ -170,9 +170,6 @@ importers:
 
   scripts:
     dependencies:
-      '@forward-pass/llm':
-        specifier: workspace:*
-        version: link:../packages/llm
       '@forward-pass/shared':
         specifier: workspace:*
         version: link:../packages/shared

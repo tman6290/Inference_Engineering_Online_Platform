@@ -40,16 +40,17 @@ Check the API with `curl http://localhost:5173/api/health`. It should return `{"
 | `pnpm db:migrate`          | Prisma migrations against `DATABASE_URL`           |
 | `pnpm db:seed`             | Seed data                                          |
 | `pnpm content:ingest`      | Fetch the book into `content/book/`                |
-| `pnpm content:digests`     | Generate section digests                           |
-| `pnpm content:checkpoints` | Generate checkpoint question banks                 |
+| `pnpm content:validate`    | Check authored chapters, answer keys and exercises |
 
 ## LLM provider
 
-All model calls go through `packages/llm` on the server. Set `LLM_PROVIDER` to `anthropic` or
-`openai-compatible` and name the model in `LLM_MODEL`. The `openai-compatible` provider works with
-any server that speaks `/chat/completions` (vLLM, llama.cpp, Ollama, hosted APIs) and needs
-`LLM_BASE_URL`. Set `LLM_PRICE_INPUT_PER_MTOK` and `LLM_PRICE_OUTPUT_PER_MTOK` to get a dollar
-cost on each logged call.
+Every chapter, checkpoint and exercise is written ahead of time with its answers, so studying never
+waits on a model. The one live call is the project critique, which goes through `packages/llm` on
+the server. I run it with `LLM_PROVIDER=anthropic`, the key in `LLM_API_KEY` and the model in
+`LLM_MODEL`. The `openai-compatible` provider also works, with any server that speaks
+`/chat/completions` (vLLM, llama.cpp, Ollama, hosted APIs) plus `LLM_BASE_URL`. Set
+`LLM_PRICE_INPUT_PER_MTOK` and `LLM_PRICE_OUTPUT_PER_MTOK` to get a dollar cost on each logged
+call.
 
 ## Layout
 
@@ -59,7 +60,8 @@ apps/api          Express API, Prisma schema in apps/api/prisma
 apps/runner       project-check sandbox service
 packages/shared   zod schemas, types and constants
 packages/llm      provider interface and adapters
-scripts/          content ingestion and generation
+content/chapters/ authored notes, checkpoints and exercises
+scripts/          book ingestion, content validation, seeding
 content/projects/ project specs
 docs/             ARCHITECTURE.md, DECISIONS.md
 ```

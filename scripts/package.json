@@ -7,7 +7,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@forward-pass/llm": "workspace:*",
     "@forward-pass/shared": "workspace:*",
     "dotenv": "^18.0.7"
   }
