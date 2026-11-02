@@ -97,3 +97,36 @@ source.
 lessons work. Glossary terms are linked to the section titled with the term, or else to the first
 section that uses it; 22 of 213 terms (mostly ones that only appear in the Preface or Chapter 0)
 have no section yet.
+
+## 2026-11-03: Content schemas, graders and the validator
+
+**Decision.** Every authored file has a zod schema in `packages/shared`: digests, checkpoint banks,
+questions (`scenario_mc`, `calculation`, `text`), exercises and `chapter.json`. The graders sit next
+to them as pure functions. `pnpm content:validate` checks every file under `content/chapters/`
+against the schemas and `content/outline.json`, and CI runs it after the tests.
+
+A few choices inside that:
+
+- **Lessons, not only sections.** The Preface (`preface`) and Chapter 0 (`0`) get digests too, so
+  a digest is keyed by lesson. The Preface lives in `content/chapters/preface/`. Only numbered
+  sections have checkpoint banks.
+- **The browser sees a whitelist.** `toPublic` builds the public question field by field and its
+  schema is strict, so a key field added to a schema later can't leak by accident. Hints, quotes,
+  explanations and worked solutions stay on the server until grading or a logged hint request.
+- **Units are case-sensitive first.** "Gb" is not "GB". A case-insensitive match is accepted only
+  when it's unambiguous; otherwise the grader asks for one of the listed units.
+- **Exercises carry their own proof.** Each solution states its final answer, and the validator
+  grades it against the exercise's key, so a walkthrough and its key can't drift apart.
+- **Book checks need the book.** Figure references, glossary terms, source quotes and a copy check
+  (no run of 10 or more words lifted from the section) read `content/book/`. That folder isn't in
+  git, so in CI and on a fresh clone those checks are skipped with a note. The structural checks
+  always run, and authoring always happens on a machine with the book ingested.
+- **A masked answer format is checked.** When a text question's `answerFormat` is a mask like
+  `****-**`, it must match the shape of the first accepted answer.
+
+**Why.** Answer keys are only as good as the checks around them. A validator that knows the
+outline catches broken rereads, uncovered subsections and duplicate ids before a learner does.
+
+**Trade-offs.** The schemas are strict, so authoring a section means satisfying word limits and
+mix rules up front. The copy check works on word runs, not meaning, so close paraphrase still
+needs a reviewer's eye.

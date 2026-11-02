@@ -1,0 +1,107 @@
+{
+  "lesson": "9.1",
+  "oneLine": "Grouping requests turns one expensive read into many cheap answers.",
+  "summary": "At small batch sizes the server waits on memory, so serving requests together is nearly free (see 9.1.1). The gain stops once compute becomes the limit (see 9.1.2).",
+  "mechanism": [
+    {
+      "title": "Read once",
+      "body": "Each step streams the weights through the chip one time."
+    },
+    {
+      "title": "Share it",
+      "body": "Every request in the group reuses that single stream."
+    },
+    {
+      "title": "Hit the ceiling",
+      "body": "Eventually arithmetic, not memory, sets the pace."
+    }
+  ],
+  "callout": {
+    "name": "The bus rule",
+    "body": "A bus costs about the same to drive with one rider or forty."
+  },
+  "figureRefs": [
+    {
+      "figure": "9.1",
+      "lookFor": "Where step time stops staying flat."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Bound",
+      "title": "Memory first",
+      "body": "Small groups wait on memory, not maths."
+    },
+    {
+      "label": "Lever",
+      "title": "Group size",
+      "body": "The main knob on throughput per chip."
+    }
+  ],
+  "workedExample": {
+    "title": "Cost per request",
+    "setup": "One read costs 16 ms whatever the group size, up to 16 requests.",
+    "table": {
+      "columns": ["Group size", "ms per request"],
+      "rows": [
+        [1, 16],
+        [8, 2],
+        [16, 1]
+      ]
+    },
+    "conclusion": {
+      "text": "Going from 1 to 8 requests cuts the cost per request eightfold.",
+      "keyNumber": "2 ms"
+    }
+  },
+  "checkQuestion": {
+    "kind": "calculation",
+    "id": "9.1-check",
+    "sectionNumber": "9.1",
+    "subsectionNumber": "9.1.1",
+    "difficulty": 1,
+    "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+    "reread": "9.1.1",
+    "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+    "prompt": "Fixture sum 0: one read costs 16 ms and serves 8 requests. Cost per request?",
+    "answerFormat": "number, in ms",
+    "answer": 2,
+    "tolerance": {
+      "kind": "absolute",
+      "value": 0.05
+    },
+    "unit": "ms",
+    "acceptedUnits": [
+      {
+        "unit": "s",
+        "factor": 1000
+      }
+    ],
+    "methodHint": "Divide the cost of the read by the requests sharing it.",
+    "workedSolution": "16 ms / 8 requests = 2 ms each."
+  },
+  "reflect": {
+    "prompt": "Explain why a bigger group barely changes step time at first.",
+    "modelAnswer": "The step is dominated by streaming the weights, and that stream is shared by every request in the group.",
+    "points": [
+      "The weights are streamed once per step",
+      "The stream is shared",
+      "Compute sits idle at a group of one"
+    ]
+  },
+  "terms": ["Batching", "Throughput", "Memory-bound"],
+  "subsectionCards": [
+    {
+      "number": "9.1.1",
+      "title": "Why Batch",
+      "hook": "One read, many answers.",
+      "readingMinutes": 3
+    },
+    {
+      "number": "9.1.2",
+      "title": "Batch Limits",
+      "hook": "Where the free lunch ends.",
+      "readingMinutes": 2
+    }
+  ]
+}

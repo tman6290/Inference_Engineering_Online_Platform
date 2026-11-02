@@ -1,19 +1,20 @@
-import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { formatReport, validateContent } from './lib/content-validator';
 import { repoRoot } from './lib/env';
 
-// Checks authored content under content/chapters/ against the shared content schemas:
-// every question has an answer key, an explanation and a section link. The schemas arrive with
-// the first authored chapter; until then this only reports what is on disk.
-const chaptersDir = path.join(repoRoot, 'content', 'chapters');
+// pnpm content:validate [--content <dir>] [--book <dir>]
+// Checks authored chapters against the content schemas and content/outline.json. With the
+// ingested book in content/book/ it also checks figures, glossary terms, quotes and copying.
+// Exits non-zero on any error, so CI and pre-commit checks can rely on it.
 
-if (!existsSync(chaptersDir)) {
-  console.info('content:validate: no authored chapters yet (content/chapters/ is empty).');
-} else {
-  const chapters = readdirSync(chaptersDir, { withFileTypes: true }).filter((entry) =>
-    entry.isDirectory(),
-  );
-  console.info(
-    `content:validate: found ${chapters.length} chapter folder(s); schemas not wired yet.`,
-  );
+function option(name: string): string | undefined {
+  const index = process.argv.indexOf(`--${name}`);
+  return index >= 0 ? process.argv[index + 1] : undefined;
 }
+
+const contentDir = path.resolve(option('content') ?? path.join(repoRoot, 'content'));
+const bookDir = path.resolve(option('book') ?? path.join(contentDir, 'book'));
+
+const report = validateContent({ contentDir, bookDir });
+console.info(formatReport(report));
+process.exitCode = report.errors.length > 0 ? 1 : 0;

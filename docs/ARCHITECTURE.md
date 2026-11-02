@@ -29,7 +29,9 @@ committed.
 against the shared schemas, and seeding the database. Each script is idempotent.
 
 **packages/shared** holds zod schemas, inferred types and constants that more than one part
-needs. A schema defined here validates the same payload on both sides of the wire.
+needs. A schema defined here validates the same payload on both sides of the wire. It also holds
+the content schemas and the graders. The graders are pure functions, so the API and
+`pnpm content:validate` grade an answer exactly the same way.
 
 **packages/llm** is the only code that talks to a model vendor, and only project critiques use
 it. It exposes one call,

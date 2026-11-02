@@ -1,0 +1,526 @@
+{
+  "sectionNumber": "9.1",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-01",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture scenario 1: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.1).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-02",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture scenario 2: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-03",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture scenario 3: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.1).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-04",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture scenario 4: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-05",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture scenario 5: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.1).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-06",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture scenario 6: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-07",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture scenario 7: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.1).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-08",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture scenario 8: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-09",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture scenario 9: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.1).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.1-mc-10",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture scenario 10: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.1.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-01",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture sum 1: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-02",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture sum 2: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-03",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture sum 3: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-04",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture sum 4: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-05",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture sum 5: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-06",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture sum 6: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "calculation",
+      "id": "9.1-calc-07",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture sum 7: one read costs 16 ms and serves 8 requests. Cost per request?",
+      "answerFormat": "number, in ms",
+      "answer": 2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.05
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Divide the cost of the read by the requests sharing it.",
+      "workedSolution": "16 ms / 8 requests = 2 ms each."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-01",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture term 1: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-02",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture term 2: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-03",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture term 3: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-04",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture term 4: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-05",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture term 5: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-06",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.2",
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.2",
+      "sourceQuote": "Past the compute limit, a bigger batch only adds queueing delay.",
+      "prompt": "Fixture term 6: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.1-text-07",
+      "sectionNumber": "9.1",
+      "subsectionNumber": "9.1.1",
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.1.1",
+      "sourceQuote": "A decode step reads every weight once, whatever the batch size.",
+      "prompt": "Fixture term 7: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    }
+  ]
+}

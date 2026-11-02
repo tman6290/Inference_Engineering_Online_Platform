@@ -1,0 +1,498 @@
+{
+  "sectionNumber": "9.2",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-01",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 1: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-02",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 2: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-03",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 3: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-04",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 4: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-05",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 5: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-06",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 6: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-07",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 7: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-08",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 8: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-09",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 9: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-10",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 10: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-11",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 11: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-12",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 12: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-13",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 13: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-14",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 14: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-15",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 15: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-16",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 16: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "9.2-mc-17",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture scenario 17: which change helps a memory-limited server most?",
+      "answerFormat": "one option",
+      "options": [
+        "Serve requests together",
+        "Buy a faster CPU",
+        "Add more disk",
+        "Lengthen the prompts"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
+      "rejectedCopy": "Think about what the server waits on at a batch of one.",
+      "hint": "What is read once per step, however many requests there are?"
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-01",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 1: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-02",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 2: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-03",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 3: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-04",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 4: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-05",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 5: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-06",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 6: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    },
+    {
+      "kind": "text",
+      "id": "9.2-text-07",
+      "sectionNumber": "9.2",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+      "reread": "9.2",
+      "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+      "prompt": "Fixture term 7: what is serving several requests in one pass called?",
+      "answerFormat": "********",
+      "acceptedAnswers": ["batching", "request batching"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It starts with b."
+    }
+  ]
+}

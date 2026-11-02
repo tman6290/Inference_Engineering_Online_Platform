@@ -1,0 +1,50 @@
+{
+  "lesson": "0",
+  "oneLine": "Serving a trained model is its own engineering discipline.",
+  "summary": "Training makes the model; serving it well is a different job.",
+  "mechanism": [
+    {
+      "title": "Train",
+      "body": "Someone produces the weights."
+    },
+    {
+      "title": "Serve",
+      "body": "You run them for users."
+    },
+    {
+      "title": "Tune",
+      "body": "You make that fast and cheap."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Focus",
+      "title": "Serving",
+      "body": "The work after training ends."
+    },
+    {
+      "label": "Goal",
+      "title": "Fast, cheap",
+      "body": "Latency and cost, together."
+    }
+  ],
+  "checkQuestion": {
+    "kind": "text",
+    "id": "0-check",
+    "sectionNumber": "0",
+    "subsectionNumber": null,
+    "difficulty": 1,
+    "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+    "reread": "0",
+    "sourceQuote": "Inference is running a trained model to answer requests.",
+    "prompt": "Fixture term 0: what is serving several requests in one pass called?",
+    "answerFormat": "********",
+    "acceptedAnswers": ["batching", "request batching"],
+    "normalisation": {
+      "foldHyphens": true
+    },
+    "hint": "It starts with b."
+  },
+  "terms": ["Inference", "Latency", "Throughput"],
+  "subsectionCards": []
+}

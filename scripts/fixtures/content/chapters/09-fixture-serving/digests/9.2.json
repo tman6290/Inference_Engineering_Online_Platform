@@ -1,0 +1,50 @@
+{
+  "lesson": "9.2",
+  "oneLine": "The first requests after a deploy are slow because the model is still loading.",
+  "summary": "Send a few throwaway requests before real traffic arrives (see 9.2).",
+  "mechanism": [
+    {
+      "title": "Deploy",
+      "body": "A new replica starts without the weights in memory."
+    },
+    {
+      "title": "Load",
+      "body": "The first request triggers the slow load."
+    },
+    {
+      "title": "Warm",
+      "body": "Later requests run at normal speed."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Cause",
+      "title": "Cold weights",
+      "body": "Nothing is in memory on a fresh replica."
+    },
+    {
+      "label": "Fix",
+      "title": "Warm it",
+      "body": "Load before traffic, not during it."
+    }
+  ],
+  "checkQuestion": {
+    "kind": "text",
+    "id": "9.2-check",
+    "sectionNumber": "9.2",
+    "subsectionNumber": null,
+    "difficulty": 1,
+    "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+    "reread": "9.2",
+    "sourceQuote": "The first request after a deploy pays for loading weights into memory.",
+    "prompt": "Fixture term 0: what is serving several requests in one pass called?",
+    "answerFormat": "********",
+    "acceptedAnswers": ["batching", "request batching"],
+    "normalisation": {
+      "foldHyphens": true
+    },
+    "hint": "It starts with b."
+  },
+  "terms": ["Warm-up", "Latency", "Inference"],
+  "subsectionCards": []
+}

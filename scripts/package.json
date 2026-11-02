@@ -9,6 +9,7 @@
   "dependencies": {
     "@forward-pass/api": "workspace:*",
     "@forward-pass/shared": "workspace:*",
-    "dotenv": "^18.0.7"
+    "dotenv": "^18.0.7",
+    "zod": "^4.6.7"
   }
 }

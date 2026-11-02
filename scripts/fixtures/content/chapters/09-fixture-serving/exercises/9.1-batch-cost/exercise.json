@@ -1,0 +1,42 @@
+{
+  "id": "9.1-batch-cost",
+  "sectionNumber": "9.1",
+  "title": "Cost per request at batch 8",
+  "brief": "Finish `cost_per_request` in `batch_cost.py`, then use it to answer.",
+  "steps": [
+    "Implement the function.",
+    "Run the tests.",
+    "Enter the cost for a 16 ms read at batch 8."
+  ],
+  "answerFormat": "number, in ms",
+  "answer": {
+    "kind": "calculation",
+    "answer": 2,
+    "tolerance": {
+      "kind": "absolute",
+      "value": 0.01
+    },
+    "unit": "ms",
+    "acceptedUnits": [
+      {
+        "unit": "s",
+        "factor": 1000
+      }
+    ]
+  },
+  "solution": {
+    "walkthrough": "The read is shared, so divide: 16 ms / 8 = 2 ms, or 0.002 s.",
+    "finalAnswer": {
+      "kind": "calculation",
+      "value": 0.002,
+      "unit": "s"
+    }
+  },
+  "starterFiles": ["batch_cost.py"],
+  "tests": {
+    "runner": "pytest",
+    "command": "pytest -q",
+    "files": ["test_batch_cost.py"]
+  },
+  "estimatedMinutes": 10
+}

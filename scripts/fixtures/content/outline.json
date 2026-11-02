@@ -1,0 +1,51 @@
+{
+  "source": "https://example.com/fixture-book/llms.txt",
+  "frontMatter": [
+    {
+      "slug": "preface",
+      "title": "Preface"
+    }
+  ],
+  "chapters": [
+    {
+      "number": 0,
+      "slug": "00-basics",
+      "title": "Basics",
+      "sections": []
+    },
+    {
+      "number": 9,
+      "slug": "09-fixture-serving",
+      "title": "Fixture Serving",
+      "sections": [
+        {
+          "number": "9.1",
+          "slug": "batching",
+          "title": "Batching",
+          "subsections": [
+            {
+              "number": "9.1.1",
+              "title": "Why Batch"
+            },
+            {
+              "number": "9.1.2",
+              "title": "Batch Limits"
+            }
+          ]
+        },
+        {
+          "number": "9.2",
+          "slug": "warm-up",
+          "title": "Warm-up",
+          "subsections": []
+        }
+      ]
+    }
+  ],
+  "backMatter": [
+    {
+      "slug": "appendix-a-inference-glossary",
+      "title": "Appendix A: Inference Glossary"
+    }
+  ]
+}

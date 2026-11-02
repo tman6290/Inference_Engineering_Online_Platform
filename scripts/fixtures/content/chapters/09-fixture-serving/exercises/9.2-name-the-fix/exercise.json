@@ -1,0 +1,23 @@
+{
+  "id": "9.2-name-the-fix",
+  "sectionNumber": "9.2",
+  "title": "Name the fix",
+  "brief": "A new replica's first ten requests are slow. Name the practice that fixes it.",
+  "steps": ["Read the latency trace.", "Name the practice."],
+  "answerFormat": "****-**",
+  "answer": {
+    "kind": "text",
+    "acceptedAnswers": ["warm-up", "warmup"],
+    "normalisation": {
+      "foldHyphens": true
+    }
+  },
+  "solution": {
+    "walkthrough": "Loading weights is the slow part; sending throwaway requests first does it ahead of traffic.",
+    "finalAnswer": {
+      "kind": "text",
+      "text": "Warm up"
+    }
+  },
+  "estimatedMinutes": 5
+}

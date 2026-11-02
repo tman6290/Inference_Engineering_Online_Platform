@@ -1,0 +1,61 @@
+{
+  "lesson": "preface",
+  "oneLine": "Why this fixture exists and how to read it.",
+  "summary": "A tiny stand-in book so the validator can be tested without the real one.",
+  "mechanism": [
+    {
+      "title": "Read",
+      "body": "Skim the stand-in pages."
+    },
+    {
+      "title": "Validate",
+      "body": "Run the validator against them."
+    },
+    {
+      "title": "Break",
+      "body": "Damage a copy and watch it fail."
+    }
+  ],
+  "figureRefs": [
+    {
+      "figure": "P.1",
+      "lookFor": "The order the pages are read in."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Purpose",
+      "title": "A test bed",
+      "body": "Exercises every block and question kind."
+    },
+    {
+      "label": "Scope",
+      "title": "Tiny",
+      "body": "Two sections, one exercise each."
+    }
+  ],
+  "checkQuestion": {
+    "kind": "scenario_mc",
+    "id": "preface-check",
+    "sectionNumber": "preface",
+    "subsectionNumber": null,
+    "difficulty": 1,
+    "explanation": "The shared read is the expensive part, so sharing it is what helps.",
+    "reread": "preface",
+    "sourceQuote": "This fixture book exists so the validator has something to read.",
+    "prompt": "Fixture scenario 0: which change helps a memory-limited server most?",
+    "answerFormat": "one option",
+    "options": [
+      "Serve requests together",
+      "Buy a faster CPU",
+      "Add more disk",
+      "Lengthen the prompts"
+    ],
+    "correctIndex": 0,
+    "acceptedCopy": "Right: one shared read serves the whole group (see preface).",
+    "rejectedCopy": "Think about what the server waits on at a batch of one.",
+    "hint": "What is read once per step, however many requests there are?"
+  },
+  "terms": ["Inference", "Latency", "Throughput"],
+  "subsectionCards": []
+}

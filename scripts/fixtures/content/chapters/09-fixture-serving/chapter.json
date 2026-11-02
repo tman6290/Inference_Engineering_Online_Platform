@@ -1,0 +1,6 @@
+{
+  "slug": "09-fixture-serving",
+  "title": "Fixture Serving",
+  "lessons": ["9.1", "9.2"],
+  "exercises": ["9.1-batch-cost", "9.2-name-the-fix"]
+}

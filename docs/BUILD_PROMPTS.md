@@ -33,7 +33,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 01 | Design tokens and app shell | done (bfc6875; React 19 upgrade 0f49c18) |
 | 02 | Auth for two seats | done (see git log: `auth:` commit) |
 | 03 | Ingest the book | done (`book:` commit; 36 sections, not 42) |
-| 04 | Content schemas, grading and validation | |
+| 04 | Content schemas, grading and validation | done (`content:` commit, 2026-11-03) |
 | 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | |
 | 06 | The Lesson page | |
 | 07 | Checkpoints and exercises | |
