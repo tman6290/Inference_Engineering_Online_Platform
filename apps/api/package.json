@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev && prisma generate",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -17,17 +17,26 @@
     "@forward-pass/shared": "workspace:*",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.7",
     "express": "^5.3.0",
+    "express-rate-limit": "^8.7.2",
     "pg": "^8.23.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
     "prisma": "^7.10.0",
     "supertest": "^7.3.1",
     "tsup": "^8.5.1"
+  },
+  "exports": {
+    "./admin": "./src/admin.ts",
+    "./config": "./src/config.ts",
+    "./db": "./src/db.ts"
   }
 }

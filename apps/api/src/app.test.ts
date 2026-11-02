@@ -2,9 +2,15 @@ import { healthResponseSchema } from '@forward-pass/shared';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
+import { createDb } from './db';
 
 describe('api', () => {
-  const app = createApp();
+  // The client connects lazily, and neither route below touches the database.
+  const app = createApp({
+    db: createDb('postgresql://unused:unused@127.0.0.1:1/unused'),
+    sessions: { secret: 'x'.repeat(32), secureCookies: false },
+    inviteCodes: [undefined, undefined],
+  });
 
   it('GET /api/health returns { ok: true }', async () => {
     const res = await request(app).get('/api/health');

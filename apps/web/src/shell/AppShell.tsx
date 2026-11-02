@@ -1,8 +1,9 @@
+import type { PublicUser } from '@forward-pass/shared';
 import { useEffect, useId, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
-import { BoltIcon, CloseIcon, LogoMark, MenuIcon } from '../ui';
+import { useAuth } from '../auth/auth';
+import { BoltIcon, CloseIcon, LogoMark, MenuIcon, SignOutIcon } from '../ui';
 import { isNavItemActive, NAV_ITEMS, usesRail } from './nav';
-import { placeholderPod, type PodMember } from './placeholderPod';
 import { ThemeToggle } from './ThemeToggle';
 import styles from './AppShell.module.css';
 
@@ -20,7 +21,10 @@ export function AppShell() {
         <Logo compact={rail} />
         <MainNav pathname={pathname} compact={rail} label="Main" />
         {rail ? null : <PodCard />}
-        <div className={styles.sidebarFoot}>{rail ? <MeAvatar /> : <UptimeCard />}</div>
+        <div className={styles.sidebarFoot}>
+          {rail ? <MeAvatar /> : <UptimeCard />}
+          <SignOutButton compact={rail} />
+        </div>
       </aside>
       <main id="main" tabIndex={-1} className={styles.main}>
         <Outlet />
@@ -76,7 +80,7 @@ function MainNav({ pathname, compact = false, label }: MainNavProps) {
   );
 }
 
-function Avatar({ member, size = 'md' }: { member: PodMember; size?: 'sm' | 'md' }) {
+function Avatar({ member, size = 'md' }: { member: PublicUser; size?: 'sm' | 'md' }) {
   return (
     <span
       className={[styles.avatar, styles[member.colour], size === 'sm' ? styles.avatarSm : ''].join(
@@ -90,26 +94,34 @@ function Avatar({ member, size = 'md' }: { member: PodMember; size?: 'sm' | 'md'
 }
 
 function PodCard() {
-  const { me, partner, latestActivity } = placeholderPod;
+  const { me } = useAuth();
+  if (!me) return null;
+  const [self, partner] = me.pod;
   return (
     <div className={styles.podCard}>
       <h2 className={styles.cardEyebrow}>Study pod</h2>
       <div className={styles.podMembers}>
         <span className={styles.avatars}>
-          <Avatar member={me} />
-          <Avatar member={partner} />
+          {me.pod.map((member) => (
+            <Avatar key={member.id} member={member} />
+          ))}
         </span>
-        <span>
-          {me.name} &amp; {partner.name}
-        </span>
+        <span>{partner ? `${self!.displayName} & ${partner.displayName}` : self!.displayName}</span>
       </div>
-      <p className={styles.podActivity}>{latestActivity}</p>
+      <p className={styles.podActivity}>
+        {partner
+          ? `Studying with ${partner.displayName}.`
+          : 'The second seat is open. Send your partner the other invite link.'}
+      </p>
     </div>
   );
 }
 
+// The real streak arrives with progress tracking (build prompt 08); nothing is recorded yet.
+const UPTIME_DAYS: number = 0;
+
 function UptimeCard() {
-  const days = placeholderPod.uptimeDays;
+  const days = UPTIME_DAYS;
   return (
     <p className={styles.uptimeCard}>
       <BoltIcon size={24} className={styles.uptimeIcon} />
@@ -124,12 +136,41 @@ function UptimeCard() {
 }
 
 function MeAvatar() {
-  const { me } = placeholderPod;
+  const { me } = useAuth();
+  if (!me) return null;
   return (
     <span className={styles.railAvatar}>
-      <Avatar member={me} />
-      <span className="visually-hidden">Signed in as {me.name}</span>
+      <Avatar member={me.pod[0]!} />
+      <span className="visually-hidden">Signed in as {me.user.displayName}</span>
     </span>
+  );
+}
+
+function SignOutButton({ compact = false }: { compact?: boolean }) {
+  const { logout } = useAuth();
+  const [pending, setPending] = useState(false);
+
+  // On success the session is cleared and RequireAuth sends the page to /login.
+  const onClick = async () => {
+    setPending(true);
+    try {
+      await logout();
+    } catch {
+      setPending(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={[styles.signOut, compact ? styles.signOutCompact : ''].join(' ')}
+      onClick={onClick}
+      disabled={pending}
+      aria-label={compact ? 'Sign out' : undefined}
+    >
+      <SignOutIcon size={20} />
+      {compact ? null : <span>Sign out</span>}
+    </button>
   );
 }
 
@@ -172,6 +213,7 @@ function TopBar({ pathname }: { pathname: string }) {
             <MainNav pathname={pathname} label="Main menu" />
             <PodCard />
             <UptimeCard />
+            <SignOutButton />
           </>
         ) : null}
       </div>

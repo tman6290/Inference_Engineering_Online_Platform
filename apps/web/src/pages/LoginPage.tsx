@@ -1,57 +1,62 @@
 import { useState, type FormEvent } from 'react';
-import { ThemeToggle } from '../shell/ThemeToggle';
-import { Button, Card, Eyebrow, Input, LogoMark } from '../ui';
-import styles from './LoginPage.module.css';
+import { Navigate, useSearchParams } from 'react-router';
+import { ApiRequestError } from '../api/client';
+import { safeNext, useAuth } from '../auth/auth';
+import { AuthLayout } from '../auth/AuthLayout';
+import { Button, Input } from '../ui';
+import styles from '../auth/AuthForm.module.css';
 
 export function LoginPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const { me, login } = useAuth();
+  const [params] = useSearchParams();
+  const next = safeNext(params.get('next'));
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = (event: FormEvent) => {
+  if (me) return <Navigate to={next} replace />;
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
+    const data = new FormData(event.currentTarget);
+    setSubmitting(true);
+    setError(null);
+    try {
+      // On success `me` is set and the <Navigate> above takes the user to `next`.
+      await login({ email: String(data.get('email')), password: String(data.get('password')) });
+    } catch (caught) {
+      setError(
+        caught instanceof ApiRequestError
+          ? caught.message
+          : 'Could not reach the server. Check your connection and try again.',
+      );
+      setSubmitting(false);
+    }
   };
 
   return (
-    <main id="main" className={styles.page}>
-      <div className={styles.corner}>
-        <ThemeToggle />
-      </div>
-      <div className={styles.column}>
-        <div className={styles.brand}>
-          <span className={styles.logoTile}>
-            <LogoMark size={30} />
-          </span>
-          <div>
-            <p className={styles.name}>Forward Pass</p>
-            <Eyebrow>Inference Engineering</Eyebrow>
-          </div>
-        </div>
-
-        <Card padding="lg" className={styles.card}>
-          <h1 className={styles.title}>Sign in</h1>
-          <p className={styles.lede}>
-            Two seats, one pod. Use the account you made with your invite code.
+    <AuthLayout title="Sign in" lede="Welcome back to the pod.">
+      <form className={styles.form} onSubmit={onSubmit} noValidate>
+        {error ? (
+          <p className={styles.alert} role="alert">
+            {error}
           </p>
-          <form className={styles.form} onSubmit={onSubmit} noValidate>
-            <Input label="Username" name="username" autoComplete="username" required />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-            />
-            <Button type="submit" block>
-              Sign in
-            </Button>
-          </form>
-          {submitted ? (
-            <p className={styles.note} role="status">
-              Sign-in isn&apos;t wired up yet.
-            </p>
-          ) : null}
-        </Card>
-      </div>
-    </main>
+        ) : null}
+        <Input label="Email" name="email" type="email" autoComplete="email" required />
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
+        <Button type="submit" block disabled={submitting}>
+          {submitting ? 'Signing in…' : 'Sign in'}
+        </Button>
+      </form>
+      <p className={styles.foot}>
+        New here? Open the invite link you were sent. Forgot your password? Ask the admin to reset
+        it.
+      </p>
+    </AuthLayout>
   );
 }

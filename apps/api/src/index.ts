@@ -1,6 +1,15 @@
 import { createApp } from './app';
-import { env } from './env';
+import { loadConfig } from './config';
+import { createDb } from './db';
 
-createApp().listen(env.API_PORT, () => {
-  console.info(`api listening on http://localhost:${env.API_PORT}`);
+const config = loadConfig();
+const db = createDb(config.databaseUrl);
+
+createApp({
+  db,
+  sessions: { secret: config.sessionSecret, secureCookies: config.secureCookies },
+  inviteCodes: config.inviteCodes,
+  trustProxy: config.trustProxy,
+}).listen(config.port, () => {
+  console.info(`api listening on http://localhost:${config.port}`);
 });

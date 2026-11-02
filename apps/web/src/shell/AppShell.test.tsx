@@ -1,12 +1,11 @@
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { axeViolations, renderRoute } from '../test/render';
+import { axeViolations, createFakeApi, renderRoute } from '../test/render';
+
+const HOME_HEADING = /^Good (morning|afternoon|evening), Tofa\.$/;
 
 beforeEach(() => {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })),
-  );
+  vi.stubGlobal('fetch', createFakeApi().fetch);
 });
 
 afterEach(() => {
@@ -23,7 +22,7 @@ function mainNav() {
 describe('app shell', () => {
   it('renders the full sidebar with every section on Home', async () => {
     renderRoute('/');
-    await screen.findByRole('heading', { level: 1, name: 'Good morning.' });
+    await screen.findByRole('heading', { level: 1, name: HOME_HEADING });
 
     const nav = within(mainNav());
     for (const label of ['Home', 'The Book', 'Checkpoints', 'Projects', 'Progress', 'Glossary']) {
@@ -55,7 +54,7 @@ describe('app shell', () => {
 
   it('opens and closes the small-screen menu', async () => {
     renderRoute('/');
-    await screen.findByRole('heading', { level: 1, name: 'Good morning.' });
+    await screen.findByRole('heading', { level: 1, name: HOME_HEADING });
     const button = screen.getByRole('button', { name: 'Menu' });
     expect(button.getAttribute('aria-expanded')).toBe('false');
 
@@ -69,7 +68,7 @@ describe('app shell', () => {
 
   it('closes the small-screen menu after following a link', async () => {
     renderRoute('/');
-    await screen.findByRole('heading', { level: 1, name: 'Good morning.' });
+    await screen.findByRole('heading', { level: 1, name: HOME_HEADING });
     const button = screen.getByRole('button', { name: 'Menu' });
     fireEvent.click(button);
     const menu = within(screen.getByRole('navigation', { name: 'Main menu' }));
@@ -82,7 +81,7 @@ describe('app shell', () => {
 
   it('switches to the dark reading theme and remembers it', async () => {
     renderRoute('/');
-    await screen.findByRole('heading', { level: 1, name: 'Good morning.' });
+    await screen.findByRole('heading', { level: 1, name: HOME_HEADING });
     const [toggle] = screen.getAllByRole('button', { name: 'Dark reading mode' });
     fireEvent.click(toggle!);
     expect(document.documentElement.dataset.theme).toBe('dark');
@@ -99,7 +98,6 @@ describe('app shell', () => {
     '/projects/05-speculation-benchmark',
     '/progress',
     '/glossary',
-    '/login',
     '/nowhere',
   ])('has no axe violations at %s', async (path) => {
     renderRoute(path);

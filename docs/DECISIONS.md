@@ -59,3 +59,19 @@ is the bulk of the work, and short answers have to be phrased so they have check
 (a number with a unit, a term, a choice). Questions that only a free-form judgement could grade
 move into projects instead. The `content:digests` and `content:checkpoints` generation scripts are
 replaced by `content:validate`.
+
+## 2026-11-02: Two seats, sessions in Postgres
+
+**Decision.** Each seat is claimed once with its invite code (`INVITE_CODE_1`, `INVITE_CODE_2`).
+Claiming writes a row keyed by the seat number, so a code can't be reused, and registration closes
+once two users exist, even if a code is re-issued. Passwords use bcrypt at cost 12 (the pure-JS
+`bcryptjs`, so installs need no native build). Sessions live in Postgres; the cookie holds a random
+token and the table stores its HMAC under `SESSION_SECRET`, so a copy of the table can't be used as
+cookies. Cookies are httpOnly and SameSite=Lax, Secure in production, and sessions last 30 days,
+extended on use once past half-life. Login and register are limited to 10 attempts per minute per IP.
+
+**Why.** Two people need no OAuth provider, email flow or password reset by mail; an admin CLI
+covers lost passwords. Database sessions can be revoked instantly, which signed tokens can't.
+
+**Trade-offs.** Every authenticated request reads the session table. At two users that costs
+nothing.

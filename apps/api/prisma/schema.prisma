@@ -1,4 +1,5 @@
-// Models arrive with the features that need them (users, sections, checkpoints, ...).
+// Models arrive with the features that need them. Authored content (digests, questions,
+// exercises) stays in files under content/ and is referenced by id, never stored here.
 
 generator client {
   provider = "prisma-client"
@@ -8,4 +9,43 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum PodColour {
+  lime
+  butter
+}
+
+/// One of the pod's two seats.
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  displayName  String
+  initial      String
+  colour       PodColour
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  sessions     Session[]
+  inviteCode   InviteCode?
+}
+
+/// The id is an HMAC of the cookie token, so a leaked table can't be replayed as cookies.
+model Session {
+  id         String   @id
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// A row exists once a seat's code has been spent. The slot (1 or 2) maps to INVITE_CODE_1 / INVITE_CODE_2.
+model InviteCode {
+  slot     Int      @id
+  codeHash String
+  spentAt  DateTime @default(now())
+  userId   String   @unique
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

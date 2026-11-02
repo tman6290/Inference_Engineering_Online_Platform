@@ -25,6 +25,11 @@ time into gitignored folders.
 5. `pnpm db:migrate`
 6. `pnpm content:ingest`
 7. `pnpm dev` serves the web app at http://localhost:5173 and the API at http://localhost:4000.
+8. Each of us claims a seat once, at `http://localhost:5173/register?code=<INVITE_CODE_1>` and
+   `…?code=<INVITE_CODE_2>`. After that, sign in at `/login`.
+
+Forgot a password? `pnpm admin reset-password <email>` prints a new one and signs that account out
+everywhere. `pnpm admin list-users` and `pnpm admin revoke-sessions <email>` cover the rest.
 
 Check the API with `curl http://localhost:5173/api/health`. It should return `{"ok":true}`.
 
@@ -39,6 +44,7 @@ Check the API with `curl http://localhost:5173/api/health`. It should return `{"
 | `pnpm test`                | Vitest across the workspace                        |
 | `pnpm db:migrate`          | Prisma migrations against `DATABASE_URL`           |
 | `pnpm db:seed`             | Seed data                                          |
+| `pnpm admin`               | List users, reset a password, revoke sessions      |
 | `pnpm content:ingest`      | Fetch the book into `content/book/`                |
 | `pnpm content:validate`    | Check authored chapters, answer keys and exercises |
 

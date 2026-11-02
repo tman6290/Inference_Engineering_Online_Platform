@@ -7,6 +7,23 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: forwardpass
+          POSTGRES_PASSWORD: forwardpass
+          POSTGRES_DB: forwardpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U forwardpass"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # The API test setup creates and migrates this database; tests fail rather than skip without it.
+      DATABASE_URL_TEST: postgresql://forwardpass:forwardpass@localhost:5432/forwardpass_test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
+import { AuthProvider } from './auth/auth';
 import { buildRoutes } from './routes';
 import { ThemeProvider } from './theme/theme';
 import './styles/global.css';
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

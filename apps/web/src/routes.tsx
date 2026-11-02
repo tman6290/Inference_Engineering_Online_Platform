@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router';
+import { RequireAuth } from './auth/RequireAuth';
 import { LoginPage } from './pages/LoginPage';
 import {
   BookPage,
@@ -13,6 +14,7 @@ import {
   ProjectsPage,
   SectionPage,
 } from './pages/pages';
+import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
 
 // Dev builds only. In production the branch is dead code, so the showcase never ships.
@@ -42,9 +44,14 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
 
   return [
     { path: '/login', element: <LoginPage /> },
+    { path: '/register', element: <RegisterPage /> },
     {
       path: '/',
-      element: <AppShell />,
+      element: (
+        <RequireAuth>
+          <AppShell />
+        </RequireAuth>
+      ),
       children: [
         { index: true, element: <HomePage /> },
         { path: 'book', element: <BookPage /> },

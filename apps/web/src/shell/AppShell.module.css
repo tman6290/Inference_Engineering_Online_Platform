@@ -55,7 +55,14 @@
 }
 
 .sidebarFoot {
+  display: grid;
+  justify-items: stretch;
+  gap: 12px;
   margin-top: auto;
+}
+
+.shell[data-rail='true'] .sidebarFoot {
+  justify-items: center;
 }
 
 /* Logo */
@@ -344,4 +351,40 @@
   .topBar .logoSub {
     display: none;
   }
+}
+
+/* Sign out */
+
+.signOut {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch);
+  padding: 0 16px;
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius-12);
+  background: transparent;
+  color: var(--mute-dark);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.signOut:hover:not(:disabled) {
+  border-color: var(--mute-dark);
+  color: var(--paper);
+}
+
+.signOut:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.signOutCompact {
+  justify-content: center;
+  width: 48px;
+  padding: 0;
 }

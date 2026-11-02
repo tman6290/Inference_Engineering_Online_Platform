@@ -31,7 +31,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 |---|---|---|
 | 00 | Bootstrap the repo | done (1749544, f7b09d0) |
 | 01 | Design tokens and app shell | done (bfc6875; React 19 upgrade 0f49c18) |
-| 02 | Auth for two seats | |
+| 02 | Auth for two seats | done (see git log: `auth:` commit) |
 | 03 | Ingest the book | |
 | 04 | Content schemas, grading and validation | |
 | 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | |

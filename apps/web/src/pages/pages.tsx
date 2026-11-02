@@ -1,6 +1,7 @@
-import { SECTION_COUNT, healthResponseSchema } from '@forward-pass/shared';
+import { SECTION_COUNT, STUDY_TIMEZONE, healthResponseSchema } from '@forward-pass/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
+import { useAuth } from '../auth/auth';
 import { ButtonLink, Chip } from '../ui';
 import { Placeholder } from './Placeholder';
 import styles from './Placeholder.module.css';
@@ -11,12 +12,27 @@ async function fetchHealth() {
   return healthResponseSchema.parse(await res.json());
 }
 
+/** Morning, afternoon or evening in the pod's timezone. */
+export function greeting(now: Date = new Date()): string {
+  const hour = Number(
+    new Intl.DateTimeFormat('en-GB', {
+      hour: 'numeric',
+      hourCycle: 'h23',
+      timeZone: STUDY_TIMEZONE,
+    }).format(now),
+  );
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export function HomePage() {
+  const { me } = useAuth();
   const health = useQuery({ queryKey: ['health'], queryFn: fetchHealth, retry: false });
   return (
     <Placeholder
       eyebrow="Home"
-      title="Good morning."
+      title={me ? `${greeting()}, ${me.user.displayName}.` : `${greeting()}.`}
       description={`Decode progress across ${SECTION_COUNT} sections, the pod standings and the next project will live here.`}
       plan={[
         'Continue decoding: the section you stopped at',
