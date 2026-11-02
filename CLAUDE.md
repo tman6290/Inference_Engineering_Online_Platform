@@ -79,8 +79,8 @@ showcase at `/dev/ui`.
 
 ## Product vocabulary (use these words in UI and code)
 
-- **Section**: one numbered book section (1.1, 5.2 …). 42 of them plus Chapter 0 and the Preface.
-- **Decode progress**: sections read / 42.
+- **Section**: one numbered book section (1.1, 5.2 …). 36 of them across Chapters 1–7. Chapter 0 has no sections; it and the Preface are lesson pages outside the count.
+- **Decode progress**: numbered sections read / 36 (`SECTION_COUNT`; the book itself says 42, but publishes 36).
 - **Checkpoint**: 10-question quiz per section (4 scenario_mc, 3 calculation, 3 text) drawn from an authored bank of ≥ 24, graded against answer keys. Pass = ≥ 7 accepted first try.
 - **Exercise**: a hands-on task inside a section with a ready-made solution and, where it involves code, tests to run.
 - **Acceptance rate**: answers accepted on the first try / answers submitted. Hints and retries are logged, not hidden.

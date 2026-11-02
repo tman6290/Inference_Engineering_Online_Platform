@@ -75,3 +75,25 @@ covers lost passwords. Database sessions can be revoked instantly, which signed 
 
 **Trade-offs.** Every authenticated request reads the session table. At two users that costs
 nothing.
+
+## 2026-11-02: The book in Postgres, 36 sections
+
+**Decision.** `pnpm content:ingest` fetches the published Markdown (`llms.txt` and the files it
+lists), saves it as received under `content/book/` and the figures under `content/figures/`, and
+loads chapters, sections, subsections, figures and the Appendix A glossary into Postgres. The API
+serves section text and figures to signed-in users only. The only committed output is
+`content/outline.json`: numbers, slugs and titles, no body text.
+
+Decode progress counts **36** sections, not 42. The book's own overview says 42, but the published
+text has 36 numbered sections (Chapter 0 has none). The Preface and Chapter 0 are read like
+lessons but sit outside the count.
+
+**Why.** Lessons, critiques and the glossary all need the text, and a database makes section,
+figure and term lookups cheap. Keeping it out of git respects the book being Baseten's to
+distribute. Re-running the ingest only writes what changed, so it is safe after any update to the
+source.
+
+**Trade-offs.** A fresh machine needs network access and about two minutes to ingest before
+lessons work. Glossary terms are linked to the section titled with the term, or else to the first
+section that uses it; 22 of 213 terms (mostly ones that only appear in the Preface or Chapter 0)
+have no section yet.

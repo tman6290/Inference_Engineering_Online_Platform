@@ -49,3 +49,87 @@ model InviteCode {
   userId   String   @unique
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+// ---------------------------------------------------------------------------
+// The book, filled by `pnpm content:ingest` from the published Markdown.
+// Book text lives here and in content/book/ (gitignored), never in git.
+// ---------------------------------------------------------------------------
+
+/// Preface, appendices and acknowledgements: pages outside the numbered chapters.
+model BookPage {
+  slug       String @id
+  title      String
+  summary    String
+  url        String
+  markdown   String
+  /// "front" (Preface) or "back" (appendices, acknowledgements).
+  placement  String
+  orderIndex Int
+}
+
+model Chapter {
+  number   Int       @id
+  slug     String    @unique
+  title    String
+  summary  String
+  url      String
+  /// The chapter's opening text, before its first numbered section.
+  intro    String
+  sections Section[]
+  figures  Figure[]
+}
+
+model Section {
+  number         String       @id
+  chapterNumber  Int
+  chapter        Chapter      @relation(fields: [chapterNumber], references: [number], onDelete: Cascade)
+  slug           String
+  title          String
+  summary        String
+  url            String
+  /// Text before the first subsection.
+  intro          String
+  wordCount      Int
+  readingMinutes Int
+  orderIndex     Int          @unique
+  /// Bold phrases in the text, a hint for glossary links.
+  boldTerms      String[]
+  subsections    Subsection[]
+  figures        Figure[]
+}
+
+model Subsection {
+  number        String   @id
+  sectionNumber String
+  section       Section  @relation(fields: [sectionNumber], references: [number], onDelete: Cascade)
+  title         String
+  markdown      String
+  orderIndex    Int
+  figures       Figure[]
+
+  @@index([sectionNumber])
+}
+
+model Figure {
+  number           String      @id
+  caption          String
+  sourceUrl        String
+  /// File name inside content/figures, e.g. "5.3.png".
+  fileName         String
+  /// Set for chapter figures; null for the Preface's P.n figures, which use pageSlug.
+  chapterNumber    Int?
+  chapter          Chapter?    @relation(fields: [chapterNumber], references: [number], onDelete: Cascade)
+  pageSlug         String?
+  sectionNumber    String?
+  section          Section?    @relation(fields: [sectionNumber], references: [number], onDelete: SetNull)
+  subsectionNumber String?
+  subsection       Subsection? @relation(fields: [subsectionNumber], references: [number], onDelete: SetNull)
+}
+
+model GlossaryTerm {
+  slug          String  @id
+  term          String
+  definition    String
+  /// First section whose text uses the term.
+  sectionNumber String?
+}

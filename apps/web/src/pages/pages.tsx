@@ -59,7 +59,7 @@ export function BookPage() {
     <Placeholder
       eyebrow="The Book"
       title="Table of contents"
-      description="Eight chapters, 42 sections, seven projects. Read in order; the stack builds bottom-up."
+      description={`Eight chapters, ${SECTION_COUNT} sections, seven projects. Read in order; the stack builds bottom-up.`}
       plan={['Chapters with section lists and read state', 'Project unlock points']}
     />
   );

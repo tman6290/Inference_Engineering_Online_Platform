@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev && prisma generate",
+    "db:migrate": "node scripts/migrate.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -36,6 +36,7 @@
   },
   "exports": {
     "./admin": "./src/admin.ts",
+    "./book": "./src/book/index.ts",
     "./config": "./src/config.ts",
     "./db": "./src/db.ts"
   }

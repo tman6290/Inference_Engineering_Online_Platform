@@ -1,0 +1,715 @@
+{
+  "source": "https://www.baseten.co/inference-engineering/llms.txt",
+  "frontMatter": [
+    {
+      "slug": "preface",
+      "title": "Preface"
+    }
+  ],
+  "chapters": [
+    {
+      "number": 0,
+      "slug": "00-inference",
+      "title": "Inference",
+      "sections": []
+    },
+    {
+      "number": 1,
+      "slug": "01-prerequisites",
+      "title": "Prerequisites",
+      "sections": [
+        {
+          "number": "1.1",
+          "slug": "scale-and-specialization",
+          "title": "Scale and Specialization",
+          "subsections": []
+        },
+        {
+          "number": "1.2",
+          "slug": "about-your-app",
+          "title": "About Your App",
+          "subsections": [
+            {
+              "number": "1.2.1",
+              "title": "AI-Native Applications"
+            },
+            {
+              "number": "1.2.2",
+              "title": "Online versus Offline"
+            },
+            {
+              "number": "1.2.3",
+              "title": "Consumer versus B2B"
+            }
+          ]
+        },
+        {
+          "number": "1.3",
+          "slug": "model-selection",
+          "title": "Model Selection",
+          "subsections": [
+            {
+              "number": "1.3.1",
+              "title": "Model Evaluation"
+            },
+            {
+              "number": "1.3.2",
+              "title": "Fine-Tuning for Domain-Specific Quality"
+            },
+            {
+              "number": "1.3.3",
+              "title": "Distillation"
+            }
+          ]
+        },
+        {
+          "number": "1.4",
+          "slug": "measuring-latency-and-throughput",
+          "title": "Measuring Latency and Throughput",
+          "subsections": [
+            {
+              "number": "1.4.1",
+              "title": "Latency Percentiles"
+            },
+            {
+              "number": "1.4.2",
+              "title": "End-to-End Metrics"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "slug": "02-models",
+      "title": "Models",
+      "sections": [
+        {
+          "number": "2.1",
+          "slug": "neural-networks",
+          "title": "Neural Networks",
+          "subsections": [
+            {
+              "number": "2.1.1",
+              "title": "Linear Layers and Matmul"
+            },
+            {
+              "number": "2.1.2",
+              "title": "Activation Functions"
+            }
+          ]
+        },
+        {
+          "number": "2.2",
+          "slug": "llm-inference-mechanics",
+          "title": "LLM Inference Mechanics",
+          "subsections": [
+            {
+              "number": "2.2.1",
+              "title": "LLM Architecture"
+            },
+            {
+              "number": "2.2.2",
+              "title": "Transformer Blocks"
+            },
+            {
+              "number": "2.2.3",
+              "title": "Attention"
+            },
+            {
+              "number": "2.2.4",
+              "title": "Mixture of Experts Models"
+            }
+          ]
+        },
+        {
+          "number": "2.3",
+          "slug": "image-generation-inference-mechanics",
+          "title": "Image Generation Inference Mechanics",
+          "subsections": [
+            {
+              "number": "2.3.1",
+              "title": "Image Generation Model Architecture"
+            },
+            {
+              "number": "2.3.2",
+              "title": "Few-Step Image Generation Models"
+            },
+            {
+              "number": "2.3.3",
+              "title": "Video Generation"
+            }
+          ]
+        },
+        {
+          "number": "2.4",
+          "slug": "calculating-inference-bottlenecks",
+          "title": "Calculating Inference Bottlenecks",
+          "subsections": [
+            {
+              "number": "2.4.1",
+              "title": "Ops:Byte Ratio and Arithmetic Intensity"
+            },
+            {
+              "number": "2.4.2",
+              "title": "LLM Inference Bottlenecks"
+            },
+            {
+              "number": "2.4.3",
+              "title": "Image Generation Inference Bottlenecks"
+            }
+          ]
+        },
+        {
+          "number": "2.5",
+          "slug": "optimizing-attention",
+          "title": "Optimizing Attention",
+          "subsections": []
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "slug": "03-hardware",
+      "title": "Hardware",
+      "sections": [
+        {
+          "number": "3.1",
+          "slug": "gpu-architecture",
+          "title": "GPU Architecture",
+          "subsections": [
+            {
+              "number": "3.1.1",
+              "title": "Compute"
+            },
+            {
+              "number": "3.1.2",
+              "title": "Memory and Caches"
+            }
+          ]
+        },
+        {
+          "number": "3.2",
+          "slug": "gpu-architecture-generations",
+          "title": "GPU Architecture Generations",
+          "subsections": [
+            {
+              "number": "3.2.1",
+              "title": "Hopper GPUs"
+            },
+            {
+              "number": "3.2.2",
+              "title": "Ada Lovelace GPUs"
+            },
+            {
+              "number": "3.2.3",
+              "title": "Blackwell GPUs"
+            },
+            {
+              "number": "3.2.4",
+              "title": "Rubin GPUs"
+            },
+            {
+              "number": "3.2.5",
+              "title": "Grace and Vera CPUs"
+            }
+          ]
+        },
+        {
+          "number": "3.3",
+          "slug": "instances",
+          "title": "Instances",
+          "subsections": [
+            {
+              "number": "3.3.1",
+              "title": "Multi-GPU Instances"
+            },
+            {
+              "number": "3.3.2",
+              "title": "Multi-Instance GPUs"
+            }
+          ]
+        },
+        {
+          "number": "3.4",
+          "slug": "other-datacenter-accelerator-options",
+          "title": "Other Datacenter Accelerator Options",
+          "subsections": []
+        },
+        {
+          "number": "3.5",
+          "slug": "local-inference",
+          "title": "Local Inference",
+          "subsections": [
+            {
+              "number": "3.5.1",
+              "title": "Desktop Inference"
+            },
+            {
+              "number": "3.5.2",
+              "title": "Mobile Inference"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "slug": "04-software",
+      "title": "Software",
+      "sections": [
+        {
+          "number": "4.1",
+          "slug": "cuda",
+          "title": "CUDA",
+          "subsections": [
+            {
+              "number": "4.1.1",
+              "title": "CUDA Kernels for Inference"
+            },
+            {
+              "number": "4.1.2",
+              "title": "CUDA Kernel Selection"
+            },
+            {
+              "number": "4.1.3",
+              "title": "Reducing Memory Accesses with Kernel Fusion"
+            }
+          ]
+        },
+        {
+          "number": "4.2",
+          "slug": "deep-learning-frameworks-and-libraries",
+          "title": "Deep Learning Frameworks and Libraries",
+          "subsections": [
+            {
+              "number": "4.2.1",
+              "title": "PyTorch"
+            },
+            {
+              "number": "4.2.2",
+              "title": "Model File Formats"
+            },
+            {
+              "number": "4.2.3",
+              "title": "ONNX Runtime and TensorRT"
+            },
+            {
+              "number": "4.2.4",
+              "title": "Transformers and Diffusers"
+            }
+          ]
+        },
+        {
+          "number": "4.3",
+          "slug": "inference-engines",
+          "title": "Inference Engines",
+          "subsections": [
+            {
+              "number": "4.3.1",
+              "title": "vLLM"
+            },
+            {
+              "number": "4.3.2",
+              "title": "SGLang"
+            },
+            {
+              "number": "4.3.3",
+              "title": "TensorRT-LLM"
+            }
+          ]
+        },
+        {
+          "number": "4.4",
+          "slug": "nvidia-dynamo",
+          "title": "NVIDIA Dynamo",
+          "subsections": []
+        },
+        {
+          "number": "4.5",
+          "slug": "performance-benchmarking-and-load-testing",
+          "title": "Performance Benchmarking and Load Testing",
+          "subsections": [
+            {
+              "number": "4.5.1",
+              "title": "Performance Benchmarking Tooling"
+            },
+            {
+              "number": "4.5.2",
+              "title": "Performance Benchmarking Tips"
+            },
+            {
+              "number": "4.5.3",
+              "title": "Profiling Performance"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "slug": "05-techniques",
+      "title": "Techniques",
+      "sections": [
+        {
+          "number": "5.1",
+          "slug": "quantization",
+          "title": "Quantization",
+          "subsections": [
+            {
+              "number": "5.1.1",
+              "title": "Number Formats"
+            },
+            {
+              "number": "5.1.2",
+              "title": "Quantization Approaches"
+            },
+            {
+              "number": "5.1.3",
+              "title": "Measuring Quality Impact"
+            }
+          ]
+        },
+        {
+          "number": "5.2",
+          "slug": "speculative-decoding",
+          "title": "Speculative Decoding",
+          "subsections": [
+            {
+              "number": "5.2.1",
+              "title": "Draft-Target Speculative Decoding"
+            },
+            {
+              "number": "5.2.2",
+              "title": "Medusa"
+            },
+            {
+              "number": "5.2.3",
+              "title": "EAGLE"
+            },
+            {
+              "number": "5.2.4",
+              "title": "N-gram Speculation and Lookahead Decoding"
+            }
+          ]
+        },
+        {
+          "number": "5.3",
+          "slug": "caching",
+          "title": "Caching",
+          "subsections": [
+            {
+              "number": "5.3.1",
+              "title": "Prefix Caching and KV Cache Re-Use"
+            },
+            {
+              "number": "5.3.2",
+              "title": "Where to Store the KV Cache"
+            },
+            {
+              "number": "5.3.3",
+              "title": "Cache-Aware Routing"
+            },
+            {
+              "number": "5.3.4",
+              "title": "Long Context Handling"
+            }
+          ]
+        },
+        {
+          "number": "5.4",
+          "slug": "model-parallelism",
+          "title": "Model Parallelism",
+          "subsections": [
+            {
+              "number": "5.4.1",
+              "title": "Tensor Parallelism for Lower Latency"
+            },
+            {
+              "number": "5.4.2",
+              "title": "Expert Parallelism for Higher Throughput"
+            },
+            {
+              "number": "5.4.3",
+              "title": "Multi-Node Inference"
+            }
+          ]
+        },
+        {
+          "number": "5.5",
+          "slug": "disaggregation",
+          "title": "Disaggregation",
+          "subsections": [
+            {
+              "number": "5.5.1",
+              "title": "How Disaggregation Works"
+            },
+            {
+              "number": "5.5.2",
+              "title": "When to Use Disaggregation"
+            },
+            {
+              "number": "5.5.3",
+              "title": "Dynamic Disaggregation with NVIDIA Dynamo"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "slug": "06-modalities",
+      "title": "Modalities",
+      "sections": [
+        {
+          "number": "6.1",
+          "slug": "vision-language-models",
+          "title": "Vision Language Models",
+          "subsections": [
+            {
+              "number": "6.1.1",
+              "title": "Video Processing for Vision Language Models"
+            },
+            {
+              "number": "6.1.2",
+              "title": "Omni-Modal Models"
+            }
+          ]
+        },
+        {
+          "number": "6.2",
+          "slug": "embedding-models",
+          "title": "Embedding Models",
+          "subsections": [
+            {
+              "number": "6.2.1",
+              "title": "Embedding Model Architecture"
+            },
+            {
+              "number": "6.2.2",
+              "title": "Embedding Model Inference"
+            }
+          ]
+        },
+        {
+          "number": "6.3",
+          "slug": "asr-models",
+          "title": "ASR Models",
+          "subsections": [
+            {
+              "number": "6.3.1",
+              "title": "Single-Chunk Latency Optimization"
+            },
+            {
+              "number": "6.3.2",
+              "title": "Long File Latency Optimization"
+            },
+            {
+              "number": "6.3.3",
+              "title": "Diarization"
+            }
+          ]
+        },
+        {
+          "number": "6.4",
+          "slug": "tts-models",
+          "title": "TTS Models",
+          "subsections": [
+            {
+              "number": "6.4.1",
+              "title": "Streaming Real-Time Text to Speech"
+            },
+            {
+              "number": "6.4.2",
+              "title": "Speech-to-Speech Models"
+            }
+          ]
+        },
+        {
+          "number": "6.5",
+          "slug": "image-generation-models",
+          "title": "Image Generation Models",
+          "subsections": [
+            {
+              "number": "6.5.1",
+              "title": "Image Generation Kernel Optimization"
+            },
+            {
+              "number": "6.5.2",
+              "title": "One Weird Trick for Faster Image Generation"
+            }
+          ]
+        },
+        {
+          "number": "6.6",
+          "slug": "video-generation-models",
+          "title": "Video Generation Models",
+          "subsections": [
+            {
+              "number": "6.6.1",
+              "title": "Attention Optimization and Quantization"
+            },
+            {
+              "number": "6.6.2",
+              "title": "Context Parallelism"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "slug": "07-production",
+      "title": "Production",
+      "sections": [
+        {
+          "number": "7.1",
+          "slug": "containerization",
+          "title": "Containerization",
+          "subsections": [
+            {
+              "number": "7.1.1",
+              "title": "Dependency Management"
+            },
+            {
+              "number": "7.1.2",
+              "title": "NIMs"
+            }
+          ]
+        },
+        {
+          "number": "7.2",
+          "slug": "autoscaling",
+          "title": "Autoscaling",
+          "subsections": [
+            {
+              "number": "7.2.1",
+              "title": "Concurrency and Batch Sizing"
+            },
+            {
+              "number": "7.2.2",
+              "title": "Cold Starts"
+            },
+            {
+              "number": "7.2.3",
+              "title": "Routing, Load Balancing, and Queueing"
+            },
+            {
+              "number": "7.2.4",
+              "title": "Scale to Zero"
+            },
+            {
+              "number": "7.2.5",
+              "title": "Independent Component Scaling"
+            }
+          ]
+        },
+        {
+          "number": "7.3",
+          "slug": "multi-cloud-capacity-management",
+          "title": "Multi-Cloud Capacity Management",
+          "subsections": [
+            {
+              "number": "7.3.1",
+              "title": "GPU Procurement"
+            },
+            {
+              "number": "7.3.2",
+              "title": "Geo-Aware Load Balancing"
+            },
+            {
+              "number": "7.3.3",
+              "title": "Building for Reliability"
+            },
+            {
+              "number": "7.3.4",
+              "title": "Security and Compliance"
+            }
+          ]
+        },
+        {
+          "number": "7.4",
+          "slug": "testing-and-deployment",
+          "title": "Testing and Deployment",
+          "subsections": [
+            {
+              "number": "7.4.1",
+              "title": "Zero-Downtime Deployment"
+            },
+            {
+              "number": "7.4.2",
+              "title": "Cost Estimation"
+            },
+            {
+              "number": "7.4.3",
+              "title": "Observability"
+            }
+          ]
+        },
+        {
+          "number": "7.5",
+          "slug": "client-code",
+          "title": "Client Code",
+          "subsections": [
+            {
+              "number": "7.5.1",
+              "title": "Client Latency Overhead"
+            },
+            {
+              "number": "7.5.2",
+              "title": "Asynchronous Inference"
+            },
+            {
+              "number": "7.5.3",
+              "title": "Streaming and Protocol Support"
+            }
+          ]
+        },
+        {
+          "number": "7.6",
+          "slug": "production-inference-with-baseten",
+          "title": "Production Inference with Baseten",
+          "subsections": []
+        }
+      ]
+    }
+  ],
+  "backMatter": [
+    {
+      "slug": "appendix-a-inference-glossary",
+      "title": "Appendix A: Inference Glossary"
+    },
+    {
+      "slug": "appendix-b-recommended-reading",
+      "title": "Appendix B: Recommended Reading"
+    },
+    {
+      "slug": "appendix-b-recommended-reading/architecture",
+      "title": "Architecture"
+    },
+    {
+      "slug": "appendix-b-recommended-reading/developer-tools",
+      "title": "Developer Tools"
+    },
+    {
+      "slug": "appendix-b-recommended-reading/frontier-open-models",
+      "title": "Frontier Open Models"
+    },
+    {
+      "slug": "appendix-b-recommended-reading/gpu-infrastructure",
+      "title": "GPU Infrastructure"
+    },
+    {
+      "slug": "appendix-b-recommended-reading/inference-optimization-research",
+      "title": "Inference Optimization Research"
+    },
+    {
+      "slug": "appendix-b-recommended-reading/intelligence-evaluation",
+      "title": "Intelligence Evaluation"
+    },
+    {
+      "slug": "acknowledgements",
+      "title": "Acknowledgements"
+    }
+  ]
+}

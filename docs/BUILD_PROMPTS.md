@@ -32,7 +32,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 00 | Bootstrap the repo | done (1749544, f7b09d0) |
 | 01 | Design tokens and app shell | done (bfc6875; React 19 upgrade 0f49c18) |
 | 02 | Auth for two seats | done (see git log: `auth:` commit) |
-| 03 | Ingest the book | |
+| 03 | Ingest the book | done (`book:` commit; 36 sections, not 42) |
 | 04 | Content schemas, grading and validation | |
 | 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | |
 | 06 | The Lesson page | |
@@ -125,7 +125,7 @@ Read CLAUDE.md hard rule 1. Write scripts/ingest-book.ts.
 7. API: GET /api/book (chapters with sections and read state placeholders), GET /api/book/sections/:number (section with subsections and figures), GET /api/glossary?q=. Figures are served from /api/figures/:number through a static route that reads content/figures (never from the public web folder).
 8. Tests run against saved fixture responses, not the live site.
 
-Done when: 42 sections, 8 chapters (0 to 7), the preface, and the glossary are in Postgres; `pnpm content:ingest` run twice makes no changes the second time; /api/book/sections/5.2 returns four subsections and the figures 5.3 to 5.6 with working image URLs; content/outline.json is committed and no book text is staged. If the real book does not have 42 sections and 8 chapters, stop and report the actual numbers before changing any constant.
+Done when: 36 sections, 8 chapters (0 to 7), the preface, and the glossary are in Postgres; `pnpm content:ingest` run twice makes no changes the second time; /api/book/sections/5.2 returns four subsections and the figures 5.3 to 5.6 with working image URLs; content/outline.json is committed and no book text is staged. (Checked 2 November 2026: the published book has 36 numbered sections, not 42; decided to count 36.)
 ```
 
 ---
@@ -304,7 +304,7 @@ Done when: toggling the page live makes /p/:username return 200 and off returns 
 ```
 Run prompt 05 for each remaining chapter in book order, one chapter per commit, applying whatever the pilot review changed. After each chapter, open its lesson pages and one checkpoint in the browser to confirm they render.
 
-Done when: all 42 sections, Chapter 0 and the Preface have digests, banks of ≥ 24 questions and exercises, and `pnpm content:validate` passes on the whole book.
+Done when: all 36 sections, Chapter 0 and the Preface have digests, banks of ≥ 24 questions and exercises, and `pnpm content:validate` passes on the whole book.
 ```
 
 ---

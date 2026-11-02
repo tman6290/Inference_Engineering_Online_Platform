@@ -202,7 +202,7 @@ export function DevUiPage() {
             <StatTile
               label="Decode progress"
               value="41%"
-              caption="17 of 42 sections read"
+              caption="17 of 36 sections read"
               progress={41}
             />
             <StatTile

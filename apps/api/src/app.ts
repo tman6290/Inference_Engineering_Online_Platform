@@ -5,7 +5,10 @@ import { loadSession } from './auth/middleware';
 import type { SessionSettings } from './auth/sessions';
 import type { Db } from './db';
 import { sendError } from './http';
+import path from 'node:path';
+import { repoRoot } from './config';
 import { authRouter } from './routes/auth';
+import { bookRouter } from './routes/book';
 import { healthRouter } from './routes/health';
 
 export interface AppDeps {
@@ -15,6 +18,8 @@ export interface AppDeps {
   trustProxy?: number;
   /** Login and register attempts per IP per minute. */
   authRateLimit?: number;
+  /** Where ingested figures live. Defaults to content/figures. */
+  figuresDir?: string;
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -39,6 +44,13 @@ export function createApp(deps: AppDeps): Express {
   app.use(
     '/api',
     authRouter({ db: deps.db, sessions: deps.sessions, inviteCodes: deps.inviteCodes, limiter }),
+  );
+  app.use(
+    '/api',
+    bookRouter({
+      db: deps.db,
+      figuresDir: deps.figuresDir ?? path.join(repoRoot, 'content', 'figures'),
+    }),
   );
 
   app.use('/api', (_req, res) => {
