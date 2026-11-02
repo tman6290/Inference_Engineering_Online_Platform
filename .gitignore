@@ -7,3 +7,4 @@ content/figures/
 uploads/
 runner-jobs/
 backups/
+.claude/settings.local.json

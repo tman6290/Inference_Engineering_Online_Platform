@@ -1,0 +1,165 @@
+# Forward Pass — project context for Claude Code
+
+Read this file before every task. It is the source of truth for scope, stack, and rules.
+Build prompts live in `docs/BUILD_PROMPTS.md`; run them in order.
+
+## What this is
+
+A private, two-user web app for studying *Inference Engineering* by Philip Kiely (Baseten Books, 2026).
+Two learners (a "pod") read the book section by section, pass checkpoints, build solo projects that get
+critiqued against a rubric, and track progress. Not a public product. No signup page, no marketing.
+
+The UI is already designed. Screenshots of the boards live in `design/`.
+Home, Lesson and Foundations survive as reduced-resolution JPEGs; Checkpoint, Project and Progress are
+missing (see `design/MISSING.txt`). Match what exists and extend its language for the rest. When the design
+and these notes disagree, follow these notes and say so in the commit message.
+
+## Content model (decided 2 November 2026)
+
+Like TryHackMe: every chapter ships ready-made. Nothing is generated while a learner uses the app.
+
+- **Authored during development, committed to the repo:** chapter and section notes, worked examples,
+  checkpoint question banks with answers and explanations, exercises with solutions, and project specs with
+  their checks and tests. Claude Code writes these in development sessions, chapter by chapter, against the
+  locally ingested book text; they are reviewed and committed like code.
+- **Graded deterministically, no AI:** every checkpoint and exercise answer has an answer key. Supported
+  answer types: single choice, multiple choice, numeric with tolerance and unit, and exact text with
+  normalisation (case, whitespace, accepted variants). Each question shows its answer format up front
+  (e.g. `****.**` or "number, in ms"), the way TryHackMe does. Every question carries an explanation and
+  the section to re-read.
+- **The only runtime AI:** project critiques. They call `packages/llm` with `LLM_PROVIDER=anthropic` and
+  the user's Anthropic API key. Runner output and the project's tests run first; the critique reads them.
+- **Notes are original writing, not the book.** They explain and cite sections (e.g. "see 5.2.1"); quotes
+  stay short. The book text itself never enters git (Hard rule 1).
+
+## Stack (fixed)
+
+- Monorepo, pnpm workspaces, TypeScript everywhere, Node 20+.
+- `apps/web`: React 19 + Vite + React Router 8 + TanStack Query. CSS Modules with design tokens in `tokens.css`. No Tailwind.
+- `apps/api`: Express + Prisma + PostgreSQL 16 + zod for validation. Sessions in httpOnly cookies.
+- `apps/runner`: project-check sandbox service (Docker, CPU only, no network, hard timeouts).
+- `packages/shared`: zod schemas and TS types shared by web, api, runner, and scripts, including the
+  content schemas (chapters, sections, questions, answer keys, exercises).
+- `scripts/`: book ingestion, content validation and seeding (run manually, idempotent).
+- LLM calls go through `packages/llm` only, server side only, and only for project critiques.
+  `LLM_PROVIDER` picks `anthropic` or `openai-compatible`; `LLM_MODEL` names the model. No vendor SDK is
+  imported anywhere else, and no model name is hard-coded.
+- Docker Compose for Postgres (host port 5433) and the runner. `pnpm dev` starts web + api.
+
+## Design tokens (from the Foundations board)
+
+```
+--ink-green: #0D2A1D   (app chrome, verdict panels, worked examples)
+--moss:      #163A29   (surfaces on dark)
+--deep:      #0A2117   (inset panels on dark)
+--line-dark: #1E4532
+--forest:    #1B6A44   (primary action on paper; hover #0F4A2E)
+--lime:      #C9F25E   (active/progress on DARK only; never on paper)
+--paper:     #F3F1E8   (page ground)
+--card:      #FBFAF5
+--line:      #DCD9CC
+--ink:       #0F1F17   (body text)
+--mute:      #5B6B61   (secondary text; passes 4.5:1 on paper)
+--mint:      #DDF3E6 / text #0F4A2E   (accepted)
+--cream:     #FFF6E2 / text #7A4A05   (retry, needs work)
+--amber:     #C77B0F   (retry marks, shaky)
+--butter:    #F5C864   (study partner colour)
+--mute-dark: #9FB3A6   (secondary text on dark)
+```
+Type: Bricolage Grotesque (display 800, headings 700, body 400 at 17px/1.65) and JetBrains Mono
+(eyebrow labels 10–13px, letter-spacing 0.14em, uppercase; numbers; code). Load from Google Fonts.
+Radii: 12 / 16 / 20 / 24 / pill. Touch targets ≥ 44px. Icons: inline stroke SVG at 1.6px, no icon font, no emoji.
+Paper surfaces for reading; dark surfaces for "the machine talking" (verdicts, worked examples, stats).
+The tokens, semantic roles and UI primitives are built: `apps/web/src/styles/tokens.css`, `apps/web/src/ui`,
+showcase at `/dev/ui`.
+
+## Product vocabulary (use these words in UI and code)
+
+- **Section**: one numbered book section (1.1, 5.2 …). 42 of them plus Chapter 0 and the Preface.
+- **Decode progress**: sections read / 42.
+- **Checkpoint**: 10-question quiz per section drawn from an authored bank of ≥ 20, graded against answer keys.
+- **Exercise**: a hands-on task inside a section with a ready-made solution and, where it involves code, tests to run.
+- **Acceptance rate**: answers accepted on the first try / answers submitted. Hints and retries are logged, not hidden.
+- **Confidence**: learner's own rating per section: shaky / okay / solid.
+- **Uptime**: consecutive study days (timezone Africa/Lagos). A study day = any graded activity or ≥ 10 min reading.
+- **Recall queue**: spaced-repetition set of sections rated solid ≥ 21 days ago or okay ≥ 10 days ago.
+- **Project**: a solo deliverable per chapter (seven total). Submitted as a repo URL plus optional files. Graded by checks + critique.
+- **Critique**: structured grading output: per-dimension scores, right / wrong / work on, inline file:line comments, portfolio flag.
+  The one feature that calls an LLM at runtime.
+- **Pod**: the two users. Standings, duels, shared notes. Nothing in a project is shared work.
+- **Duel**: both users take a fresh checkpoint on the same section, alone, within 48 h. Higher first-try acceptance wins;
+  fewer hints breaks ties. Loser records a 3-minute teach-back (text or audio) on the questions they missed.
+
+## Hard rules
+
+1. **The book text and figures never enter git.** `content/book/`, `content/figures/`, `uploads/`, `.env*` are gitignored.
+   Ingestion fetches from `https://www.baseten.co/inference-engineering/llms.txt` at setup time. The repo is public on GitHub.
+   Authored notes are original explanations that cite sections; never paste or closely paraphrase long passages.
+2. Projects are **individual**. No shared submissions, no joint grading. Partners see each other's scores, never the work,
+   until a project is portfolio-public.
+3. Critiques read the book, not the internet. Every critique prompt includes the relevant section text and must cite sections.
+4. The grader never trusts claims. README statements are checked against `results.json` and runner output; unsupported claims
+   are called out under "What is wrong".
+5. No GPU in the sandbox. Projects that need a GPU ship a `--dry-run` path that runs on CPU with a tiny model so the pipeline
+   is proven to execute. Real numbers come from the learner's `results.json`, validated against the project schema.
+6. Two seats only. Invite codes in env. No password reset by email; an admin CLI resets passwords.
+7. Every LLM call has a zod output schema, `temperature: 0` for grading, a token budget, and a retry on schema failure. Log cost per call.
+8. Accessible by default: real buttons and inputs, labels, focus rings, 4.5:1 contrast, keyboard-only works.
+9. Tests before "done": API routes get integration tests against a test database; grading logic gets unit tests with fixtures.
+   Every authored question bank passes `pnpm content:validate` (schema, answer keys, explanations, section links).
+10. Commit messages: `area: what changed` (e.g. `api: checkpoint grading for numeric answers`). One concern per commit.
+11. No pull requests while one person works on the repo: commit to `main` and push. CI on push is the gate.
+
+## What goes in git (decided 2 November 2026)
+
+Everything is committed except secrets, so the project can be picked up on any machine from a clone.
+This replaces the earlier "keep the tooling invisible" rule.
+
+- **Committed:** code, content, `CLAUDE.md`, `docs/BUILD_PROMPTS.md`, `.claude/settings.json`, `design/`.
+- **Never committed:** `.env` and any other secret (API keys, invite codes, passwords), `.claude/settings.local.json`.
+  Check `git status` and the staged file list before every commit; if a secret is ever staged, unstage it.
+- **Not committed because they are regenerated, not because they are secret:** `node_modules`, `dist`, `uploads/`,
+  `runner-jobs/`, `backups/`, and the fetched book in `content/book/` and `content/figures/` (`pnpm content:ingest`
+  fetches it again on a new machine).
+- No `Co-Authored-By` or other attribution trailers in commits (`.claude/settings.json` sets `"includeCoAuthoredBy": false`).
+- README, ARCHITECTURE.md and DECISIONS.md are written in the first person as the project author.
+- Commit messages describe the change only: `api: checkpoint grading for numeric answers`.
+
+## Working on another machine
+
+1. Clone `git@github.com:tman6290/Inference_Engineering_Online_Platform.git`, then `corepack enable` (pnpm is pinned
+   in `package.json`) and `pnpm i`.
+2. `cp .env.example .env` and fill in the secrets: `SESSION_SECRET`, `LLM_API_KEY` (an Anthropic key, for critiques),
+   `LLM_MODEL`, both invite codes. `.env` never travels through git; copy values by hand or from a password manager.
+3. `docker compose up -d` (Postgres on host port 5433, so a locally installed Postgres on 5432 doesn't clash),
+   `pnpm db:migrate`, `pnpm content:ingest`, `pnpm dev`.
+4. Machine-specific notes (paths, shims, ports) belong in the Claude Code memory on that machine, not here.
+
+## Copyright stance (decided 2 November 2026)
+
+This is a personal learning platform, so following the book closely is fine and the repo stays public. If it ever
+becomes a public service (our own TryHackMe), replace book-derived scenarios, analogies and worked examples with
+original ones before launch. Don't re-raise the question otherwise.
+
+## Folder layout
+
+```
+apps/web            React app
+apps/api            Express API + Prisma schema in apps/api/prisma
+apps/runner         sandbox check service
+packages/shared     zod schemas, types, constants (incl. content schemas)
+packages/llm        provider interface + anthropic / openai-compatible adapters (critiques only)
+scripts/            ingest-book.ts, validate-content.ts, seed.ts
+content/chapters/   authored notes, checkpoint banks, exercises + solutions (committed)
+                    <nn>-<slug>/chapter.json, sections/<id>.md, checkpoints/<id>.json, exercises/<id>/
+content/projects/   project specs (committed): <nn>-<slug>/project.json, README.md, checks/, tests/
+content/book/       fetched book markdown (gitignored; reference for authoring and critiques)
+content/figures/    fetched figures (gitignored)
+docs/               ARCHITECTURE.md, DECISIONS.md, BUILD_PROMPTS.md
+design/             board screenshots
+```
+
+## Done means
+
+`pnpm lint && pnpm typecheck && pnpm test` pass, `docker compose up` works from a clean clone with only `.env` filled,
+and the README explains setup in under ten steps.
