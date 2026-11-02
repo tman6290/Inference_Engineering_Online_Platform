@@ -20,7 +20,7 @@ per check (CPU only, no network, hard timeout), and returns logs and exit status
 service with the Docker socket mounted. Today it exposes `GET /health` and nothing else.
 
 **content/** holds the course itself. Every chapter is written ahead of time and committed: section
-notes, worked examples, checkpoint banks with answer keys and explanations, exercises with
+digests, worked examples, checkpoint banks with answer keys and explanations, exercises with
 solutions, and project specs with their checks and tests. Nothing is generated while someone
 studies. The book text is the exception: it is fetched into `content/book/` at setup and never
 committed.

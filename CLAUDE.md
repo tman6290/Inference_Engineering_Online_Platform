@@ -18,19 +18,23 @@ and these notes disagree, follow these notes and say so in the commit message.
 
 Like TryHackMe: every chapter ships ready-made. Nothing is generated while a learner uses the app.
 
-- **Authored during development, committed to the repo:** chapter and section notes, worked examples,
-  checkpoint question banks with answers and explanations, exercises with solutions, and project specs with
-  their checks and tests. Claude Code writes these in development sessions, chapter by chapter, against the
-  locally ingested book text; they are reviewed and committed like code.
-- **Graded deterministically, no AI:** every checkpoint and exercise answer has an answer key. Supported
-  answer types: single choice, multiple choice, numeric with tolerance and unit, and exact text with
-  normalisation (case, whitespace, accepted variants). Each question shows its answer format up front
-  (e.g. `****.**` or "number, in ms"), the way TryHackMe does. Every question carries an explanation and
-  the section to re-read.
+- **Authored during development, committed to the repo:** one digest per section (the Lesson page's notes:
+  one-liner, summary, mechanism, worked example, key cards, check question, reflect prompt), checkpoint
+  banks (≥ 24 questions) with answers and explanations, exercises with solutions and local tests, and
+  project specs with their checks. Claude Code writes these in development sessions, chapter by chapter
+  (build prompt 05), against the locally ingested book text; they are reviewed and committed like code.
+  The Lesson page also shows the ingested book text itself, from the local database, never from git.
+- **Graded deterministically, no AI:** every checkpoint and exercise answer has an answer key. Question
+  kinds: `scenario_mc` (one of four options), `calculation` (number with tolerance and unit conversion) and
+  `text` (exact answer after normalisation of case, whitespace and punctuation, with accepted variants).
+  Each question shows its answer format up front (e.g. `*****` or "number, in GB"), the way TryHackMe does,
+  and carries an explanation and the subsection to re-read. Open "explain it" prompts are `reflect` blocks
+  in the digest: the learner writes, then compares with a model answer; they are never graded.
 - **The only runtime AI:** project critiques. They call `packages/llm` with `LLM_PROVIDER=anthropic` and
-  the user's Anthropic API key. Runner output and the project's tests run first; the critique reads them.
-- **Notes are original writing, not the book.** They explain and cite sections (e.g. "see 5.2.1"); quotes
-  stay short. The book text itself never enters git (Hard rule 1).
+  the user's Anthropic API key. Runner output and the project's checks run first; the critique reads them.
+- **Digests are original writing, not the book.** They explain and cite subsections (e.g. "see 5.2.1");
+  quotes stay short. The book text itself never enters git (Hard rule 1).
+- Schemas live in `packages/shared` (build prompt 04); `pnpm content:validate` must pass before a commit.
 
 ## Stack (fixed)
 
@@ -77,7 +81,7 @@ showcase at `/dev/ui`.
 
 - **Section**: one numbered book section (1.1, 5.2 …). 42 of them plus Chapter 0 and the Preface.
 - **Decode progress**: sections read / 42.
-- **Checkpoint**: 10-question quiz per section drawn from an authored bank of ≥ 20, graded against answer keys.
+- **Checkpoint**: 10-question quiz per section (4 scenario_mc, 3 calculation, 3 text) drawn from an authored bank of ≥ 24, graded against answer keys. Pass = ≥ 7 accepted first try.
 - **Exercise**: a hands-on task inside a section with a ready-made solution and, where it involves code, tests to run.
 - **Acceptance rate**: answers accepted on the first try / answers submitted. Hints and retries are logged, not hidden.
 - **Confidence**: learner's own rating per section: shaky / okay / solid.
@@ -94,7 +98,7 @@ showcase at `/dev/ui`.
 
 1. **The book text and figures never enter git.** `content/book/`, `content/figures/`, `uploads/`, `.env*` are gitignored.
    Ingestion fetches from `https://www.baseten.co/inference-engineering/llms.txt` at setup time. The repo is public on GitHub.
-   Authored notes are original explanations that cite sections; never paste or closely paraphrase long passages.
+   Authored digests are original explanations that cite subsections; never paste or closely paraphrase long passages.
 2. Projects are **individual**. No shared submissions, no joint grading. Partners see each other's scores, never the work,
    until a project is portfolio-public.
 3. Critiques read the book, not the internet. Every critique prompt includes the relevant section text and must cite sections.
@@ -149,10 +153,11 @@ apps/api            Express API + Prisma schema in apps/api/prisma
 apps/runner         sandbox check service
 packages/shared     zod schemas, types, constants (incl. content schemas)
 packages/llm        provider interface + anthropic / openai-compatible adapters (critiques only)
-scripts/            ingest-book.ts, validate-content.ts, seed.ts
-content/chapters/   authored notes, checkpoint banks, exercises + solutions (committed)
-                    <nn>-<slug>/chapter.json, sections/<id>.md, checkpoints/<id>.json, exercises/<id>/
-content/projects/   project specs (committed): <nn>-<slug>/project.json, README.md, checks/, tests/
+scripts/            ingest-book.ts, validate-content.ts, seed.ts, admin.ts
+content/chapters/   authored digests, checkpoint banks, exercises + solutions (committed)
+                    <nn>-<slug>/chapter.json, digests/<section>.json, checkpoints/<section>.json, exercises/<id>/
+content/projects/   project specs (committed): <nn>-<slug>/project.json, README.md, checks/
+content/outline.json chapter, section and subsection numbers and titles (committed; written by the ingest)
 content/book/       fetched book markdown (gitignored; reference for authoring and critiques)
 content/figures/    fetched figures (gitignored)
 docs/               ARCHITECTURE.md, DECISIONS.md, BUILD_PROMPTS.md
