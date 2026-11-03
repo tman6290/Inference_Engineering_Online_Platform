@@ -1,0 +1,33 @@
+.footer {
+  display: grid;
+  gap: 20px;
+  padding: 24px 28px;
+}
+
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.text {
+  display: grid;
+  gap: 4px;
+}
+
+.question {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hint {
+  font-size: 14px;
+  color: var(--text-mute);
+}
+
+.error {
+  font-size: 14px;
+  color: var(--warn-text);
+}

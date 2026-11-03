@@ -3,8 +3,9 @@ import type { RouteObject } from 'react-router';
 import { CHANGE_PASSWORD_PATH, RequireAuth } from './auth/RequireAuth';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { LoginPage } from './pages/LoginPage';
+import { BookPage } from './pages/BookPage';
+import { LessonPage } from './pages/LessonPage';
 import {
-  BookPage,
   CheckpointPage,
   CheckpointsPage,
   GlossaryPage,
@@ -13,7 +14,6 @@ import {
   ProgressPage,
   ProjectPage,
   ProjectsPage,
-  SectionPage,
 } from './pages/pages';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
@@ -64,7 +64,7 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
       children: [
         { index: true, element: <HomePage /> },
         { path: 'book', element: <BookPage /> },
-        { path: 'book/:sectionId', element: <SectionPage /> },
+        { path: 'book/:sectionId', element: <LessonPage /> },
         { path: 'checkpoints', element: <CheckpointsPage /> },
         { path: 'checkpoint/:sectionId', element: <CheckpointPage /> },
         { path: 'projects', element: <ProjectsPage /> },

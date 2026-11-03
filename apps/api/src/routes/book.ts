@@ -2,11 +2,13 @@ import {
   figureNumberSchema,
   sectionNumberSchema,
   type BookResponse,
+  type ChapterStatus,
   type GlossaryResponse,
   type SectionResponse,
 } from '@forward-pass/shared';
 import { Router } from 'express';
-import { requireAuth } from '../auth/middleware';
+import { authLocals, requireAuth } from '../auth/middleware';
+import { confidenceByLesson, progressByLesson, readStateOf } from '../lessons/progress';
 import type { Db } from '../db';
 import { sendError } from '../http';
 
@@ -24,29 +26,80 @@ export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
   router.use(['/book', '/glossary', '/figures'], requireAuth);
 
   router.get('/book', async (_req, res) => {
-    const [pages, chapters] = await Promise.all([
+    const userId = authLocals(res).userId!;
+    const [pages, chapters, progress, confidence] = await Promise.all([
       db.bookPage.findMany({ where: { placement: 'front' }, orderBy: { orderIndex: 'asc' } }),
       db.chapter.findMany({
         orderBy: { number: 'asc' },
         include: { sections: { orderBy: { orderIndex: 'asc' } } },
       }),
+      progressByLesson(db, userId),
+      confidenceByLesson(db, userId),
     ]);
+
+    // Per chapter: how much is read, then a pipeline status. The first chapter that isn't done or
+    // in progress, after the furthest one in progress, is "up next"; everything after is queued.
+    const shaped = chapters.map((chapter) => {
+      const lessonIds =
+        chapter.number === 0 ? ['0'] : chapter.sections.map((section) => section.number);
+      const states = lessonIds.map((id) => readStateOf(progress.get(id)));
+      const read = states.filter((state) => state === 'read').length;
+      const started = states.some((state) => state !== 'unread');
+      const status: ChapterStatus =
+        read === lessonIds.length && lessonIds.length > 0 ? 'done' : started ? 'reading' : 'queued';
+      return {
+        chapter,
+        read,
+        total: lessonIds.length,
+        status: status as ChapterStatus,
+        chapterState: states[0] ?? ('unread' as const),
+      };
+    });
+    const lastActive = shaped.reduce(
+      (last, entry, index) => (entry.status !== 'queued' ? index : last),
+      -1,
+    );
+    const upNext = shaped.findIndex(
+      (entry, index) => index > lastActive && entry.status === 'queued',
+    );
+    if (upNext >= 0) shaped[upNext]!.status = 'upNext';
+
     const body: BookResponse = {
-      frontMatter: pages.map(({ slug, title, summary }) => ({ slug, title, summary })),
-      chapters: chapters.map((chapter) => ({
+      frontMatter: pages.map(({ slug, title, summary }) => ({
+        slug,
+        title,
+        summary,
+        readState: readStateOf(progress.get(slug)),
+      })),
+      chapters: shaped.map(({ chapter, read, total, status, chapterState }) => ({
         number: chapter.number,
         slug: chapter.slug,
         title: chapter.title,
         summary: chapter.summary,
+        status,
+        progressPct: total ? Math.round((read / total) * 100) : 0,
+        readState:
+          chapter.number === 0
+            ? chapterState
+            : status === 'done'
+              ? 'read'
+              : status === 'reading'
+                ? 'reading'
+                : 'unread',
         sections: chapter.sections.map((section) => ({
           number: section.number,
           slug: section.slug,
           title: section.title,
           summary: section.summary,
           readingMinutes: section.readingMinutes,
-          readState: 'unread',
+          readState: readStateOf(progress.get(section.number)),
+          confidence: confidence.get(section.number) ?? null,
+          checkpointScore: null,
         })),
       })),
+      decoded: chapters
+        .flatMap((chapter) => chapter.sections)
+        .filter((section) => readStateOf(progress.get(section.number)) === 'read').length,
     };
     res.json(body);
   });

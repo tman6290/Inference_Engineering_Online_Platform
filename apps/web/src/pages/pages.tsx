@@ -2,7 +2,7 @@ import { SECTION_COUNT, STUDY_TIMEZONE, healthResponseSchema } from '@forward-pa
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { useAuth } from '../auth/auth';
-import { ButtonLink, Chip } from '../ui';
+import { Chip } from '../ui';
 import { Placeholder } from './Placeholder';
 import styles from './Placeholder.module.css';
 
@@ -50,37 +50,6 @@ export function HomePage() {
           <Chip status="retry">API offline</Chip>
         )}
       </p>
-    </Placeholder>
-  );
-}
-
-export function BookPage() {
-  return (
-    <Placeholder
-      eyebrow="The Book"
-      title="Table of contents"
-      description={`Eight chapters, ${SECTION_COUNT} sections, seven projects. Read in order; the stack builds bottom-up.`}
-      plan={['Chapters with section lists and read state', 'Project unlock points']}
-    />
-  );
-}
-
-export function SectionPage() {
-  const { sectionId = '' } = useParams();
-  return (
-    <Placeholder
-      eyebrow={`Section ${sectionId}`}
-      title="Lesson"
-      description="The section text, worked examples, terms on the page and your notes."
-      plan={[
-        'Chapter outline with subsection progress',
-        'Reading column with figures and check-yourself questions',
-        'Confidence rating and the link to the checkpoint',
-      ]}
-    >
-      <ButtonLink to={`/checkpoint/${sectionId}`} variant="secondary" arrow className={styles.cta}>
-        Go to the checkpoint
-      </ButtonLink>
     </Placeholder>
   );
 }

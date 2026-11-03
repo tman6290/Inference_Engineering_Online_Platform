@@ -159,3 +159,29 @@ export const SignOutIcon = createIcon(
     <path d="m16.5 8.5 3.5 3.5-3.5 3.5" />
   </>,
 );
+
+export const LightbulbIcon = createIcon(
+  'Lightbulb',
+  <>
+    <path d="M9 18h6M10 21h4" />
+    <path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" />
+  </>,
+);
+
+export const CircleIcon = createIcon('Circle', <circle cx="12" cy="12" r="8" />);
+
+export const CircleDotIcon = createIcon(
+  'CircleDot',
+  <>
+    <circle cx="12" cy="12" r="8" />
+    <circle cx="12" cy="12" r="3" fill="currentColor" />
+  </>,
+);
+
+export const CircleCheckIcon = createIcon(
+  'CircleCheck',
+  <>
+    <circle cx="12" cy="12" r="9" fill="currentColor" stroke="none" />
+    <path d="m8 12.5 2.8 2.8L16.5 9.5" stroke="var(--icon-on-fill, #FBFAF5)" />
+  </>,
+);

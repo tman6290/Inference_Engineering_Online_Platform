@@ -1,0 +1,125 @@
+.rail {
+  display: grid;
+  align-content: start;
+  gap: 28px;
+  min-width: 0;
+}
+
+.block {
+  display: grid;
+  gap: 10px;
+}
+
+.toc {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tocLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch);
+  color: var(--text);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.tocLink:hover {
+  color: var(--link);
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--text-mute);
+  border-radius: 50%;
+}
+
+.dotSeen {
+  border-color: var(--forest);
+  background: var(--forest);
+}
+
+[data-theme='dark'] .dotSeen {
+  border-color: var(--lime);
+  background: var(--lime);
+}
+
+.terms {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.term {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-12);
+  background: var(--surface);
+}
+
+.termName {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.termDefinition {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-mute);
+}
+
+.more {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pod {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--radius-16);
+  background: var(--ink-green);
+}
+
+.podText {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--paper);
+}
+
+.podLink {
+  justify-self: start;
+  min-height: var(--touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lime);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.podNote {
+  padding: 12px 14px;
+  border-radius: var(--radius-12);
+  background: var(--deep);
+  color: var(--paper);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}

@@ -1,0 +1,175 @@
+/* Three columns as on the Lesson board: chapter outline, reading column, lesson rail. */
+.layout {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 720px) 220px;
+  grid-template-areas: 'outline content rail';
+  justify-content: center;
+  align-items: start;
+  gap: 40px;
+}
+
+.outline {
+  grid-area: outline;
+  position: sticky;
+  top: 24px;
+}
+
+/* Shown only below 900px, where the outline folds. */
+.outlineToggle {
+  display: none;
+}
+
+.content {
+  grid-area: content;
+  display: grid;
+  gap: 32px;
+  min-width: 0;
+}
+
+.rail {
+  grid-area: rail;
+  position: sticky;
+  top: 24px;
+}
+
+.header {
+  display: grid;
+  gap: 10px;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.title {
+  font-size: clamp(34px, 4.4vw, 46px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  max-width: 62ch;
+  font-size: 18px;
+  color: var(--text-mute);
+}
+
+.bookText {
+  display: grid;
+  gap: 24px;
+}
+
+.fallbackNote {
+  padding: 12px 16px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-12);
+  font-size: 14px;
+  color: var(--text-mute);
+}
+
+.bookSubsection {
+  display: grid;
+  gap: 14px;
+  scroll-margin-top: 24px;
+}
+
+.subsectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.fullText {
+  padding: 4px 0;
+}
+
+.fullText > summary {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.fullText[open] > summary {
+  margin-bottom: 12px;
+}
+
+.status {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  max-width: 720px;
+  margin: 40px auto;
+}
+
+/* Medium widths: the rail drops below the reading column. */
+@media (max-width: 1279px) {
+  .layout {
+    grid-template-columns: 216px minmax(0, 1fr);
+    grid-template-areas:
+      'outline content'
+      'outline rail';
+    gap: 32px 32px;
+  }
+
+  .rail {
+    position: static;
+  }
+}
+
+/* Narrow: one column; the outline folds into a disclosure above the lesson. */
+@media (max-width: 899px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'outline'
+      'content'
+      'rail';
+    gap: 24px;
+  }
+
+  .outline {
+    position: static;
+    padding: 4px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-16);
+    background: var(--surface);
+  }
+
+  .outlineToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: var(--touch);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .outlineToggle::after {
+    content: '+';
+    font-family: var(--font-mono);
+    color: var(--text-mute);
+  }
+
+  .outlineToggle[aria-expanded='true']::after {
+    content: '−';
+  }
+
+  .outlineFolded {
+    display: none;
+  }
+
+  .outline > div {
+    padding: 8px 0 12px;
+  }
+}

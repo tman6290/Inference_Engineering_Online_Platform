@@ -1,0 +1,33 @@
+.reflect {
+  display: grid;
+  gap: 16px;
+  scroll-margin-top: 24px;
+}
+
+.reflect > button {
+  justify-self: start;
+}
+
+.model {
+  display: grid;
+  gap: 12px;
+  padding: 24px 28px;
+  border-radius: var(--radius-20);
+  background: var(--ink-green);
+}
+
+.answer {
+  line-height: 1.6;
+}
+
+.pointsLabel {
+  font-weight: 700;
+}
+
+.points {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--mute-dark);
+}

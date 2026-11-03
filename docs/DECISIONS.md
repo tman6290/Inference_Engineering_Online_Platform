@@ -146,3 +146,23 @@ make acceptance rates and duels meaningless. Checking it in CI keeps later chapt
 **Trade-offs.** Writing distractors as detailed as the right answer takes more effort, and the
 length rule is a heuristic: a bank can pass it and still have weak distractors. The authoring
 prompt keeps the human-quality bar; the validator only stops the mechanical tells.
+
+## 2026-11-03: One lesson route for the Preface, Chapter 0 and sections
+
+**Decision.** `/book/:id` takes `preface`, `0` or a section number, and `GET /api/lessons/:id`
+returns everything the page needs in one response: the book text, figures, the public digest,
+glossary terms, my progress, my last check answer, my note and my partner's rating and note.
+Digests load from `content/` once at API startup and a bad file stops the server with its path.
+A lesson counts as read at 90% scroll or when I rate my confidence. Reading events are written
+at most every 30 seconds, plus one `sendBeacon` when the tab hides. The check question reveals
+its explanation once accepted or after three tries, and every attempt is stored as an `Answer`
+so acceptance rate can be computed later.
+
+**Why.** The Preface and Chapter 0 have digests but no section number, and they belong in the
+same reading flow. One response keeps the page to a single request and one loading state. The
+`/api/book/sections/:number/digest` route from the prompt exists too, for tools that want only
+the digest.
+
+**Trade-offs.** The lesson response is large and changes whenever any part of it does, so the web
+patches its cache after each write instead of refetching. Digests need an API restart to show up
+after an edit. Wide tables scroll inside their own focusable box on a phone rather than reflowing.

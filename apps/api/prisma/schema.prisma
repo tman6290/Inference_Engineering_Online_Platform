@@ -135,3 +135,74 @@ model GlossaryTerm {
   /// First section whose text uses the term.
   sectionNumber String?
 }
+
+// ---------------------------------------------------------------------------
+// Studying. Lesson ids are "preface", "0" or a section number like "5.2".
+// ---------------------------------------------------------------------------
+
+enum Confidence {
+  shaky
+  okay
+  solid
+}
+
+/// One row per learner per lesson: how far they've scrolled and when it counted as read.
+model LessonProgress {
+  userId       String
+  lessonId     String
+  maxScrollPct Int       @default(0)
+  readAt       DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@id([userId, lessonId])
+}
+
+/// A stretch of reading, written at most every 30 seconds while the page is open.
+model ReadingEvent {
+  id           String   @id @default(uuid())
+  userId       String
+  lessonId     String
+  startedAt    DateTime
+  endedAt      DateTime
+  maxScrollPct Int
+
+  @@index([userId, lessonId])
+}
+
+/// Every rating is kept; the latest one is the learner's current confidence.
+model ConfidenceRating {
+  id        String     @id @default(uuid())
+  userId    String
+  lessonId  String
+  level     Confidence
+  createdAt DateTime   @default(now())
+
+  @@index([userId, lessonId, createdAt])
+}
+
+/// A learner's notes on a lesson. Visible to their pod partner.
+model Note {
+  userId    String
+  lessonId  String
+  body      String
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, lessonId])
+}
+
+/// A graded answer. `context` is "check" (a lesson's check-yourself) or, later, "checkpoint".
+model Answer {
+  id         String   @id @default(uuid())
+  userId     String
+  lessonId   String
+  questionId String
+  context    String
+  answer     Json
+  accepted   Boolean
+  firstTry   Boolean
+  usedHint   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([userId, questionId])
+  @@index([userId, lessonId])
+}

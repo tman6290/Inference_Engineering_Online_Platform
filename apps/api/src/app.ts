@@ -9,6 +9,8 @@ import path from 'node:path';
 import { repoRoot } from './config';
 import { authRouter } from './routes/auth';
 import { bookRouter } from './routes/book';
+import { lessonRouter } from './routes/lessons';
+import { emptyContent, type LoadedContent } from './content/load';
 import { healthRouter } from './routes/health';
 
 export interface AppDeps {
@@ -20,6 +22,8 @@ export interface AppDeps {
   authRateLimit?: number;
   /** Where ingested figures live. Defaults to content/figures. */
   figuresDir?: string;
+  /** Authored digests and banks, loaded at start-up. Defaults to none. */
+  content?: LoadedContent;
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -52,6 +56,7 @@ export function createApp(deps: AppDeps): Express {
       figuresDir: deps.figuresDir ?? path.join(repoRoot, 'content', 'figures'),
     }),
   );
+  app.use('/api', lessonRouter({ db: deps.db, content: deps.content ?? emptyContent() }));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'not_found' });

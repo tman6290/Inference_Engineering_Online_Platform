@@ -35,7 +35,7 @@ describe('app shell', () => {
 
   it('collapses to the icon rail on a lesson route and keeps link names', async () => {
     renderRoute('/book/5.2');
-    await screen.findByRole('heading', { level: 1, name: 'Lesson' });
+    await screen.findByRole('heading', { level: 1, name: 'Speculative Decoding' });
 
     expect(document.querySelector('[data-rail="true"]')).not.toBeNull();
     const book = within(mainNav()).getByRole('link', { name: 'The Book' });

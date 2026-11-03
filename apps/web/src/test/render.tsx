@@ -1,4 +1,4 @@
-import type { MeResponse } from '@forward-pass/shared';
+import type { LessonResponse, MeResponse } from '@forward-pass/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import axe from 'axe-core';
@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import { AuthProvider } from '../auth/auth';
 import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
+import { book, lesson21, lesson52 } from './lesson-fixtures';
 
 export const TOFA: MeResponse = {
   user: {
@@ -33,14 +34,23 @@ const json = (status: number, body?: unknown) =>
   });
 
 /**
- * A stand-in for the API with one session. Covers the routes the shell and auth pages call.
+ * A stand-in for the API with one session. Covers the routes the shell, auth, book and lesson
+ * pages call; lessons 5.2 (with a digest) and 2.1 (without) exist.
  * Install with vi.stubGlobal('fetch', fakeApi.fetch).
  */
 export function createFakeApi({
   signedIn = true,
   mustChangePassword = false,
 }: { signedIn?: boolean; mustChangePassword?: boolean } = {}) {
-  const state = { signedIn, mustChangePassword, password: PASSWORD };
+  const state = {
+    signedIn,
+    mustChangePassword,
+    password: PASSWORD,
+    lessons: structuredClone({ '5.2': lesson52, '2.1': lesson21 }) as Record<
+      string,
+      LessonResponse
+    >,
+  };
   const me = (): MeResponse => ({
     ...TOFA,
     user: { ...TOFA.user, mustChangePassword: state.mustChangePassword },
@@ -83,6 +93,37 @@ export function createFakeApi({
       case '/api/auth/logout':
         state.signedIn = false;
         return new Response(null, { status: 204 });
+      case '/api/book':
+        return json(200, book);
+    }
+
+    const lesson = /^\/api\/(?:lessons|sections)\/([^/]+)(?:\/(\w+))?$/.exec(path);
+    const current = lesson ? state.lessons[decodeURIComponent(lesson[1]!)] : undefined;
+    if (!lesson || !current) return json(404, { error: 'not_found' });
+    switch (lesson[2]) {
+      case undefined:
+        return json(200, current);
+      case 'reading':
+        return json(200, current.progress);
+      case 'confidence':
+        current.progress = { ...current.progress, readState: 'read', confidence: body.level };
+        return json(200, current.progress);
+      case 'note':
+        current.note = { body: body.body, updatedAt: new Date().toISOString() };
+        return json(200, current.note);
+      case 'check': {
+        const accepted = body.kind === 'scenario_mc' && body.choice === 0;
+        current.check = {
+          accepted,
+          attempts: (current.check?.attempts ?? 0) + 1,
+          feedback: accepted
+            ? 'Right: each pass emits more tokens.'
+            : 'Think about which phase it speeds up.',
+          explanation: accepted ? 'Speculation changes the decode loop.' : null,
+          choice: body.kind === 'scenario_mc' ? body.choice : null,
+        };
+        return json(200, current.check);
+      }
       default:
         return json(404, { error: 'not_found' });
     }

@@ -1,0 +1,134 @@
+.outline {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--touch);
+  justify-self: start;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.head {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.summary {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-mute);
+}
+
+.progress {
+  margin-top: 12px;
+}
+
+.list,
+.subsections {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch);
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-12);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.lesson:hover {
+  background: var(--neutral-bg);
+  color: var(--text);
+}
+
+.current,
+.current:hover {
+  border-color: var(--border);
+  background: var(--surface-raised);
+  font-weight: 700;
+}
+
+.icon {
+  flex: none;
+  color: var(--text-mute);
+}
+
+.read .icon {
+  --icon-on-fill: var(--card);
+  color: var(--forest);
+}
+
+[data-theme='dark'] .read .icon {
+  --icon-on-fill: var(--ink-green);
+  color: var(--lime);
+}
+
+.current .icon {
+  color: var(--forest);
+}
+
+[data-theme='dark'] .current .icon {
+  color: var(--lime);
+}
+
+.lessonTitle {
+  min-width: 0;
+}
+
+.subsections {
+  margin: 4px 0 8px 22px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+.subsection {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: var(--text-mute);
+  font-size: 14px;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.subsection:hover {
+  color: var(--text);
+}
+
+.project {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-12);
+  color: var(--text-mute);
+  font-size: 14px;
+  line-height: 1.4;
+}

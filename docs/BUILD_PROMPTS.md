@@ -35,7 +35,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 03 | Ingest the book | done (`book:` commit; 36 sections, not 42) |
 | 04 | Content schemas, grading and validation | done (`content:` commit, 2026-11-03) |
 | 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | pilot done (`content:` commit, 2026-11-03); reused by 13 |
-| 06 | The Lesson page | |
+| 06 | The Lesson page | done (`lessons:` commit, 2026-11-03) |
 | 07 | Checkpoints and exercises | |
 | 08 | Progress, uptime, recall queue, Home | |
 | 09 | Glossary and search | |
@@ -172,7 +172,7 @@ Done when: the validator passes on the chapter, every numeric answer was double-
 
 ---
 
-## Prompt 06 · The Lesson page
+## Prompt 06 · The Lesson page (done)
 
 ```
 Read CLAUDE.md. Study design/02 Lesson · 5.2 Speculative Decoding.jpg. Build the reading page from the authored digest and the ingested book.

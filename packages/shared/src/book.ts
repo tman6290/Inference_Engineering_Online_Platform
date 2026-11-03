@@ -48,21 +48,46 @@ const sectionSummarySchema = z.object({
   title: z.string(),
   summary: z.string(),
   readingMinutes: z.number().int(),
-  /** Placeholder until reading progress is tracked (build prompt 06). */
   readState: readStateSchema,
 });
 
+/**
+ * Where a chapter sits in the pipeline: every section read (done), some read (reading), the first
+ * unstarted chapter after those (upNext), or later (queued).
+ */
+export const chapterStatusSchema = z.enum(['done', 'reading', 'upNext', 'queued']);
+export type ChapterStatus = z.infer<typeof chapterStatusSchema>;
+
 export const bookResponseSchema = z.object({
-  frontMatter: z.array(z.object({ slug: z.string(), title: z.string(), summary: z.string() })),
+  frontMatter: z.array(
+    z.object({
+      slug: z.string(),
+      title: z.string(),
+      summary: z.string(),
+      readState: readStateSchema,
+    }),
+  ),
   chapters: z.array(
     z.object({
       number: z.number().int(),
       slug: z.string(),
       title: z.string(),
       summary: z.string(),
-      sections: z.array(sectionSummarySchema),
+      status: chapterStatusSchema,
+      /** Read share of the chapter: its sections, or the chapter page itself for Chapter 0. */
+      progressPct: z.number().int(),
+      readState: readStateSchema,
+      sections: z.array(
+        sectionSummarySchema.extend({
+          confidence: z.enum(['shaky', 'okay', 'solid']).nullable(),
+          /** Last checkpoint acceptance, once checkpoints exist (build prompt 07). */
+          checkpointScore: z.number().nullable(),
+        }),
+      ),
     }),
   ),
+  /** Sections read, out of SECTION_COUNT. */
+  decoded: z.number().int(),
 });
 export type BookResponse = z.infer<typeof bookResponseSchema>;
 

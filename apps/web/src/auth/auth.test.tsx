@@ -32,7 +32,7 @@ describe('auth flow', () => {
     fill('Password', PASSWORD);
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
-    await screen.findByRole('heading', { level: 1, name: 'Lesson' });
+    await screen.findByRole('heading', { level: 1, name: 'Speculative Decoding' });
     expect(router.state.location.pathname).toBe('/book/5.2');
   });
 
@@ -146,7 +146,7 @@ describe('temporary passwords', () => {
     fill('Confirm new password', 'my own long passphrase');
     fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
 
-    await screen.findByRole('heading', { level: 1, name: 'Lesson' });
+    await screen.findByRole('heading', { level: 1, name: 'Speculative Decoding' });
     expect(router.state.location.pathname).toBe('/book/5.2');
     expect(api.state.signedIn).toBe(true);
     expect(api.state.mustChangePassword).toBe(false);

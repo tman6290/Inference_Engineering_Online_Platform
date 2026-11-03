@@ -4,3 +4,4 @@ export * from './auth';
 export * from './book';
 export * from './content';
 export * from './grade';
+export * from './lesson';
