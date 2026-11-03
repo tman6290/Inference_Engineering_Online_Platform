@@ -18,6 +18,8 @@ import {
   useStartAttempt,
 } from '../features/checkpoint/api';
 import { QuestionCard, StatusChip } from '../features/checkpoint/QuestionCard';
+import { useDuels } from '../features/pod/api';
+import { DuelSummary } from '../features/pod/DuelSummary';
 import { PageHeader } from '../shell/PageHeader';
 import {
   Button,
@@ -37,7 +39,8 @@ const pct = (value: number) => `${Math.round(value * 100)}%`;
 function barOf(state: AttemptResponse) {
   const total = state.questions.length || CHECKPOINT_SIZE;
   const recall = state.attempt.kind === 'recall';
-  return { total, recall, pass: recall ? Math.ceil(0.7 * total) : CHECKPOINT_PASS };
+  const duel = state.attempt.kind === 'duel';
+  return { total, recall, duel, pass: recall ? Math.ceil(0.7 * total) : CHECKPOINT_PASS };
 }
 const errorText = (error: unknown) =>
   error instanceof ApiRequestError ? error.message : 'Could not reach the server. Try again.';
@@ -69,18 +72,26 @@ function ProjectCard({ project }: { project: AttemptResponse['project'] }) {
   );
 }
 
-function DuelCard({ section }: { section: string }) {
+/** The latest duel on this section. Your partner's score appears only once you both finish. */
+function DuelCard({ section, attemptId }: { section: string; attemptId?: string }) {
   const { me } = useAuth();
+  const duels = useDuels();
   const partner = me?.pod.find((member) => member.id !== me.user.id);
+  const duel = duels.data?.duels.find(
+    (entry) => entry.section.number === section && entry.status !== 'expired',
+  );
   return (
     <Card variant="tinted" className={styles.railCard}>
       <Eyebrow>Duel</Eyebrow>
-      <p className={styles.railText}>
-        {partner
-          ? `Duel ${partner.displayName} on ${section}: the same ten questions, taken alone within 48 hours.`
-          : `Once your partner joins, you can duel on ${section}: the same ten questions, taken alone within 48 hours.`}
-      </p>
-      <p className={styles.railNote}>Duels open in a later build.</p>
+      {duel ? (
+        <DuelSummary duel={duel} compact currentAttemptId={attemptId} />
+      ) : (
+        <p className={styles.railText}>
+          {partner
+            ? `No duel on ${section} yet. Once you have both read it, challenge ${partner.displayName} from the pod table on Home.`
+            : `Once your partner joins, you can duel on ${section}: the same ten questions, taken alone within 48 hours.`}
+        </p>
+      )}
     </Card>
   );
 }
@@ -186,19 +197,23 @@ function Result({ state }: { state: AttemptResponse }) {
   const start = useStartAttempt(state.section.number);
   const navigate = useNavigate();
   const { attempt } = state;
-  const { total, recall, pass } = barOf(state);
+  const { total, recall, duel, pass } = barOf(state);
   return (
     <Card variant="dark" padding="lg" className={styles.result} aria-labelledby="result-title">
-      <Eyebrow tone="accent">{attempt.passed ? 'Passed' : 'Not passed yet'}</Eyebrow>
+      <Eyebrow tone="accent">
+        {duel ? 'Duel attempt finished' : attempt.passed ? 'Passed' : 'Not passed yet'}
+      </Eyebrow>
       <h2 id="result-title" className={styles.resultTitle}>
         {attempt.firstTryAccepted} of {total} accepted on the first try
       </h2>
       <p className={styles.resultText}>
-        {recall
-          ? 'Every section here has left the queue. A section with two misses in a row also dropped a confidence level.'
-          : attempt.passed
-            ? `That clears the bar of ${pass}.`
-            : `The bar is ${pass}. Re-read the subsections linked under each miss, then try a fresh draw.`}
+        {duel
+          ? "The duel's result shows on Home and in the rail once your partner finishes too."
+          : recall
+            ? 'Every section here has left the queue. A section with two misses in a row also dropped a confidence level.'
+            : attempt.passed
+              ? `That clears the bar of ${pass}.`
+              : `The bar is ${pass}. Re-read the subsections linked under each miss, then try a fresh draw.`}
         {attempt.hints ? ` ${attempt.hints} hint${attempt.hints > 1 ? 's' : ''} used.` : ''}
       </p>
       <div className={styles.resultActions}>
@@ -207,7 +222,11 @@ function Result({ state }: { state: AttemptResponse }) {
             Continue to {state.next.title}
           </ButtonLink>
         ) : null}
-        {recall ? (
+        {duel ? (
+          <ButtonLink to="/" variant="ghost">
+            Back to Home
+          </ButtonLink>
+        ) : recall ? (
           <ButtonLink to="/progress" variant="ghost">
             Back to Progress
           </ButtonLink>
@@ -231,7 +250,7 @@ function Result({ state }: { state: AttemptResponse }) {
 
 export function AttemptView({ state }: { state: AttemptResponse }) {
   const { attempt, questions } = state;
-  const { total, recall, pass } = barOf(state);
+  const { total, recall, duel, pass } = barOf(state);
   const done = attempt.completedAt !== null;
   const firstOpen = questions.findIndex((entry) => entry.status === 'open');
   const [selected, setSelected] = useState(firstOpen >= 0 ? firstOpen : 0);
@@ -385,8 +404,8 @@ export function AttemptView({ state }: { state: AttemptResponse }) {
 
         {recall ? null : (
           <>
-            <ProjectCard project={state.project} />
-            <DuelCard section={state.section.number} />
+            {duel ? null : <ProjectCard project={state.project} />}
+            <DuelCard section={state.section.number} attemptId={attempt.id} />
           </>
         )}
 

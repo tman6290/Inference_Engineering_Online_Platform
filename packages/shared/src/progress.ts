@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { sectionNumberSchema } from './book';
 import { CONFIDENCE_LEVELS } from './constants';
 import { lessonIdSchema } from './content';
+import { challengeSchema, duelSchema, standingSchema } from './pod';
 
 // Progress, Home and recall. Dates are study days in Africa/Lagos, written YYYY-MM-DD.
 
@@ -114,22 +115,17 @@ export const homeResponseSchema = z.object({
     weekDays: z.array(z.number().int()).length(7),
     weekGoalMinutes: z.number().int(),
   }),
-  standings: z.array(
-    z.object({
-      id: z.string(),
-      displayName: z.string(),
-      initial: z.string(),
-      colour: z.enum(['lime', 'butter']),
-      isYou: z.boolean(),
-      decoded: z.number().int(),
-      acceptanceRate: z.number().nullable(),
-      projectsShipped: z.number().int(),
-      uptime: z.number().int(),
-      lastActivity: z
-        .object({ at: z.string(), lessonId: lessonIdSchema, title: z.string() })
-        .nullable(),
-    }),
-  ),
+  standings: z.array(standingSchema),
+  /** Where the pod table offers a duel, if anywhere. */
+  challenge: challengeSchema,
+  duels: z.object({
+    /** Challenges waiting for you to accept. */
+    incoming: z.array(duelSchema),
+    /** Duels you have sent or accepted that are still running. */
+    active: z.array(duelSchema),
+    /** Duels you lost whose teach-back you still owe. */
+    owed: z.array(duelSchema),
+  }),
   /** The project of the chapter in progress; it opens when that chapter's last checkpoint passes. */
   nextProject: z
     .object({

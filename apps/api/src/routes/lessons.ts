@@ -18,6 +18,7 @@ import { countWords, readingMinutes, slugify, stripPageHeader } from '../book/pa
 import type { LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { sendError, sendValidationError } from '../http';
+import { teachBacksFor } from '../pod/duels';
 import { exerciseSummaries } from './exercises';
 import {
   confidenceByLesson,
@@ -259,6 +260,7 @@ export function lessonRouter({ db, content }: LessonRouterDeps): Router {
       digest: digest ? toPublicDigest(digest) : null,
       terms,
       exercises,
+      teachBacks: kind === 'section' ? await teachBacksFor(db, content, userId, id) : [],
       progress: {
         readState: readStateOf(own),
         maxScrollPct: own?.maxScrollPct ?? 0,

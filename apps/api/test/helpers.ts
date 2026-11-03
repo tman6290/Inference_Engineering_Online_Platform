@@ -26,7 +26,7 @@ export function testDb(): Db {
 
 export async function resetDatabase(db: Db = testDb()): Promise<void> {
   await db.$executeRawUnsafe(
-    'TRUNCATE "InviteCode", "Session", "User", "Figure", "Subsection", "Section", "Chapter", "BookPage", "GlossaryTerm", "LessonProgress", "ReadingEvent", "ConfidenceRating", "Note", "Answer", "Attempt", "AttemptHint", "ExerciseReveal", "StudyDay" RESTART IDENTITY CASCADE',
+    'TRUNCATE "InviteCode", "Session", "User", "Figure", "Subsection", "Section", "Chapter", "BookPage", "GlossaryTerm", "LessonProgress", "ReadingEvent", "ConfidenceRating", "Note", "Answer", "Attempt", "AttemptHint", "ExerciseReveal", "StudyDay", "Duel", "TeachBack" RESTART IDENTITY CASCADE',
   );
 }
 

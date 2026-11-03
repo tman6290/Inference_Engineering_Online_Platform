@@ -39,7 +39,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 07 | Checkpoints and exercises | done (`checkpoints:` commit, 2026-11-03) |
 | 08 | Progress, uptime, recall queue, Home | done (`progress:` commit, 2026-11-03) |
 | 09 | Glossary and search | done (`search:` commit, 2026-11-03) |
-| 10 | Pod: standings, duels, shared notes | |
+| 10 | Pod: standings, duels, shared notes | done (`pod:` commit, 2026-11-03) |
 | 11 | Projects: specs, submission, checks, critique | |
 | 12 | Portfolio and sharing | |
 | 13 | Author the remaining chapters | |
@@ -238,7 +238,7 @@ Done when: every term used in the pilot digests resolves in the glossary, and se
 
 ---
 
-## Prompt 10 · Pod: standings, duels, shared notes
+## Prompt 10 · Pod: standings, duels, shared notes (done)
 
 ```
 Read CLAUDE.md (Pod, Duel). Projects stay individual; this prompt touches only reading, checkpoints and notes.

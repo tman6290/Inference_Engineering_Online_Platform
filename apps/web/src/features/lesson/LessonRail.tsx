@@ -2,6 +2,7 @@ import type { LessonResponse } from '@forward-pass/shared';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Eyebrow, Textarea } from '../../ui';
+import { TeachBack } from '../pod/TeachBack';
 import { useSaveNote } from './api';
 import styles from './LessonRail.module.css';
 
@@ -168,6 +169,17 @@ export function LessonRail({ lesson, sections }: LessonRailProps) {
               {showPartnerNote ? <p className={styles.podNote}>{partner.note.body}</p> : null}
             </>
           ) : null}
+        </section>
+      ) : null}
+
+      {lesson.teachBacks.length ? (
+        <section className={styles.teachBacks} aria-labelledby="teach-backs" id="teach-backs">
+          <Eyebrow as="h2" id="teach-backs">
+            Teach-backs
+          </Eyebrow>
+          {lesson.teachBacks.map((teachBack) => (
+            <TeachBack key={teachBack.duelId} teachBack={teachBack} compact />
+          ))}
         </section>
       ) : null}
     </aside>

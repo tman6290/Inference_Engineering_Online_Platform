@@ -1,0 +1,36 @@
+.teachBack {
+  display: grid;
+  gap: 12px;
+}
+
+.compact {
+  gap: 8px;
+  font-size: 14px;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-mute);
+}
+
+.audio {
+  width: 100%;
+}
+
+.entry {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.entry summary {
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.text {
+  padding-top: 6px;
+  white-space: pre-line;
+}

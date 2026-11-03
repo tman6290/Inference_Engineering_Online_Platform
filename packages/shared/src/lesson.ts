@@ -4,6 +4,7 @@ import { CONFIDENCE_LEVELS } from './constants';
 import { answerInputSchema, digestSchema, lessonIdSchema, type Digest } from './content';
 import { publicQuestionSchema, toPublic } from './grade';
 import { exerciseSummarySchema } from './checkpoint';
+import { teachBackSchema } from './pod';
 
 // What the Lesson page receives and sends. The authored digest is public except its check
 // question, whose answer key stays on the server.
@@ -77,6 +78,8 @@ export const lessonResponseSchema = z.object({
   terms: z.array(z.object({ term: z.string(), slug: z.string(), definition: z.string() })),
   /** Hands-on tasks for this lesson, in chapter.json order. */
   exercises: z.array(exerciseSummarySchema),
+  /** Teach-backs on this section that you wrote or that were owed to you. */
+  teachBacks: z.array(teachBackSchema),
   progress: z.object({
     readState: readStateSchema,
     maxScrollPct: z.number().int(),

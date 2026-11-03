@@ -21,6 +21,7 @@ import type { LoadedContent } from '../content/load';
 import type { AnswerRow, AttemptRow, Db } from '../db';
 import { sendError, sendValidationError } from '../http';
 import { readingOrder } from '../lessons/progress';
+import { expireDuels, resolveDuel } from '../pod/duels';
 import { latestRatings, recallQueue } from '../progress/store';
 
 interface CheckpointRouterDeps {
@@ -34,7 +35,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router {
   const router = Router();
-  router.use(['/checkpoints', '/attempts', '/recall'], requireAuth);
+  router.use(['/checkpoints', '/attempts', '/recall', '/duels/:id/attempt'], requireAuth);
 
   /** A solo attempt's bank, or for a recall attempt every covered section's questions together. */
   function bankFor(attempt: AttemptRow): CheckpointBank | undefined {
@@ -87,6 +88,12 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
       data: { completedAt: new Date(), ...counts },
     });
     if (stamped.count === 1 && attempt.kind === 'recall') await settleRecall(attempt, answers);
+    if (attempt.kind === 'duel') {
+      const duel = await db.duel.findFirst({
+        where: { OR: [{ challengerAttemptId: attempt.id }, { opponentAttemptId: attempt.id }] },
+      });
+      if (duel) await resolveDuel(db, duel.id);
+    }
   }
 
   /**
@@ -136,7 +143,8 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
         chapterNumber: found?.section.chapterNumber ?? 0,
       },
       questions,
-      project: recall ? null : await projectFor(attempt.sectionNumber, attempt.userId),
+      project:
+        attempt.kind === 'solo' ? await projectFor(attempt.sectionNumber, attempt.userId) : null,
       next: !recall && position >= 0 ? (order[position + 1] ?? null) : null,
     };
   }
@@ -317,6 +325,37 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
       },
     });
     res.status(201).json(await attemptState(attempt, bankFor(attempt)!));
+  });
+
+  // Each learner's duel attempt: the duel's fixed questions, taken alone. Resumes if started.
+  router.post('/duels/:id/attempt', async (req, res) => {
+    const userId = authLocals(res).userId!;
+    await expireDuels(db);
+    const duel = await db.duel.findUnique({ where: { id: req.params.id } });
+    if (!duel || (duel.challengerId !== userId && duel.opponentId !== userId)) {
+      return sendError(res, 404, 'not_found', 'No such duel.');
+    }
+    const bank = content.banks.get(duel.sectionNumber);
+    if (!bank) return sendError(res, 404, 'not_found', 'This section has no checkpoint now.');
+    const field = duel.challengerId === userId ? 'challengerAttemptId' : 'opponentAttemptId';
+    const existing = duel[field]
+      ? await db.attempt.findUnique({ where: { id: duel[field]! } })
+      : null;
+    if (existing) return res.json(await attemptState(existing, bank));
+    if (duel.status !== 'open') {
+      return sendError(res, 409, 'duel_not_open', `This duel is ${duel.status}.`);
+    }
+    const attempt = await db.attempt.create({
+      data: {
+        userId,
+        kind: 'duel',
+        sectionNumber: duel.sectionNumber,
+        seed: duel.seed,
+        questionIds: duel.questionIds,
+      },
+    });
+    await db.duel.update({ where: { id: duel.id }, data: { [field]: attempt.id } });
+    res.status(201).json(await attemptState(attempt, bank));
   });
 
   router.get('/attempts/:id', async (req, res) => {

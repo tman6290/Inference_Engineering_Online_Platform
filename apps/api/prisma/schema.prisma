@@ -270,3 +270,44 @@ model StudyDay {
 
   @@id([userId, date])
 }
+
+// ---------------------------------------------------------------------------
+// Pod: duels and teach-backs. Projects never appear here; they stay individual.
+// ---------------------------------------------------------------------------
+
+/// Both learners take the same ten questions on one section, alone, within 48 hours.
+model Duel {
+  id                  String    @id @default(uuid())
+  sectionNumber       String
+  challengerId        String
+  opponentId          String
+  /// pending (sent), open (accepted), complete (both finished, resolved) or expired.
+  status              String    @default("pending")
+  /// Seeds the shared draw; the questions are fixed when the duel is created.
+  seed                String
+  questionIds         String[]
+  createdAt           DateTime  @default(now())
+  deadline            DateTime
+  acceptedAt          DateTime?
+  resolvedAt          DateTime?
+  /// Null on a draw, or while unresolved.
+  winnerId            String?
+  challengerAttemptId String?
+  opponentAttemptId   String?
+
+  @@index([challengerId])
+  @@index([opponentId])
+}
+
+/// The loser's explanation of the questions they missed: text per question, an audio file, or both.
+model TeachBack {
+  id        String   @id @default(uuid())
+  duelId    String   @unique
+  userId    String
+  /// [{ questionId, text }] for the questions the author missed on the first try.
+  entries   Json
+  /// File name under uploads/teach-backs, when audio was recorded.
+  audioFile String?
+  audioMime String?
+  createdAt DateTime @default(now())
+}

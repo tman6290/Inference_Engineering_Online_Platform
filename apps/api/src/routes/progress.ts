@@ -4,6 +4,8 @@ import {
   WEEK_GOAL_MINUTES,
   type HomeResponse,
   type ProgressPage,
+  type Standing,
+  type StandingsResponse,
 } from '@forward-pass/shared';
 import { Router } from 'express';
 import { authLocals, requireAuth } from '../auth/middleware';
@@ -12,6 +14,7 @@ import type { LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { sendError } from '../http';
 import { readingOrder } from '../lessons/progress';
+import { challengeFor, duelRecord, duelsFor } from '../pod/duels';
 import {
   addDays,
   bestWeekday,
@@ -47,7 +50,7 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
 
 export function progressRouter({ db, content, devRoutes }: ProgressRouterDeps): Router {
   const router = Router();
-  router.use(['/progress', '/home'], requireAuth);
+  router.use(['/progress', '/home', '/pod'], requireAuth);
 
   /** Everything both pages need about one learner. */
   async function learner(userId: string, now: Date) {
@@ -247,19 +250,20 @@ export function progressRouter({ db, content, devRoutes }: ProgressRouterDeps): 
     };
   }
 
-  router.get('/home', async (_req, res) => {
-    const userId = authLocals(res).userId!;
-    const now = new Date();
+  /** Both seats, the signed-in learner first, with where a duel could be offered. */
+  async function standingsFor(
+    userId: string,
+    now: Date,
+    me?: Awaited<ReturnType<typeof learner>>,
+  ): Promise<StandingsResponse> {
     const users = await db.user.findMany({ orderBy: { createdAt: 'asc' } });
-    const others = users.filter((user) => user.id !== userId);
-    const [me, cont, order] = await Promise.all([
-      learner(userId, now),
-      continueFor(userId),
-      readingOrder(db),
-    ]);
-    const standings = await Promise.all(
-      [users.find((user) => user.id === userId)!, ...others].map(async (user) => {
-        const stats = user.id === userId ? me : await learner(user.id, now);
+    const ordered = [
+      users.find((user) => user.id === userId)!,
+      ...users.filter((user) => user.id !== userId),
+    ];
+    const members: Standing[] = await Promise.all(
+      ordered.map(async (user) => {
+        const stats = user.id === userId && me ? me : await learner(user.id, now);
         return {
           id: user.id,
           displayName: user.displayName,
@@ -271,9 +275,33 @@ export function progressRouter({ db, content, devRoutes }: ProgressRouterDeps): 
           projectsShipped: 0,
           uptime: stats.uptime,
           lastActivity: await lastActivity(user.id),
+          duels: await duelRecord(db, user.id),
         };
       }),
     );
+    const partner = ordered[1];
+    return {
+      members,
+      challenge: partner ? await challengeFor(db, content, userId, partner.id) : null,
+    };
+  }
+
+  router.get('/pod/standings', async (_req, res) => {
+    res.json(await standingsFor(authLocals(res).userId!, new Date()));
+  });
+
+  router.get('/home', async (_req, res) => {
+    const userId = authLocals(res).userId!;
+    const now = new Date();
+    const [me, cont, order] = await Promise.all([
+      learner(userId, now),
+      continueFor(userId),
+      readingOrder(db),
+    ]);
+    const [{ members: standings, challenge }, duels] = await Promise.all([
+      standingsFor(userId, now, me),
+      duelsFor(db, userId),
+    ]);
 
     // This week, Monday to Sunday.
     const monday = addDays(me.today, -weekdayOf(me.today));
@@ -340,6 +368,15 @@ export function progressRouter({ db, content, devRoutes }: ProgressRouterDeps): 
         weekGoalMinutes: WEEK_GOAL_MINUTES,
       },
       standings,
+      challenge,
+      duels: {
+        incoming: duels.filter((duel) => duel.status === 'pending' && duel.role === 'opponent'),
+        active: duels.filter(
+          (duel) =>
+            (duel.status === 'pending' && duel.role === 'challenger') || duel.status === 'open',
+        ),
+        owed: duels.filter((duel) => duel.teachBack.owedBy === 'me' && !duel.teachBack.recorded),
+      },
       nextProject,
       shaky,
     };

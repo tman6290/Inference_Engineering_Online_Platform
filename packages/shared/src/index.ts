@@ -8,3 +8,4 @@ export * from './lesson';
 export * from './checkpoint';
 export * from './progress';
 export * from './search';
+export * from './pod';

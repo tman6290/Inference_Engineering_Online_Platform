@@ -1,0 +1,74 @@
+.page {
+  display: grid;
+  gap: 24px;
+  max-width: 760px;
+}
+
+.lead {
+  font-size: 18px;
+}
+
+.done {
+  padding: 12px 16px;
+  border: 1px solid var(--ok-border);
+  border-radius: var(--radius-12);
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.done a {
+  color: inherit;
+  font-weight: 700;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.question,
+.audio {
+  display: grid;
+  gap: 12px;
+}
+
+.prompt {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.explanation summary {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  color: var(--link);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.explanation p {
+  color: var(--text-mute);
+}
+
+.audioTitle {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.fileLabel {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.fileLabel input {
+  min-height: var(--touch);
+  font: inherit;
+  font-weight: 400;
+}
+
+.error {
+  font-weight: 600;
+  color: var(--warn-text);
+}

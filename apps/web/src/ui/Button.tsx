@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import { Link, type LinkProps } from 'react-router';
 import { ArrowRightIcon } from './icons';
 import styles from './Button.module.css';
@@ -20,7 +20,9 @@ interface CommonProps {
   children: ReactNode;
 }
 
-type ButtonProps = CommonProps & ButtonHTMLAttributes<HTMLButtonElement>;
+// React 19 passes `ref` as a plain prop; it reaches the <button> through `rest`.
+type ButtonProps = CommonProps &
+  ButtonHTMLAttributes<HTMLButtonElement> & { ref?: Ref<HTMLButtonElement> };
 type ButtonLinkProps = CommonProps & Omit<LinkProps, 'children'>;
 
 function classes(variant: ButtonVariant, block: boolean, extra?: string) {

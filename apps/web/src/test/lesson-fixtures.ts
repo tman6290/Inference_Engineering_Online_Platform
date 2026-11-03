@@ -121,6 +121,7 @@ export const lesson52: LessonResponse = {
       definition: 'Guess, then verify.',
     },
   ],
+  teachBacks: [],
   exercises: [
     {
       id: '5.2-toy-speedup',

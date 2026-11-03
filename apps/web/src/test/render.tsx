@@ -8,6 +8,7 @@ import { AuthProvider } from '../auth/auth';
 import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
 import { createFakeCheckpoint } from './fake-checkpoint';
+import { createFakePod } from './fake-pod';
 import { fakeSearch, glossary, home, progress } from './fake-progress';
 import { book, lesson21, lesson52 } from './lesson-fixtures';
 
@@ -48,7 +49,8 @@ const json = (status: number, body?: unknown) =>
 export function createFakeApi({
   signedIn = true,
   mustChangePassword = false,
-}: { signedIn?: boolean; mustChangePassword?: boolean } = {}) {
+  owesTeachBack = false,
+}: { signedIn?: boolean; mustChangePassword?: boolean; owesTeachBack?: boolean } = {}) {
   const state = {
     signedIn,
     mustChangePassword,
@@ -59,6 +61,7 @@ export function createFakeApi({
     >,
   };
   const checkpoint = createFakeCheckpoint();
+  const pod = createFakePod({ owesTeachBack });
   const me = (): MeResponse => ({
     ...TOFA,
     user: { ...TOFA.user, mustChangePassword: state.mustChangePassword },
@@ -104,7 +107,7 @@ export function createFakeApi({
       case '/api/book':
         return json(200, book);
       case '/api/home':
-        return json(200, home);
+        return json(200, { ...home, duels: pod.homeDuels() });
       case '/api/progress':
         return json(200, progress);
       case '/api/glossary':
@@ -114,6 +117,8 @@ export function createFakeApi({
     if (path.startsWith('/api/search?')) {
       return json(200, fakeSearch(new URLSearchParams(path.split('?')[1]).get('q') ?? ''));
     }
+    const duelled = pod.handle(path, init?.method ?? 'GET', body);
+    if (duelled) return duelled;
     const handled = checkpoint.handle(path, init?.method ?? 'GET', body);
     if (handled) return handled;
 
@@ -148,7 +153,7 @@ export function createFakeApi({
         return json(404, { error: 'not_found' });
     }
   });
-  return { fetch, state, checkpoint };
+  return { fetch, state, checkpoint, pod };
 }
 
 export function renderRoute(path: string) {

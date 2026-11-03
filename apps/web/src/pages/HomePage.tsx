@@ -1,12 +1,15 @@
 import { SECTION_COUNT, type HomeResponse } from '@forward-pass/shared';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../auth/auth';
 import { ChapterPipeline } from '../features/book/ChapterPipeline';
 import { useBook } from '../features/lesson/api';
+import { ChallengeSheet } from '../features/pod/ChallengeSheet';
+import { DuelSummary } from '../features/pod/DuelSummary';
 import { useHome } from '../features/progress/api';
-import { ago, duration, longDate, percent } from '../features/progress/format';
+import { ago, duration, longDate, percent, plural } from '../features/progress/format';
 import { PageHeader } from '../shell/PageHeader';
-import { ButtonLink, Card, Eyebrow, LockIcon, ProgressBar, StatTile } from '../ui';
+import { Button, ButtonLink, Card, Eyebrow, LockIcon, ProgressBar, StatTile } from '../ui';
 import { greeting } from './pages';
 import styles from './HomePage.module.css';
 
@@ -120,12 +123,27 @@ function Tiles({ tiles, today }: { tiles: HomeResponse['tiles']; today: string }
   );
 }
 
-function Standings({ rows }: { rows: HomeResponse['standings'] }) {
+function Standings({
+  rows,
+  challenge,
+}: {
+  rows: HomeResponse['standings'];
+  challenge: HomeResponse['challenge'];
+}) {
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const partner = rows.find((row) => !row.isYou);
   return (
     <Card as="section" padding="lg" className={styles.standings} aria-labelledby="standings-title">
-      <h2 id="standings-title" className={styles.cardTitle}>
-        Pod standings
-      </h2>
+      <div className={styles.cardHead}>
+        <h2 id="standings-title" className={styles.cardTitle}>
+          Pod standings
+        </h2>
+        {challenge && partner ? (
+          <Button variant="secondary" onClick={() => setSheetOpen(true)}>
+            Challenge on {challenge.sectionNumber}
+          </Button>
+        ) : null}
+      </div>
       <div className={styles.tableWrap} tabIndex={0} role="region" aria-label="Pod standings table">
         <table className={styles.table}>
           <thead>
@@ -135,7 +153,7 @@ function Standings({ rows }: { rows: HomeResponse['standings'] }) {
               <th scope="col">Acceptance</th>
               <th scope="col">Projects</th>
               <th scope="col">Uptime</th>
-              <th scope="col">Last active</th>
+              <th scope="col">Duels</th>
             </tr>
           </thead>
           <tbody>
@@ -149,8 +167,17 @@ function Standings({ rows }: { rows: HomeResponse['standings'] }) {
                     >
                       {row.initial}
                     </span>
-                    {row.displayName}
-                    {row.isYou ? <span className={styles.you}>you</span> : null}
+                    <span className={styles.who}>
+                      <span>
+                        {row.displayName}
+                        {row.isYou ? <span className={styles.you}> you</span> : null}
+                      </span>
+                      <span className={styles.lastActive}>
+                        {row.lastActivity
+                          ? `${row.lastActivity.lessonId} ${row.lastActivity.title}, ${ago(row.lastActivity.at)}`
+                          : 'Not started'}
+                      </span>
+                    </span>
                   </span>
                 </th>
                 <td>
@@ -159,10 +186,15 @@ function Standings({ rows }: { rows: HomeResponse['standings'] }) {
                 <td>{percent(row.acceptanceRate)}</td>
                 <td>{row.projectsShipped}</td>
                 <td>{row.uptime}d</td>
-                <td className={styles.lastActive}>
-                  {row.lastActivity
-                    ? `${row.lastActivity.lessonId} ${row.lastActivity.title}, ${ago(row.lastActivity.at)}`
-                    : 'Not started'}
+                <td>
+                  <span className="visually-hidden">
+                    {plural(row.duels.wins, 'win')}, {plural(row.duels.losses, 'loss', 'losses')},{' '}
+                    {plural(row.duels.draws, 'draw')}
+                  </span>
+                  <span aria-hidden="true">
+                    {row.duels.wins}–{row.duels.losses}
+                    {row.duels.draws ? `–${row.duels.draws}` : ''}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -179,6 +211,31 @@ function Standings({ rows }: { rows: HomeResponse['standings'] }) {
           loser records a 3-minute teach-back on the questions they missed.
         </p>
       </Card>
+      {sheetOpen && challenge && partner ? (
+        <ChallengeSheet
+          section={challenge}
+          partnerName={partner.displayName}
+          onClose={() => setSheetOpen(false)}
+        />
+      ) : null}
+    </Card>
+  );
+}
+
+/** Challenges waiting on you, duels in play and teach-backs you owe. Hidden when there are none. */
+function Duels({ duels }: { duels: HomeResponse['duels'] }) {
+  const all = [...duels.owed, ...duels.incoming, ...duels.active];
+  if (!all.length) return null;
+  return (
+    <Card as="section" padding="lg" className={styles.side} aria-labelledby="duels-title">
+      <h2 id="duels-title" className={styles.cardTitle}>
+        Duels
+      </h2>
+      <div>
+        {all.map((duel) => (
+          <DuelSummary key={duel.id} duel={duel} />
+        ))}
+      </div>
     </Card>
   );
 }
@@ -281,8 +338,9 @@ export function HomePage() {
           </section>
 
           <div className={styles.bottom}>
-            <Standings rows={data!.standings} />
+            <Standings rows={data!.standings} challenge={data!.challenge} />
             <div className={styles.sideColumn}>
+              <Duels duels={data!.duels} />
               <NextProject project={data!.nextProject} />
               <Shaky items={data!.shaky} />
             </div>

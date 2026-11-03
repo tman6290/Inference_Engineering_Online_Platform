@@ -12,6 +12,7 @@ import { bookRouter } from './routes/book';
 import { checkpointRouter } from './routes/checkpoints';
 import { exerciseRouter } from './routes/exercises';
 import { lessonRouter } from './routes/lessons';
+import { podRouter } from './routes/pod';
 import { progressRouter } from './routes/progress';
 import { searchRouter } from './routes/search';
 import { emptyContent, type LoadedContent } from './content/load';
@@ -30,6 +31,8 @@ export interface AppDeps {
   content?: LoadedContent;
   /** Mounts development-only routes such as POST /api/progress/rebuild. */
   devRoutes?: boolean;
+  /** Where uploads (teach-back audio) are stored. Defaults to uploads/. */
+  uploadsDir?: string;
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -68,6 +71,14 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', checkpointRouter({ db: deps.db, content }));
   app.use('/api', exerciseRouter({ db: deps.db, content }));
   app.use('/api', searchRouter({ db: deps.db, content }));
+  app.use(
+    '/api',
+    podRouter({
+      db: deps.db,
+      content,
+      uploadsDir: deps.uploadsDir ?? path.join(repoRoot, 'uploads'),
+    }),
+  );
   app.use('/api', progressRouter({ db: deps.db, content, devRoutes: deps.devRoutes ?? false }));
 
   app.use('/api', (_req, res) => {
@@ -75,8 +86,12 @@ export function createApp(deps: AppDeps): Express {
   });
 
   const onError: ErrorRequestHandler = (error, _req, res, _next) => {
-    console.error(error);
     if (res.headersSent) return;
+    // Body-parser errors carry their own status: a body over its size limit is 413.
+    if ((error as { status?: number }).status === 413) {
+      return sendError(res, 413, 'too_large', 'That upload is too large.');
+    }
+    console.error(error);
     sendError(res, 500, 'internal', 'Something went wrong on the server.');
   };
   app.use(onError);

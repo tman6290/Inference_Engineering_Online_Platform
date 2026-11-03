@@ -61,4 +61,5 @@ export function ago(iso: string, now: Date = new Date()): string {
   return days === 1 ? 'yesterday' : `${days} days ago`;
 }
 
-export const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
+export const plural = (count: number, word: string, many = `${word}s`) =>
+  `${count} ${count === 1 ? word : many}`;

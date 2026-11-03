@@ -12,6 +12,7 @@ import { HomePage } from './pages/HomePage';
 import { LessonPage } from './pages/LessonPage';
 import { ProgressPage } from './pages/ProgressPage';
 import { RecallPage } from './pages/RecallPage';
+import { TeachBackPage } from './pages/TeachBackPage';
 import { NotFoundPage, ProjectPage, ProjectsPage } from './pages/pages';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
@@ -70,6 +71,7 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
         { path: 'projects/:slug', element: <ProjectPage /> },
         { path: 'progress', element: <ProgressPage /> },
         { path: 'recall', element: <RecallPage /> },
+        { path: 'duels/:duelId/teach-back', element: <TeachBackPage /> },
         { path: 'glossary', element: <GlossaryPage /> },
         ...devUi,
         { path: '*', element: <NotFoundPage /> },

@@ -60,6 +60,7 @@ export const home: HomeResponse = {
       acceptanceRate: 0.83,
       projectsShipped: 0,
       uptime: 4,
+      duels: { wins: 1, losses: 0, draws: 0 },
       lastActivity: {
         at: '2026-11-03T08:00:00.000Z',
         lessonId: '5.2',
@@ -76,9 +77,12 @@ export const home: HomeResponse = {
       acceptanceRate: 0.77,
       projectsShipped: 0,
       uptime: 9,
+      duels: { wins: 0, losses: 1, draws: 0 },
       lastActivity: null,
     },
   ],
+  challenge: { sectionNumber: '5.2', title: 'Speculative Decoding' },
+  duels: { incoming: [], active: [], owed: [] },
   nextProject: {
     chapterNumber: 5,
     chapterTitle: 'Techniques',

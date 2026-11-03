@@ -1,0 +1,38 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--ink-green) 55%, transparent);
+}
+
+.sheet {
+  display: grid;
+  gap: 14px;
+  width: min(520px, 100%);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-20);
+  background: var(--card);
+  color: var(--text);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.error {
+  font-weight: 600;
+  color: var(--warn-text);
+}

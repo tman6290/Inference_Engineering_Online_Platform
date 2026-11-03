@@ -248,3 +248,25 @@ ingest stamps `content/book/.last-ingest`, so a re-ingest triggers one too.
 **Trade-offs.** Production still loads content once at start, so a deploy restarts the API.
 Near-miss matching only runs when there are no exact results, so a typo next to a correct word
 can still miss.
+
+## 2026-11-03: Duels and teach-backs
+
+**Decision.** A duel needs both of us to have read the section, and the section needs a bank.
+The ten questions are drawn once, when the challenge goes out, from a shared seed. The draw leaves
+out every question either of us has answered on that section, falling back to seen ones only when
+the bank runs dry. The opponent accepts, then each of us takes a duel attempt alone; it is an
+ordinary attempt (`kind: "duel"`), so grading, hints and the three tries work as in a checkpoint,
+and its answers count toward acceptance rate but not toward the section's checkpoint score. The
+duel resolves when the second attempt finishes: more first-try acceptances win, then fewer hints,
+then less time from start to finish. An exact tie is a draw. Anything still running 48 hours after
+the challenge expires and counts for nobody. Neither of us sees the other's score until both have
+finished. The loser owes one teach-back per duel: a written answer for every missed question, or
+an audio file up to 5 MB stored in `uploads/teach-backs/`, and Home lists it as owed until then.
+The winner reads it in the section's notes rail. The pod table offers a challenge on the latest
+shared section without a duel yet, falling back to a rematch.
+
+**Why.** Fixing the questions at challenge time is what makes the duel fair: nobody can redraw
+for an easier set. Reusing the attempt machinery means one grader and one set of rules.
+
+**Trade-offs.** There's no decline button; an unwanted challenge just expires. Audio is uploaded
+as a file rather than recorded in the browser.
