@@ -1,0 +1,608 @@
+{
+  "sectionNumber": "1.2",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-01",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 1,
+      "prompt": "You are standing up inference for a customer-service agent that your company sells to retailers. A teammate proposes building a general serving layer first, able to host any model for any traffic pattern, so you are covered whatever comes next. What is the stronger plan?",
+      "answerFormat": "one option",
+      "options": [
+        "Build the general layer first, so a new model or traffic pattern never forces a rewrite later",
+        "Mirror the serving stack a foundation-model lab runs for its public API, since it is proven at scale",
+        "List this app's model, traffic shape, latency target and users, then optimise for exactly those",
+        "Rent the fastest GPUs on offer now and tune the serving settings once real traffic arrives"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. A vertical app gains from every constraint it pins down; full generality is the burden of model labs and platform builders (see 1.2).",
+      "rejectedCopy": "Think about who actually needs to support every model and every usage pattern, and whether that is you.",
+      "hint": "The section names only two situations where maximum generality is the job.",
+      "explanation": "A customer-service agent is a vertical AI-native app. Its known model, traffic and latency needs are constraints you can exploit. Building for any model and any pattern is what public foundation-model APIs and inference platforms must do, and it gives up the optimisations a specific use case allows. Copying a lab's setup imports that same generality without the reason for it.",
+      "reread": "1.2",
+      "sourceQuote": "When building inference for vertical AI-native apps, you want to add as many constraints as possible by getting specific with your use case."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-02",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 2,
+      "prompt": "Your sales-prospecting agent takes one click from a user, then plans, searches, reads 6 web pages and drafts an email, running 9 model calls in sequence. Users say it feels sluggish even though each call has a good time to first token. Where should you look first?",
+      "answerFormat": "one option",
+      "options": [
+        "Time to first token of the first call, since that is what the user sees first",
+        "Total wall-clock time across the whole chain of calls for one user action",
+        "Cluster-wide tokens per second during the busiest hour of the day",
+        "The per-token price of the larger model behind the email-drafting step"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. For agents one action fans out into many calls, so the user feels the sum of the chain (see 1.2.1).",
+      "rejectedCopy": "Count how many model calls stand between the click and the result, and what the user is waiting for.",
+      "hint": "The user does not see individual calls; they see one action finish.",
+      "explanation": "An agent multiplies inference: one click becomes nine sequential calls, so even small per-call latencies stack into a long wait. The metric that matches the complaint is end-to-end time for the action. A fast first token on call one is the tempting answer, but the user sees nothing useful until the last call returns.",
+      "reread": "1.2.1",
+      "sourceQuote": "One user action triggers many inference calls"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-03",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 1,
+      "prompt": "A front-line support chat answers from retrieved help articles. Answers average 250 tokens and stream to the screen. Product asks which single latency number to put on the team dashboard as the target for how fast the chat feels. Which do you choose?",
+      "answerFormat": "one option",
+      "options": [
+        "Time from pressing send until the first token appears on screen",
+        "Total GPU throughput in tokens per second across the chat deployment",
+        "Time from pressing send until the full 250-token answer has finished",
+        "Average answer length in tokens, since shorter answers finish sooner"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. In streaming chat the wait before the first token appears is what makes it feel quick or slow (see 1.2.1).",
+      "rejectedCopy": "When the answer streams, think about the moment the user stops staring at an empty reply box.",
+      "hint": "Streaming changes which part of the wait the user notices.",
+      "explanation": "Once tokens start streaming, the user is reading, so the felt delay is the gap before the first token. Full-answer time is the tempting pick, but it mostly overlaps with reading. Throughput is a cost and capacity number, not a feel number.",
+      "reread": "1.2.1",
+      "sourceQuote": "Time to first token makes chat feel fast"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-04",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 2,
+      "prompt": "You are building live speech translation: speech recognition, then an LLM translation step, then text-to-speech. The LLM team has cut its own latency by 40%, yet conversations still feel stilted. What should the team measure and budget?",
+      "answerFormat": "one option",
+      "options": [
+        "The LLM's time to first token only, since it is the largest model in the chain",
+        "Word error rate of the speech recognition model, so fewer sentences need repeating",
+        "Throughput of each of the three stages, measured separately at peak load",
+        "Latency end to end, from the speaker stopping to the translated audio starting"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Voice needs the whole pipeline fast enough for natural turn-taking, so you budget it end to end (see 1.2.1).",
+      "rejectedCopy": "A conversation partner hears the result of every stage, not just the one you optimised.",
+      "hint": "Trace what happens between one person finishing a sentence and the other hearing it.",
+      "explanation": "Voice apps chain several models, and the listener feels the total. A 40% cut on one stage helps little if recognition, network hops or speech synthesis dominate. Optimising only the LLM is the tempting move because it is the largest model, but it is one slice of the budget.",
+      "reread": "1.2.1",
+      "sourceQuote": "End-to-end latency for natural conversation"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-05",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 1,
+      "prompt": "Your platform must screen every uploaded post and comment, about 40 million items a day, for safety before they stay public. What should the inference setup prioritise?",
+      "answerFormat": "one option",
+      "options": [
+        "The lowest possible time to first token per item",
+        "The largest, most capable model to maximise output quality",
+        "Streaming each verdict token by token to the moderator UI",
+        "High throughput so each check costs as little as possible"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Moderation runs at huge volume, so throughput and cost per check dominate (see 1.2.1).",
+      "rejectedCopy": "Multiply a small cost per item by 40 million and ask what that does to the budget.",
+      "hint": "Who is waiting for each verdict, and how many verdicts are there?",
+      "explanation": "Moderation is a volume problem: tens of millions of short checks a day. Packing many checks onto each GPU drives cost per check down. Chasing the lowest TTFT per item is tempting, but no person is reading each verdict as it streams, and a latency-first setup costs more per check.",
+      "reread": "1.2.1",
+      "sourceQuote": "High throughput for cost-effective checks"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-06",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 3,
+      "prompt": "Your e-commerce recommendation model serves 8,000 requests per second at peak. Average latency is 35 ms, but during sales events the product page sometimes renders without recommendations because the call times out at 120 ms. Which target best fits this workload?",
+      "answerFormat": "one option",
+      "options": [
+        "Lower the average latency from 35 ms to 25 ms across all requests",
+        "Keep p99 latency under the timeout while at peak request volume",
+        "Maximise tokens per second per GPU, accepting occasional slow requests",
+        "Switch to a larger model so recommendations are more relevant"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. Recommendation systems need latency that stays consistent under heavy load, which is a tail-latency target (see 1.2.1).",
+      "rejectedCopy": "The average already looks fine. Ask which requests are causing the empty recommendation slots.",
+      "hint": "The failures happen to a small fraction of requests during the busiest moments.",
+      "explanation": "The problem is inconsistency at volume: a few requests blow past 120 ms when traffic peaks. A high-percentile target such as p99 at peak load captures that. Cutting the average is the tempting fix, but an average can fall while the tail stays above the timeout.",
+      "reread": "1.2.1",
+      "sourceQuote": "Consistent latency with high request volume"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-07",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 1,
+      "prompt": "Every night you embed about 2 million new support tickets for search. The job has to finish before 6 a.m. You already run a latency-tuned deployment of the same embedding model for live queries. How should you run the nightly job?",
+      "answerFormat": "one option",
+      "options": [
+        "Send it through the live deployment one ticket at a time so each request finishes fast",
+        "Scale up the live deployment overnight, keeping its small-batch, low-latency settings",
+        "Run it on a throughput-tuned deployment with large batches, sized to finish by 6 a.m.",
+        "Skip the nightly job and embed each ticket lazily the first time a search touches it"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. Nobody waits on a single ticket, so you tune for documents per GPU-hour and size to the deadline (see 1.2.2).",
+      "rejectedCopy": "Ask whether any human waits on any single ticket's embedding tonight.",
+      "hint": "The job has a deadline, but no individual request has a user behind it.",
+      "explanation": "The nightly job is offline batch work. Large batches make each request slower but let each GPU process far more tickets per hour, which is what a deadline needs. Scaling the live deployment works but pays latency-tuned prices for work that does not need low latency.",
+      "reread": "1.2.2",
+      "sourceQuote": "the system as a whole processes far more requests per hour in parallel."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-08",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 2,
+      "prompt": "Your team uses the same speech-to-text model for a live dictation feature and for transcribing a back catalog of 30,000 hours of recorded interviews. Both carry heavy, steady volume. What is the most cost-effective way to serve them?",
+      "answerFormat": "one option",
+      "options": [
+        "Two deployments of one model: latency-tuned for dictation, throughput-tuned for the catalog",
+        "One shared deployment tuned for latency, so dictation stays snappy and the catalog rides along",
+        "One shared deployment tuned for throughput, so the catalog is cheap and dictation is acceptable",
+        "Two different models: a small fast one for dictation and a large accurate one for the catalog"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. With enough volume on both sides, one model can earn two deployments tuned for different goals (see 1.2.2).",
+      "rejectedCopy": "Each single shared deployment makes one of the two workloads pay for the other's needs.",
+      "hint": "The model can stay the same while the deployment settings differ.",
+      "explanation": "Dictation is online and needs low latency; the catalog is offline and needs throughput. A single latency-tuned deployment overpays for the catalog, and a single throughput-tuned one makes dictation lag. Swapping models is tempting but changes quality, which nobody asked for. Two deployments of one model serve each goal.",
+      "reread": "1.2.2",
+      "sourceQuote": "create two separate deployments for the same model, with one optimized for latency and the other optimized for throughput."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-09",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 3,
+      "prompt": "A colleague reviews your corpus-cleaning job for the training team and flags that individual requests take 40 seconds each, against 2 seconds on the chat deployment. The job processes 5 times more documents per GPU-hour than the chat deployment would and finishes well inside its window. What do you tell them?",
+      "answerFormat": "one option",
+      "options": [
+        "They are right; shrink the batch size until each request takes about 2 seconds, like chat",
+        "Move the job onto the chat deployment so both workloads share one latency target and one fleet",
+        "Add GPUs until each request finishes in under 10 seconds, keeping the current batch size",
+        "Nothing to fix: offline work is judged on finishing within its window, not per-request latency"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Offline work is judged by total work done in the window and cost, not per-request speed (see 1.2.2).",
+      "rejectedCopy": "Ask who would ever notice a 40-second request in this job.",
+      "hint": "Which number does the training team care about: one document's time or the whole job's?",
+      "explanation": "Slow individual requests are the price of the big batches that make offline work cheap. Since the job finishes in time and gets 5 times the documents per GPU-hour, it is doing its job. Shrinking batches is the tempting reflex from online work, but it would cut throughput and raise cost for no user-visible gain.",
+      "reread": "1.2.2",
+      "sourceQuote": "Offline jobs are better served by high-throughput model deployments where each individual request would be too slow for a good user experience"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-10",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 2,
+      "prompt": "You run inference for a free-to-try consumer photo app. Marketing plans an influencer campaign next week that could multiply traffic by 10 overnight, or do nothing. Which inference plan fits best?",
+      "answerFormat": "one option",
+      "options": [
+        "Elastic capacity that scales up fast, tuned for low marginal cost with decent latency",
+        "Reserve dedicated GPUs for 10× peak traffic on a one-year contract, so the spike is covered",
+        "Tune for the lowest possible latency whatever it costs, since first impressions decide retention",
+        "Hold capacity fixed and queue whatever does not fit until the traffic spike falls away"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Consumer traffic is cost-sensitive and unpredictable, so flexibility and marginal cost lead (see 1.2.3).",
+      "rejectedCopy": "Picture both outcomes of the campaign and ask what each plan costs you in each case.",
+      "hint": "You do not know if the spike will come, and a free tier earns little per user.",
+      "explanation": "Consumer apps live on thin margins and spiky demand, so you want to pay only for traffic that arrives and to grow fast if it does. A year of reserved 10× capacity is the tempting safe bet, but if the campaign flops you pay for idle GPUs. Latency at any cost is a B2B priority, and queuing turns a viral moment into a bad first impression.",
+      "reread": "1.2.3",
+      "sourceQuote": "a single launch or marketing campaign can drive a spike in usage overnight."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-11",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 2,
+      "prompt": "Your B2B product drafts quotes inside customers' sales workflows; their reps cannot send a quote while it is down. Finance proposes moving inference to preemptible spot GPUs, cutting cost 60% but adding several short outages a month. How do you weigh it?",
+      "answerFormat": "one option",
+      "options": [
+        "Accept it: cost is the first concern for any AI product, and a 60% cut is too large to pass up",
+        "Accept it, and lengthen client timeouts so requests ride out the short outages without failing",
+        "Reject it as the default: in a customer's revenue path, uptime and steady latency outrank cost",
+        "Accept it for the busiest customers only, since that is where the 60% savings are largest"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. Business software in the revenue path is held to high availability and latency; cost is a secondary concern (see 1.2.3).",
+      "rejectedCopy": "Ask what an outage costs your customer, not what the GPUs cost you.",
+      "hint": "Who loses money when the quote tool is down?",
+      "explanation": "For B2B products in a customer's revenue path, latency and uptime are the primary targets, while cost and scale come second. Spot capacity can still serve batch side jobs, but not the critical path. Treating cost as first is the consumer instinct and is the tempting wrong answer here.",
+      "reread": "1.2.3",
+      "sourceQuote": "Mission-critical software in the revenue path is held to a high standard of performance and reliability."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.2-mc-12",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 3,
+      "prompt": "A German hospital group wants to use your clinical-notes summariser. Your cheapest GPU capacity is in a US region, and an engineer argues that TLS encryption in transit makes the region irrelevant. What do you do first?",
+      "answerFormat": "one option",
+      "options": [
+        "Ship on the US region, since encryption in transit already settles the data-protection question",
+        "Ask security and legal where this data may be processed, then use a permitted region and provider",
+        "Strip patient names and record numbers from prompts, then ship on the cheaper US region",
+        "Benchmark latency from Germany to each region and pick the fastest one that fits the budget"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. Data sovereignty, privacy and regulation can rule out regions and providers, and that call needs security and legal (see 1.2.3).",
+      "rejectedCopy": "Encryption protects data on the wire. Ask what it says about where the data is allowed to be processed.",
+      "hint": "The question is not whether the data is safe in transit but where it lands.",
+      "explanation": "Data sovereignty asks whether user data may be processed in a given region at all, and health data is tightly regulated. Encryption in transit does not change where the GPUs sit. Stripping names is tempting but is not a legal judgement an engineer should make alone; security and legal need to confirm the allowed regions and providers before any performance work.",
+      "reread": "1.2.3",
+      "sourceQuote": "Data sovereignty: Are your GPUs in a geographic region where you are allowed to send user data?"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-01",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 2,
+      "prompt": "A prospecting agent makes 12 model calls for one user action. Each call averages 3,000 input tokens and 500 output tokens. Illustrative prices: $0.50 per million input tokens and $2.00 per million output tokens. What does one user action cost?",
+      "answerFormat": "number, in USD",
+      "answer": 0.03,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "USD",
+      "acceptedUnits": [
+        {
+          "unit": "cents",
+          "factor": 0.01
+        }
+      ],
+      "methodHint": "Total the input and output tokens across all 12 calls, then price each total separately per million tokens.",
+      "workedSolution": "Input: 12 × 3,000 = 36,000 tokens × $0.50 / 1,000,000 = $0.018. Output: 12 × 500 = 6,000 tokens × $2.00 / 1,000,000 = $0.012. Total: $0.018 + $0.012 = $0.03 per action (3 cents).",
+      "explanation": "Agents multiply cost by the number of calls per action, so price the action, not the call. The common slip is pricing one call ($0.0025) and forgetting the factor of 12.",
+      "reread": "1.2.1",
+      "sourceQuote": "One user action triggers many inference calls"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-02",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 1,
+      "prompt": "A developer types at 300 characters per minute. For tab completion to keep up, a suggestion must arrive before their next keystroke. What is the time between two keystrokes?",
+      "answerFormat": "number, in ms",
+      "answer": 200,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Convert characters per minute to characters per second, then invert.",
+      "workedSolution": "300 characters per minute / 60 = 5 characters per second. 1 / 5 = 0.2 s = 200 ms between keystrokes.",
+      "explanation": "Completion latency is set by typing speed: the whole suggestion has to land inside one keystroke gap. At 300 characters per minute that gap is 200 ms.",
+      "reread": "1.2.1",
+      "sourceQuote": "Full completion chunk at user’s typing speed"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-03",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 3,
+      "prompt": "A tab-completion feature has a 200 ms budget per suggestion. Network round trip plus time to first token use 80 ms of it. The suggestion is a 30-token chunk that must be fully generated within the budget. What is the minimum decode speed, in tokens per second?",
+      "answerFormat": "number, in tokens/s",
+      "answer": 250,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "tokens/s",
+      "acceptedUnits": [],
+      "methodHint": "Subtract the fixed overhead from the budget, then divide the tokens still to generate by the time left, in seconds.",
+      "workedSolution": "Time left for decoding: 200 − 80 = 120 ms = 0.12 s. Speed needed: 30 tokens / 0.12 s = 250 tokens per second.",
+      "explanation": "Completion needs the whole chunk, not just the first token, inside the keystroke gap. A common slip is dividing by the full 200 ms (giving 150 tokens/s) and forgetting the overhead already spent.",
+      "reread": "1.2.1",
+      "sourceQuote": "Full completion chunk at user’s typing speed"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-04",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 1,
+      "prompt": "You need to transcribe a back catalog of 20,000 hours of podcast audio. One GPU on a throughput-tuned deployment transcribes 400 hours of audio per wall-clock hour. The job must finish in 10 hours. How many GPUs do you need?",
+      "answerFormat": "number, in GPUs",
+      "answer": 5,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0
+      },
+      "unit": "GPUs",
+      "acceptedUnits": [],
+      "methodHint": "Work out how many audio hours one GPU gets through in the whole window, then divide the catalog by that.",
+      "workedSolution": "One GPU in 10 hours: 400 × 10 = 4,000 audio hours. GPUs needed: 20,000 / 4,000 = 5.",
+      "explanation": "Offline jobs are sized by total work over a deadline, not by how fast any single file finishes. Five throughput-tuned GPUs clear the catalog in exactly 10 hours.",
+      "reread": "1.2.2",
+      "sourceQuote": "Transcribing a back catalog of podcasts, interviews, or other audio to make it searchable."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-05",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 2,
+      "prompt": "A nightly document-processing job must handle 1,080,000 documents within a 6-hour window. What sustained processing rate does the job need, in documents per second?",
+      "answerFormat": "number, in docs/s",
+      "answer": 50,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "docs/s",
+      "acceptedUnits": [
+        {
+          "unit": "docs/min",
+          "factor": 0.016666666666666666
+        }
+      ],
+      "methodHint": "Convert the window to seconds, then divide the documents by it.",
+      "workedSolution": "6 hours × 3,600 s = 21,600 s. 1,080,000 / 21,600 = 50 documents per second.",
+      "explanation": "An offline job's requirement is a sustained rate across the window. 50 documents per second is the throughput the deployment has to deliver, whatever each document's own latency.",
+      "reread": "1.2.2",
+      "sourceQuote": "Embedding, converting, or analyzing a set of documents on a regular cadence."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-06",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 2,
+      "prompt": "The same job needs a sustained 50 documents per second. A latency-tuned deployment processes 10 documents per second per GPU; a throughput-tuned deployment of the same model processes 25 per GPU. Counting whole GPUs, how many fewer GPUs does the throughput-tuned option need?",
+      "answerFormat": "number, in GPUs",
+      "answer": 3,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0
+      },
+      "unit": "GPUs",
+      "acceptedUnits": [],
+      "methodHint": "Divide the required rate by each per-GPU rate, round each up to a whole GPU, then subtract.",
+      "workedSolution": "Latency-tuned: 50 / 10 = 5 GPUs. Throughput-tuned: 50 / 25 = 2 GPUs. Difference: 5 − 2 = 3 fewer GPUs.",
+      "explanation": "Higher throughput means the same work on fewer GPUs, which is where the cost saving comes from. Reusing a latency-tuned deployment for batch work would cost 5 GPUs instead of 2.",
+      "reread": "1.2.2",
+      "sourceQuote": "higher throughput makes it cheaper at scale because you can use fewer GPUs for the same number of users."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-07",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 3,
+      "prompt": "You serve a speech-to-text model for live dictation and a nightly batch transcription job. Today one shared latency-tuned deployment runs 8 GPUs around the clock. Splitting it gives a latency-tuned deployment of 6 GPUs running 24 hours for dictation, plus a throughput-tuned deployment of 2 GPUs running 8 hours a night for the batch. At an illustrative $3.00 per GPU-hour, how much does the split save per day?",
+      "answerFormat": "number, in USD per day",
+      "answer": 96,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "USD",
+      "acceptedUnits": [],
+      "methodHint": "Cost each setup as GPUs × hours × price per GPU-hour, adding the two deployments in the split, then subtract.",
+      "workedSolution": "Shared: 8 × 24 × $3 = $576. Split: dictation 6 × 24 × $3 = $432, batch 2 × 8 × $3 = $48, total $480. Saving: $576 − $480 = $96 per day.",
+      "explanation": "With enough volume on both workloads, two deployments of one model, each tuned for its own goal, cost less than one compromise deployment. The usual slip is costing the batch deployment for 24 hours instead of 8.",
+      "reread": "1.2.2",
+      "sourceQuote": "Whisper, a speech-to-text model, could be used in both a real-time dictation app and a batch transcription job."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-08",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 1,
+      "prompt": "A consumer app normally receives 2,000 requests per minute. Overnight, a launch campaign pushes traffic to 15 times that normal rate. Each GPU handles 500 requests per minute at an acceptable latency. How many GPUs do you need at the peak?",
+      "answerFormat": "number, in GPUs",
+      "answer": 60,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0
+      },
+      "unit": "GPUs",
+      "acceptedUnits": [],
+      "methodHint": "Find the peak request rate first, then divide by what one GPU can handle.",
+      "workedSolution": "Peak: 2,000 × 15 = 30,000 requests per minute. GPUs: 30,000 / 500 = 60.",
+      "explanation": "Normal traffic needs 4 GPUs; the spike needs 60. That gap is why consumer apps value capacity that can scale up quickly and back down, instead of paying for the peak all year.",
+      "reread": "1.2.3",
+      "sourceQuote": "a single launch or marketing campaign can drive a spike in usage overnight."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.2-calc-09",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 2,
+      "prompt": "A consumer writing app's average user sends 40 requests a month, each using 1,500 tokens in total (input and output combined). At an illustrative blended price of $0.40 per million tokens, what is the inference cost per user per month?",
+      "answerFormat": "number, in USD",
+      "answer": 0.024,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "USD",
+      "acceptedUnits": [
+        {
+          "unit": "cents",
+          "factor": 0.01
+        }
+      ],
+      "methodHint": "Tokens per user per month first, then apply the price per million tokens.",
+      "workedSolution": "40 × 1,500 = 60,000 tokens per month. 60,000 × $0.40 / 1,000,000 = $0.024 per user per month (2.4 cents).",
+      "explanation": "Marginal cost per user is the number consumer apps live by: with a free tier or a low price, 2.4 cents per user per month across millions of users decides whether the product is viable.",
+      "reread": "1.2.3",
+      "sourceQuote": "Consumer applications are generally much more cost-sensitive and have less predictable usage patterns."
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-01",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 1,
+      "prompt": "Transcribing a podcast archive, re-embedding documents every week and cleaning a training corpus have no user waiting on each request. Name the mode of inference they belong to.",
+      "answerFormat": "*******",
+      "acceptedAnswers": [
+        "offline",
+        "offline inference",
+        "offline batch",
+        "batch",
+        "batch inference"
+      ],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It is the opposite of the real-time mode used for chat and voice.",
+      "explanation": "These are offline workloads: they run against a deadline, so they are tuned for throughput rather than per-request latency.",
+      "reread": "1.2.2",
+      "sourceQuote": "However, some applications have offline batch inference needs."
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-02",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.2",
+      "difficulty": 1,
+      "prompt": "The section's central tradeoff sets latency against one other quantity. Raising it lets the same number of users run on fewer GPUs. Name that quantity.",
+      "answerFormat": "**********",
+      "acceptedAnswers": ["throughput"],
+      "normalisation": {},
+      "hint": "It measures total work done per unit of time across the system.",
+      "explanation": "Lower latency makes each request faster; higher throughput makes the system cheaper at scale. You tune online work for the first and offline work for the second.",
+      "reread": "1.2.2",
+      "sourceQuote": "One of the primary tradeoffs in inference engineering is latency versus throughput."
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-03",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 1,
+      "prompt": "Give the four-letter acronym for the latency metric that most shapes how fast a streaming chat app feels.",
+      "answerFormat": "****",
+      "acceptedAnswers": ["TTFT", "time to first token"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It measures the wait until the reply starts appearing.",
+      "explanation": "Time to first token: once the first token arrives the user starts reading, so this gap is the delay they feel.",
+      "reread": "1.2.1",
+      "sourceQuote": "Time to first token makes chat feel fast"
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-04",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 2,
+      "prompt": "A compliance review asks whether your GPUs sit in a geographic region where you may legally send your users' data. Name this concern (two words).",
+      "answerFormat": "**** ***********",
+      "acceptedAnswers": ["data sovereignty", "data residency"],
+      "normalisation": {},
+      "hint": "The first word is \"data\"; the second is about which jurisdiction holds authority over it.",
+      "explanation": "Data sovereignty concerns where user data is allowed to be processed. It sits beside user privacy and regulatory compliance, and it can rule out regions or providers outright.",
+      "reread": "1.2.3",
+      "sourceQuote": "Data sovereignty: Are your GPUs in a geographic region where you are allowed to send user data?"
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-05",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 2,
+      "prompt": "Besides a lab selling its own model through a public API, the section names one other situation that demands maximum generality: a system, internal or sold as a product, that must run any model for any use case. What is it called (two words)?",
+      "answerFormat": "********* ********",
+      "acceptedAnswers": ["inference platform", "inference platforms"],
+      "normalisation": {},
+      "hint": "The first word is the subject of the whole book.",
+      "explanation": "Foundation-model APIs and inference platforms both serve unknown workloads, so they cannot lean on use-case constraints the way a vertical app can.",
+      "reread": "1.2",
+      "sourceQuote": "You are building an inference platform, either internally or as a product, and need to support any model and any use case."
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-06",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 2,
+      "prompt": "For consumer apps, the section says to prioritise flexibility and one cost measure: the cost of serving one more request or one more user. Name it (two words).",
+      "answerFormat": "******** ****",
+      "acceptedAnswers": ["marginal cost", "marginal costs"],
+      "normalisation": {},
+      "hint": "Economists use this word for the cost of the next unit.",
+      "explanation": "Consumer apps are cost-sensitive and their traffic is hard to predict, so the cost of each additional request matters more than squeezing latency far below a decent standard.",
+      "reread": "1.2.3",
+      "sourceQuote": "should prioritize marginal cost and flexibility while keeping latency and availability at a decent standard."
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-07",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.1",
+      "difficulty": 1,
+      "prompt": "In the section's table of AI-native app categories, which category is defined by one user action setting off many inference calls? Give the category name.",
+      "answerFormat": "******",
+      "acceptedAnswers": ["agents", "agent", "AI agents"],
+      "normalisation": {},
+      "hint": "Its example is a prospecting tool for sales teams.",
+      "explanation": "Agents plan, call tools and draft in a chain, so a single click turns into many model calls. Cost and latency both have to be counted per action, not per call.",
+      "reread": "1.2.1",
+      "sourceQuote": "One user action triggers many inference calls"
+    },
+    {
+      "kind": "text",
+      "id": "1.2-text-08",
+      "sectionNumber": "1.2",
+      "subsectionNumber": "1.2.3",
+      "difficulty": 2,
+      "prompt": "For B2B products, engineers must favour latency and one other property, with cost and scale as secondary concerns. Name that property (one word).",
+      "answerFormat": "******",
+      "acceptedAnswers": ["uptime", "availability", "high availability", "reliability"],
+      "normalisation": {},
+      "hint": "Business customers notice when the service is down during working hours.",
+      "explanation": "Business software often sits in a customer's revenue path, so being up and consistently fast outranks being cheap.",
+      "reread": "1.2.3",
+      "sourceQuote": "Inference engineers building for businesses must favor latency and uptime, though cost and scale are important secondary concerns."
+    }
+  ]
+}

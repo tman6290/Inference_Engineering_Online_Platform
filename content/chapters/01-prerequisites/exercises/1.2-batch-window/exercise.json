@@ -1,0 +1,26 @@
+{
+  "id": "1.2-batch-window",
+  "sectionNumber": "1.2",
+  "title": "Size an offline embedding job to its window",
+  "brief": "Every Sunday night your search team re-embeds a corpus of **2,400,000 documents**. The job must finish inside an **8-hour** window. You have two ways to run the same embedding model:\n\n- reuse the **latency-tuned** deployment that serves live search queries, at **12 documents per second per GPU**, or\n- stand up a **throughput-tuned** deployment with large batches, at **40 documents per second per GPU**.\n\nHow many GPUs does the throughput-tuned deployment need to finish inside the window? Count whole GPUs. Section 1.2.2 covers why offline jobs belong on throughput-tuned deployments.",
+  "steps": [
+    "Convert the window to seconds.",
+    "Divide the corpus by the window to get the sustained rate the job needs, in documents per second.",
+    "Divide that rate by the throughput-tuned per-GPU rate and round up to a whole GPU.",
+    "Repeat with the latency-tuned rate and compare the two GPU counts."
+  ],
+  "answerFormat": "number, in GPUs",
+  "answer": {
+    "kind": "calculation",
+    "answer": 3,
+    "tolerance": { "kind": "absolute", "value": 0 },
+    "unit": "GPUs",
+    "acceptedUnits": []
+  },
+  "solution": {
+    "walkthrough": "**Window.** 8 hours × 3,600 s = 28,800 s.\n\n**Rate needed.** 2,400,000 / 28,800 ≈ 83.3 documents per second.\n\n**Throughput-tuned.** 83.3 / 40 ≈ 2.08, so 2 GPUs fall short (80 documents per second would take 2,400,000 / 80 = 30,000 s, about 8.3 hours). Round up to **3 GPUs**, which finish in 2,400,000 / 120 = 20,000 s, about 5.6 hours.\n\n**Latency-tuned, for comparison.** 83.3 / 12 ≈ 6.9, so 7 GPUs. Reusing the live deployment would need more than twice the hardware for the same job, because its small batches keep each request fast when no one is waiting on any single document (see 1.2.2).",
+    "finalAnswer": { "kind": "calculation", "value": 3, "unit": "GPUs" }
+  },
+  "starterFiles": [],
+  "estimatedMinutes": 10
+}

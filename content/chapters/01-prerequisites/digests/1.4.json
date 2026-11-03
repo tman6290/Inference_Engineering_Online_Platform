@@ -1,0 +1,126 @@
+{
+  "lesson": "1.4",
+  "oneLine": "Measure LLM speed as TTFT plus per-user TPS, report percentiles instead of the mean, and keep inference-only and end-to-end numbers apart so you know which layer to fix.",
+  "summary": "Two numbers describe how fast a streamed reply feels. **TTFT** is the wait before anything appears, and it is set mostly by prefill, which is compute-bound. **TPS** is how quickly the rest arrives, set by decode, which is limited by memory bandwidth. TPS is ambiguous: per user it is a latency number, summed across the service it is throughput. Say *perceived TPS* or *total TPS*, or quote **inter-token latency** (ITL): 10 ms between tokens is 100 tokens per second. Agent tool calls are not streamed, so judge them by total response time.\n\nResponse times are right-skewed, so the mean drifts above the median and hides the slow tail. Report P50 for the typical request and P90, P95 or P99 for the tail, because the one slow reply in ten is the one users remember (see 1.4.1).\n\nFinally, decide what you are timing. Inference-only time is GPU work and shows whether model optimisation paid off. End-to-end time adds network and queueing and shows what users feel. Fast inference with slow end-to-end numbers means the problem is infrastructure (see 1.4.2).",
+  "mechanism": [
+    {
+      "title": "Prefill sets TTFT",
+      "body": "The whole prompt is processed in one compute-heavy pass before the first output token exists."
+    },
+    {
+      "title": "Decode sets TPS",
+      "body": "Each later token waits on a memory-bound step; its spacing is the inter-token latency."
+    },
+    {
+      "title": "Collect a distribution",
+      "body": "Time many requests, sort them, and read P50 for the typical case and P90 or P99 for the tail."
+    },
+    {
+      "title": "Split the clock",
+      "body": "Compare GPU-only time with client-side time; the gap is network plus queue."
+    }
+  ],
+  "callout": {
+    "name": "Fast GPU, slow app",
+    "body": "If inference-only numbers look healthy while users still wait, a faster kernel won't help. The missing time lives in the network, the request queue or too few replicas. Look at infrastructure first (see 1.4.2)."
+  },
+  "figureRefs": [
+    {
+      "figure": "1.4",
+      "lookFor": "The gap before the first token is TTFT; the steady spacing of the tokens after it is what TPS measures."
+    },
+    {
+      "figure": "1.5",
+      "lookFor": "The long right tail drags the mean to the right of the P50 line."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "TTFT",
+      "title": "Wait before the first token",
+      "body": "Driven by prefill. Lower is better. Long prompts and queueing push it up."
+    },
+    {
+      "label": "TPS / ITL",
+      "title": "Speed of the stream",
+      "body": "Driven by decode. TPS = 1000 / ITL in ms. Say perceived or total to avoid confusion."
+    },
+    {
+      "label": "Percentiles",
+      "title": "P50 for typical, P99 for tail",
+      "body": "P90 means one request in ten is slower. The mean hides that tail."
+    },
+    {
+      "label": "Scope",
+      "title": "Inference-only or end-to-end",
+      "body": "GPU time judges model work; client-side time judges what users feel."
+    }
+  ],
+  "workedExample": {
+    "title": "Mean versus percentiles on ten TTFT samples",
+    "setup": "A load test records the TTFT of ten requests, sorted: 150, 160, 165, 170, 175, 180, 190, 210, 650 and 1900 ms. Two requests hit a queue; the other eight were fine. Use the nearest-rank method: for percentile p over n samples, take the value at rank ceil(p × n / 100).",
+    "table": {
+      "columns": ["Statistic", "How it is found", "Value (ms)"],
+      "rows": [
+        ["Mean", "3950 / 10", 395],
+        ["P50", "rank ceil(5.0) = 5", 175],
+        ["P90", "rank ceil(9.0) = 9", 650],
+        ["P99", "rank ceil(9.9) = 10", 1900]
+      ]
+    },
+    "conclusion": {
+      "text": "The mean of 395 ms is more than double the median and matches no real request. P50 says the typical user waits 175 ms; P90 says one in ten waits at least 650 ms. Those two numbers tell the real story.",
+      "keyNumber": "P90 = 650 ms"
+    }
+  },
+  "checkQuestion": {
+    "kind": "calculation",
+    "id": "1.4-check",
+    "sectionNumber": "1.4",
+    "subsectionNumber": "1.4.2",
+    "difficulty": 2,
+    "prompt": "A streamed reply has a TTFT of 400 ms and 201 output tokens. After the first token, the remaining 200 tokens arrive at a steady 40 tokens per second. What is the total response time, from request to last token?",
+    "answerFormat": "number, in ms",
+    "answer": 5400,
+    "tolerance": { "kind": "absolute", "value": 5 },
+    "unit": "ms",
+    "acceptedUnits": [{ "unit": "s", "factor": 1000 }],
+    "methodHint": "Total time is the wait for the first token plus the time to stream the tokens after it.",
+    "workedSolution": "Streaming the 200 tokens after the first takes 200 / 40 = 5 s = 5000 ms. Add the 400 ms TTFT: 400 + 5000 = 5400 ms.",
+    "explanation": "TTFT covers the first token, and TPS covers only the tokens after it, so total time is TTFT + (tokens after the first) / TPS. Dividing all 201 tokens by 40 gives 5025 ms and double-counts the first token.",
+    "reread": "1.4",
+    "sourceQuote": "How many tokens each second does the user receive after the first token is generated?"
+  },
+  "reflect": {
+    "prompt": "Your product manager asks why the latency dashboard shows P50 and P99 instead of one average, and why it has both a GPU timing panel and a client-side panel. Explain both choices in plain terms.",
+    "modelAnswer": "Response times for an LLM service are right-skewed: most requests cluster near a typical value, but a few take far longer because of long prompts, long outputs or a busy queue. An average mixes those together and lands somewhere that describes almost nobody, usually above the median. P50 tells us what the typical user gets. P99 tells us how bad the slow tail is, and the tail is what erodes trust: if one reply in a hundred stalls for ten seconds, heavy users hit it every day. So we track both and try to push the tail down, not only the middle.\n\nThe two timing panels answer different questions. The GPU panel is inference-only time. It tells us whether model work, such as a new kernel or quantisation, made generation faster. The client-side panel is end-to-end time, including network and time waiting in the queue, and that is what users feel. When the GPU panel looks good but the client panel looks bad, the fix is infrastructure: more replicas, better autoscaling or a closer region, not more model tuning.",
+    "points": [
+      "LLM latency is right-skewed, so the mean sits above the median and describes few real requests.",
+      "P50 shows the typical experience; P90 or P99 shows the tail users remember.",
+      "Inference-only time measures whether model optimisation worked.",
+      "End-to-end time adds network and queueing and reflects what users feel.",
+      "Fast inference with slow end-to-end time points to infrastructure, not the model."
+    ]
+  },
+  "terms": [
+    "Time to first token (TTFT)",
+    "Perceived TPS",
+    "Inter-token latency (ITL)",
+    "Latency percentiles",
+    "Throughput"
+  ],
+  "subsectionCards": [
+    {
+      "number": "1.4.1",
+      "title": "Latency Percentiles",
+      "hook": "Why the average lies about a skewed distribution, and what P50 through P99 mean.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "1.4.2",
+      "title": "End-to-End Metrics",
+      "hook": "GPU time versus what the user waits for, and which one points to infrastructure.",
+      "readingMinutes": 1
+    }
+  ]
+}

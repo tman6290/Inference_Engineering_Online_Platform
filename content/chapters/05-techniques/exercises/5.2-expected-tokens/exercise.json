@@ -1,0 +1,33 @@
+{
+  "id": "5.2-expected-tokens",
+  "sectionNumber": "5.2",
+  "title": "Code the speedup model and find the best draft length",
+  "brief": "Turn the three levers from 5.2 into code. You will write three small functions in `speculation.py`: expected tokens per target pass for a draft length and acceptance rate, the speedup once each draft token's cost is charged to the pass, and the draft length that maximises that speedup.\n\nThe model: each draft token matches the target with probability `p`, the first miss discards every later draft, and the target always adds one token of its own. A validating pass costs 1.0 (the same as a plain decode pass) and each draft token adds `draft_cost` to it. Python standard library only.",
+  "steps": [
+    "Open `speculation.py` and read the model in its docstring.",
+    "Implement `expected_tokens_per_pass(acceptance, draft_length)`: 1 + p + p² + … + p^k, with the input checks the docstring asks for.",
+    "Implement `speedup(acceptance, draft_length, draft_cost)`: expected tokens divided by 1 + k × draft_cost.",
+    "Implement `best_draft_length(acceptance, draft_cost, max_length)`: try every length from 0 to max_length and keep the best, preferring the shorter one on a tie.",
+    "Run `python -m pytest -q` in the exercise folder until every test passes.",
+    "Compute `speedup(0.8, best_draft_length(0.8, 0.05, 10), 0.05)` and enter it below."
+  ],
+  "answerFormat": "number, as a multiple (x), e.g. 2.4",
+  "answer": {
+    "kind": "calculation",
+    "answer": 3.092,
+    "tolerance": { "kind": "relative", "value": 0.01 },
+    "unit": "x",
+    "acceptedUnits": []
+  },
+  "solution": {
+    "walkthrough": "Position i survives only if positions 1 to i all match, so its chance is p^i and the expected tokens per pass is 1 + p + … + p^k, which equals (1 − p^(k+1)) / (1 − p) for p < 1 (see 5.2). A pass with k drafts takes 1 + k × c target-pass times, so speedup = tokens / (1 + k c).\n\nFor p = 0.8 and c = 0.05:\n\n| k | tokens per pass | pass time | speedup |\n|---|---|---|---|\n| 4 | 3.3616 | 1.20 | 2.801 |\n| 6 | 3.9514 | 1.30 | 3.040 |\n| 7 | 4.1611 | 1.35 | 3.082 |\n| 8 | 4.3289 | 1.40 | 3.092 |\n| 9 | 4.4631 | 1.45 | 3.078 |\n| 10 | 4.5705 | 1.50 | 3.047 |\n\nThe best length is 8, giving a speedup of about **3.09×**. Past that point the 9th guess adds 0.8⁹ ≈ 0.134 expected tokens but 0.05 of a pass in time, and 0.134 / 0.05 is now worth less than the current 3.09 tokens per unit of time, so the average falls. Notice how flat the curve is near the top: lengths 6 to 10 are all within 2% of each other, which is why real deployments pick a short length and spend their effort on raising acceptance instead. The reference implementation is in `solution/speculation.py`.",
+    "finalAnswer": { "kind": "calculation", "value": 3.092, "unit": "x" }
+  },
+  "starterFiles": ["speculation.py"],
+  "tests": {
+    "runner": "pytest",
+    "command": "python -m pytest -q",
+    "files": ["test_speculation.py"]
+  },
+  "estimatedMinutes": 30
+}

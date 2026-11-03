@@ -1,0 +1,132 @@
+{
+  "lesson": "1.3",
+  "oneLine": "The model you pick sets the ceiling on speed and cost. Prove quality with your own evals, then serve the smallest model that passes them, whether off the shelf, fine-tuned or distilled.",
+  "summary": "Pick the model before you tune anything else. On the same GPU and engine, fewer parameters means faster, cheaper inference, so this choice caps every later gain. While a product is still searching for fit, rent a frontier model through a pay-per-token API. Once traffic grows, flip the advice: look for the smallest model that still clears your quality bar, and prefer popular architectures, because inference engines support them best.\n\nQuality needs proof. Evals (see 1.3.1) are tests built from your own product's tasks. Public benchmarks such as MMLU help you shortlist, but labs now chase them. Evals also give you the baseline you need before any optimisation that might cost quality.\n\nTwo routes make a small model good enough. Fine-tuning (see 1.3.2) keeps the architecture and moves the weights using labelled domain data; a narrow task like text-to-SQL lets a few-billion-parameter model match a giant general one. Distillation (see 1.3.3) trains a small student on a large teacher's full output probabilities, so it copies the teacher's behaviour, flaws included. It is rarer; DeepSeek's R1 distills onto Llama and Qwen are the famous case.",
+  "mechanism": [
+    {
+      "title": "Prototype on APIs",
+      "body": "Before product-market fit, pay per token for a frontier model and skip running your own inference."
+    },
+    {
+      "title": "Write your evals",
+      "body": "Build product-specific tests around the hardest cases and record a baseline score before optimising."
+    },
+    {
+      "title": "Shortlist smaller models",
+      "body": "Use public benchmarks and Elo to pick candidates, favouring architectures your inference engine supports well."
+    },
+    {
+      "title": "Shrink if needed",
+      "body": "Fine-tune on labelled domain data, or distill a large teacher, until a small model passes."
+    },
+    {
+      "title": "Serve the smallest passer",
+      "body": "On the same hardware and engine, fewer parameters means lower latency and lower cost per token."
+    }
+  ],
+  "callout": {
+    "name": "Goodhart's Law",
+    "body": "A number that turns into a target stops telling you what it used to. Labs race for benchmark records with every release, so leaderboard scores drift away from real capability. Your own evals, aimed at your product's hardest cases, stay honest because nobody is training against them (see 1.3.1)."
+  },
+  "figureRefs": [
+    {
+      "figure": "1.2",
+      "lookFor": "The network's shape is identical before and after; only the values inside the weights differ."
+    },
+    {
+      "figure": "1.3",
+      "lookFor": "The student is drawn much smaller than the teacher yet produces the same kind of output."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Evals",
+      "title": "Your product, your test",
+      "body": "Benchmarks shortlist; evals built from your tasks decide. They also set the baseline for later optimisation."
+    },
+    {
+      "label": "Fine-tuning",
+      "title": "Same architecture, new weights",
+      "body": "Labelled domain data adapts a foundation model. Narrow domains like text-to-SQL allow big size cuts."
+    },
+    {
+      "label": "Distillation",
+      "title": "The student copies the teacher",
+      "body": "Trained on the teacher's probability distributions, not just its answers, so it inherits good and bad habits."
+    },
+    {
+      "label": "Architecture",
+      "title": "Stay on popular architectures",
+      "body": "Common architectures get the deepest engine support, which opens up more optimisations."
+    }
+  ],
+  "workedExample": {
+    "title": "Does a fine-tuned 8B model pay for itself?",
+    "setup": "Illustrative numbers. A text-to-SQL feature runs on a 70B general model in FP16 (2 bytes per parameter), using 20 GPUs to carry peak traffic. A fine-tuned 8B model passes the same evals and carries that traffic on 4 GPUs. GPUs rent at $2.50 per hour and a month has 730 hours. The fine-tuning run, including labelling, costs $6,000 once.",
+    "table": {
+      "columns": ["Model", "FP16 weights", "GPUs", "Monthly GPU cost"],
+      "rows": [
+        ["70B general", "70B × 2 B = 140 GB", 20, "20 × $2.50 × 730 = $36,500"],
+        ["8B fine-tuned", "8B × 2 B = 16 GB", 4, "4 × $2.50 × 730 = $7,300"],
+        ["Difference", "124 GB", 16, "$29,200"]
+      ]
+    },
+    "conclusion": {
+      "text": "The $6,000 run pays back in $6,000 ÷ $29,200 ≈ 0.21 months, about six days. The saving only counts because the 8B model passed the evals first.",
+      "keyNumber": "$29,200 saved per month"
+    }
+  },
+  "checkQuestion": {
+    "kind": "scenario_mc",
+    "id": "1.3-check",
+    "sectionNumber": "1.3",
+    "subsectionNumber": "1.3.1",
+    "difficulty": 1,
+    "prompt": "You must choose between two open models for a medical-billing assistant. Model A tops a famous public leaderboard; model B ranks lower. What should decide the choice?",
+    "answerFormat": "one option",
+    "options": [
+      "Model A, because the leaderboard covers far more tasks than any eval set your team could write",
+      "Whichever model has the most downloads and community fine-tunes on Hugging Face this month",
+      "Scores on an eval set built from real billing requests, with the hardest cases weighted most",
+      "Model B, because lower leaderboard scores mean it is less likely to be overfit to public tests"
+    ],
+    "correctIndex": 2,
+    "acceptedCopy": "Right. Leaderboards help you shortlist; only a test built from your own product's tasks tells you which model works for you (see 1.3.1).",
+    "rejectedCopy": "Ask which measurement actually looks like the work this assistant will do every day.",
+    "hint": "A benchmark measures common tasks. Whose tasks matter here?",
+    "explanation": "Product-specific evals measure the thing you care about, so they decide. Model A's leaderboard lead is the tempting answer, but public benchmarks are saturated and gamed, and they test common tasks, not billing. Ranking lower on a leaderboard does not make model B better either; you still have to measure it.",
+    "reread": "1.3.1",
+    "sourceQuote": "there is no substitute for directly measuring how a model performs for your application."
+  },
+  "reflect": {
+    "prompt": "Your team wants to replace a 400B general model with an 8B model fine-tuned on support tickets. Explain what you need before you trust the swap, and why a strong public benchmark score for the 8B model is not enough.",
+    "modelAnswer": "I need a product-specific eval set built from real support tickets, weighted toward the hardest tickets the model must handle, and I need the 400B model's score on it as the baseline. The 8B model ships only if it matches that baseline on the hard cases, not just on average. A public benchmark score tells me little: it measures common tasks rather than our tickets, and labs optimise for those benchmarks, so a high score can reflect training to the test (Goodhart's Law). I would also read a sample of outputs to check the numbers against my own judgement, and keep the eval to re-run after later optimisations such as quantization.",
+    "points": [
+      "Build evals from real product tasks, focused on the hardest cases",
+      "Score the current large model first to set a baseline",
+      "Public benchmarks test common tasks and are gamed, so they only shortlist",
+      "Look at the outputs themselves, not only the aggregate score"
+    ]
+  },
+  "terms": ["Evals", "Fine-tuning", "Distillation", "Goodhart's Law", "Foundation model"],
+  "subsectionCards": [
+    {
+      "number": "1.3.1",
+      "title": "Model Evaluation",
+      "hook": "Why your own tests beat leaderboards, and how to make them useful.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "1.3.2",
+      "title": "Fine-Tuning for Domain-Specific Quality",
+      "hook": "How narrow, well-labelled tasks let a tiny model match a giant.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "1.3.3",
+      "title": "Distillation",
+      "hook": "Teaching a small student to behave like a large teacher.",
+      "readingMinutes": 1
+    }
+  ]
+}

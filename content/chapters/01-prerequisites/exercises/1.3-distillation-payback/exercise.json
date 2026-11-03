@@ -1,0 +1,29 @@
+{
+  "id": "1.3-distillation-payback",
+  "sectionNumber": "1.3",
+  "title": "Does distilling the teacher pay back?",
+  "brief": "You serve a 120B teacher model for a reasoning feature. A distilled 8B student, trained on the teacher's probability distributions (see 1.3.3), passes your evals (see 1.3.1). Work out how long the switch takes to pay for itself. All numbers are illustrative.\n\n- Sustained traffic: **20,000 output tokens per second**, around the clock.\n- Teacher: one replica uses **4 GPUs** and sustains **2,000 tokens per second**.\n- Student: one replica uses **1 GPU** and sustains **2,500 tokens per second**.\n- GPUs cost **$2.40 per GPU-hour**.\n- One-off costs: **$18,000** to collect the teacher's distributions and train the student, plus **$2,000** for the eval runs.\n\nAssume replicas come in whole numbers and every GPU runs 24 hours a day.",
+  "steps": [
+    "Work out how many replicas of each model the traffic needs, then how many GPUs each fleet uses.",
+    "Compute the GPUs saved and the daily saving at $2.40 per GPU-hour.",
+    "Add up the one-off costs.",
+    "Divide the one-off cost by the daily saving to get the payback period in days."
+  ],
+  "answerFormat": "number, in days",
+  "answer": {
+    "kind": "calculation",
+    "answer": 10.85,
+    "tolerance": { "kind": "relative", "value": 0.03 },
+    "unit": "days",
+    "acceptedUnits": [
+      { "unit": "weeks", "factor": 7 },
+      { "unit": "hours", "factor": 0.041666667 }
+    ]
+  },
+  "solution": {
+    "walkthrough": "**Fleets.** Teacher: 20,000 ÷ 2,000 = 10 replicas × 4 GPUs = **40 GPUs**. Student: 20,000 ÷ 2,500 = 8 replicas × 1 GPU = **8 GPUs**.\n\n**Daily saving.** 40 − 8 = 32 GPUs saved. 32 × $2.40 × 24 h = **$1,843.20 per day**.\n\n**One-off cost.** $18,000 + $2,000 = **$20,000**.\n\n**Payback.** $20,000 ÷ $1,843.20 ≈ **10.85 days** (about 260 hours, or 1.55 weeks).\n\n**Sanity checks.** Each student GPU does 2,500 tokens per second against the teacher's 500 per GPU (2,000 ÷ 4), a 5× gain per GPU, so 40 GPUs shrinking to 8 is consistent. A common slip is comparing the student fleet's daily cost ($460.80) with the one-off cost, which gives about 43 days; the payback uses the difference between the fleets.\n\n**What the number doesn't say.** The saving is only real because the student passed the evals. A distilled student copies the teacher's behaviour, flaws included, and usually scores somewhat lower (see 1.3.3), so re-run the evals on the hard cases before switching, and keep the teacher's score as the baseline.",
+    "finalAnswer": { "kind": "calculation", "value": 10.85, "unit": "days" }
+  },
+  "starterFiles": [],
+  "estimatedMinutes": 15
+}

@@ -1,0 +1,110 @@
+{
+  "lesson": "1.1",
+  "oneLine": "Start on a shared pay-per-token API; move to dedicated GPUs only when volume, a custom model or a multi-model pipeline gives you a concrete business reason (see 1.1).",
+  "summary": "You can put a model behind your product in two ways (see 1.1). **Shared inference** means calling someone else's public endpoint and paying for what you consume, usually per million tokens. **Dedicated deployments** mean renting (or buying) GPUs that serve only your traffic, and paying for every GPU hour whether or not requests arrive.\n\nShared endpoints win early: no fixed cost, no cold starts, almost no engineering. The price is that your bill grows in a straight line with traffic, your uptime can never beat the provider's, other tenants can slow you down, and you don't control latency, quality or rate limits.\n\nThe section gives three triggers for going dedicated. **Scale**: enough volume that paying per GPU beats paying per token. **Specialization**: a fine-tuned or custom model, or latency and uptime targets a shared API won't promise. **Orchestration**: several models chained in one request, where hops between vendors cost latency and complexity.\n\nShared versus dedicated is a separate axis from open versus closed, though open weights are what make unrestricted dedicated serving possible. Going dedicated raises your minimum monthly bill and your engineering load, so wait for a clear, immediate need.",
+  "mechanism": [
+    {
+      "title": "Start shared",
+      "body": "Call a public endpoint, pay per million tokens, and spend engineering time finding product-market fit."
+    },
+    {
+      "title": "Watch the triggers",
+      "body": "Track token volume, model customisation needs, latency or uptime targets, and how many models one request touches."
+    },
+    {
+      "title": "Do the arithmetic",
+      "body": "Compare the per-token bill with GPU hours at your real utilisation, including idle and redundancy hours."
+    },
+    {
+      "title": "Switch on need",
+      "body": "Move to dedicated GPUs once a trigger is concrete, accepting a higher spend floor and more operational work."
+    }
+  ],
+  "callout": {
+    "name": "The clear-need rule",
+    "body": "Dedicated inference buys control and, at volume, a lower cost per token. It also buys a fixed monthly bill and a serving stack you now own. Make the move when a number or a requirement forces it, not because it feels more serious (see 1.1)."
+  },
+  "figureRefs": [],
+  "keyCards": [
+    {
+      "label": "Scale",
+      "title": "Volume makes GPU hours cheaper",
+      "body": "Per-token bills grow linearly; a busy dedicated GPU spreads a fixed hourly price over more tokens."
+    },
+    {
+      "label": "Specialization",
+      "title": "Custom models need your own GPUs",
+      "body": "Fine-tuned weights, strict latency targets or uptime promises usually rule out a generic shared endpoint."
+    },
+    {
+      "label": "Orchestration",
+      "title": "Pipelines want models side by side",
+      "body": "Chaining several models across vendors adds a network hop each time; co-located deployments remove them."
+    }
+  ],
+  "workedExample": {
+    "title": "When does a dedicated GPU beat $0.60 per million tokens?",
+    "setup": "Illustrative prices, not quotes. A shared API charges $0.60 per million tokens. A dedicated GPU rents for $3.00 per hour and can push at most 2,500 tokens per second, which is 9 million tokens per hour at full load. You pay the $3.00 every hour, so the dedicated cost per million tokens is $3.00 divided by the millions of tokens actually served that hour. The table varies the average utilisation.",
+    "table": {
+      "columns": [
+        "Average utilisation",
+        "Tokens per hour (M)",
+        "Dedicated $ per M tokens",
+        "Shared $ per M tokens"
+      ],
+      "rows": [
+        ["10%", 0.9, 3.33, 0.6],
+        ["25%", 2.25, 1.33, 0.6],
+        ["50%", 4.5, 0.67, 0.6],
+        ["55.6%", 5, 0.6, 0.6],
+        ["75%", 6.75, 0.44, 0.6],
+        ["100%", 9, 0.33, 0.6]
+      ]
+    },
+    "conclusion": {
+      "text": "Break-even sits where the GPU serves $3.00 / $0.60 = 5 million tokens per hour, about 56% of its capacity. Below that the shared API is cheaper; above it every extra token on the dedicated GPU is close to free.",
+      "keyNumber": "≈ 56% utilisation to break even"
+    }
+  },
+  "checkQuestion": {
+    "kind": "scenario_mc",
+    "id": "1.1-check-01",
+    "sectionNumber": "1.1",
+    "subsectionNumber": null,
+    "difficulty": 1,
+    "prompt": "Your team launched an AI writing feature two months ago. Usage is small and changes week to week while you test what customers want. An engineer proposes renting dedicated GPUs now \"so we're ready\". What fits the guidance in 1.1?",
+    "answerFormat": "one option",
+    "options": [
+      "Stay on a shared pay-per-token API until volume, a custom model or a pipeline need makes the case",
+      "Rent dedicated GPUs now, because they are cheaper per token than an API at any level of traffic",
+      "Buy GPUs for on-premises hosting, because owning hardware avoids paying for GPU hours by the hour",
+      "Move to an open model on a shared endpoint, because only open models can scale with demand later"
+    ],
+    "correctIndex": 0,
+    "explanation": "While a product is still searching for fit, a shared API has no fixed cost and almost no engineering overhead. Dedicated GPUs are only cheaper per token when they stay busy; at low, shifting volume you'd pay for idle hours and raise your spend floor. The section advises switching once there is a clear and immediate business need.",
+    "reread": "1.1",
+    "sourceQuote": "Only switch once there is a clear and immediate business need.",
+    "acceptedCopy": "Right. Early, uncertain traffic is exactly where pay-per-token makes sense; dedicated waits for a concrete trigger (see 1.1).",
+    "rejectedCopy": "Think about what you pay for a GPU in the hours when nobody is using your feature.",
+    "hint": "Which option has no fixed monthly cost?"
+  },
+  "reflect": {
+    "prompt": "Your manager asks, \"Why don't we just run our own GPUs? Everyone serious does.\" Explain in a short paragraph when moving to dedicated inference makes sense for your product, and what it costs you beyond the GPU bill.",
+    "modelAnswer": "Today we pay per token, so we only pay for what users actually consume, we get no cold starts, and the integration is an API key. Dedicated GPUs make sense when one of three things becomes true. First, scale: our monthly token volume is high enough that a GPU kept busy most of the day costs less per token than the API, which we can check by dividing the hourly GPU price by the tokens it would really serve, idle hours included. Second, specialization: we need a fine-tuned or custom model, or latency and uptime guarantees the provider won't give. Third, orchestration: a single request chains several models and the hops between vendors hurt latency. The extra cost is a fixed monthly floor, since we pay for GPU hours whether or not traffic arrives, plus the engineering work of running, scaling and monitoring our own serving stack. So we should switch when one of those triggers is concrete and measured, not in anticipation.",
+    "points": [
+      "Shared inference has no fixed cost, no cold starts and minimal engineering, which suits early or uncertain traffic.",
+      "Scale trigger: enough volume that per-GPU-hour pricing beats per-token pricing at realistic utilisation.",
+      "Specialization trigger: a custom or fine-tuned model, or latency and uptime requirements the provider won't meet.",
+      "Orchestration trigger: multi-model pipelines where cross-vendor network hops add latency and complexity.",
+      "Dedicated raises the monthly spend floor and the engineering surface area, so switch only on a clear need."
+    ]
+  },
+  "terms": [
+    "Open model",
+    "Closed model",
+    "Cold start",
+    "Fine-tuning",
+    "Service Level Agreement (SLA)"
+  ],
+  "subsectionCards": []
+}

@@ -1,0 +1,130 @@
+{
+  "lesson": "1.2",
+  "oneLine": "Start from the app, not the hardware: what users do, whether anyone waits on the answer, and who pays all decide how you serve the model.",
+  "summary": "Only model labs selling a public API and teams building an inference platform must serve every possible workload. Everyone else builds a vertical app, where each constraint you pin down is an optimisation you can make.\n\nThe app category tells you which number matters (see 1.2.1). An agent fans one click into many model calls, chat lives on time to first token, voice needs the whole pipeline fast, completion must keep pace with typing, and moderation wants cheap volume.\n\nThe biggest fork is whether a person is waiting (see 1.2.2). Online traffic gets tuned for latency. Offline batch work gets tuned for throughput: each request is slow, but each GPU-hour finishes more work. One model can justify two deployments, one per mode.\n\nThe customer shapes the rest (see 1.2.3). Consumer apps have thin margins and viral spikes, so marginal cost and elastic capacity come first. B2B apps sit in a customer's revenue path, so latency and uptime lead. Compliance can rule out regions and providers before any benchmark does.",
+  "mechanism": [
+    {
+      "title": "Name the use case",
+      "body": "Write down the app category, what one user action costs in model calls, and who is waiting."
+    },
+    {
+      "title": "Pick the mode",
+      "body": "A human waiting means online and latency first; a job with a deadline means offline and throughput first."
+    },
+    {
+      "title": "Weigh the customer",
+      "body": "Consumers push you toward low marginal cost and elastic capacity; businesses push toward low latency and uptime."
+    },
+    {
+      "title": "Check compliance early",
+      "body": "Data region, privacy and regulation can veto a provider or region before performance even enters the discussion."
+    }
+  ],
+  "callout": {
+    "name": "The recruiting coach",
+    "body": "A basketball coach and a gymnastics coach visiting the same school want opposite students. Inference works the same way: there is no best deployment in the abstract, only the best one for a stated use case. Pin the use case down first."
+  },
+  "keyCards": [
+    {
+      "label": "Category",
+      "title": "Each app has its number",
+      "body": "Agents: calls per action. Chat: TTFT. Voice: end-to-end latency. Moderation: cost per check (see 1.2.1)."
+    },
+    {
+      "label": "Mode",
+      "title": "Online for people, offline for jobs",
+      "body": "Latency-tuned and throughput-tuned deployments of one model can both be right (see 1.2.2)."
+    },
+    {
+      "label": "Customer",
+      "title": "Consumer cost, business uptime",
+      "body": "Viral consumer traffic rewards cheap elastic capacity; B2B revenue paths reward reliability (see 1.2.3)."
+    },
+    {
+      "label": "Compliance",
+      "title": "Legal limits come first",
+      "body": "Data sovereignty, privacy and regulation narrow your options; bring in security and legal early (see 1.2.3)."
+    }
+  ],
+  "workedExample": {
+    "title": "Why agents cost more per click than chat",
+    "setup": "Illustrative prices: $0.50 per million input tokens and $2.00 per million output tokens. A support chat answers each user message with one call of 2,000 input and 300 output tokens. A prospecting agent runs 10 calls per user action, each 4,000 input and 400 output tokens. Both users take 30 actions a month. Cost per call = input tokens × 0.50 / 1,000,000 + output tokens × 2.00 / 1,000,000.",
+    "table": {
+      "columns": [
+        "App",
+        "Calls per action",
+        "Tokens per call (in / out)",
+        "Cost per action (USD)",
+        "Cost per user per month (USD)"
+      ],
+      "rows": [
+        ["Support chat", 1, "2,000 / 300", 0.0016, 0.048],
+        ["Prospecting agent", 10, "4,000 / 400", 0.028, 0.84]
+      ]
+    },
+    "conclusion": {
+      "text": "Chat: 0.001 + 0.0006 = $0.0016 per action. Agent: 10 × (0.002 + 0.0008) = $0.028 per action, 17.5 times the chat cost. Count calls per action before you price an agent.",
+      "keyNumber": "17.5× per action"
+    }
+  },
+  "checkQuestion": {
+    "kind": "scenario_mc",
+    "id": "1.2-check",
+    "sectionNumber": "1.2",
+    "subsectionNumber": "1.2.2",
+    "difficulty": 1,
+    "prompt": "Your company runs four model workloads. Which one should go on a throughput-optimised deployment instead of a latency-optimised one?",
+    "answerFormat": "one option",
+    "options": [
+      "Tab completion suggestions inside the team's own code editor",
+      "A weekly job that re-embeds the help-centre articles for search",
+      "A voice agent that answers inbound customer phone calls live",
+      "The support chat widget that answers visitors on the pricing page"
+    ],
+    "correctIndex": 1,
+    "acceptedCopy": "Right. Nobody watches the weekly re-embedding run, so it only has to finish on time, which is offline work (see 1.2.2).",
+    "rejectedCopy": "Ask, for each workload, whether a person is sitting there waiting for the answer.",
+    "hint": "Three of these have a person waiting on every call.",
+    "explanation": "Completion, voice and chat each have a user waiting on every request, so they are online and need low latency. The weekly re-embedding has a deadline but no one waiting on any single document, so it can trade slow individual requests for far more documents per GPU-hour.",
+    "reread": "1.2.2",
+    "sourceQuote": "Document processing: Embedding, converting, or analyzing a set of documents on a regular cadence."
+  },
+  "reflect": {
+    "prompt": "Pick an AI feature you use or want to build. Describe its category, whether it is online or offline, and whether its users are consumers or businesses. Then say which one inference metric you would optimise first, and why.",
+    "modelAnswer": "Take an IDE tab-completion feature sold to engineering teams. It is a completion app, so the suggestion has to land between keystrokes: the budget is a couple of hundred milliseconds for the whole chunk, not just the first token. It is online, because a developer is waiting on every request. It is B2B, sold per seat to companies, so consistent low latency and uptime outrank shaving cost per request, and the vendor must check where code is processed because customers may restrict which regions see it. The first metric to optimise is end-to-end latency for a full completion chunk at the percentiles developers feel, such as p95. Throughput and cost matter after that, as secondary targets.",
+    "points": [
+      "Names the app category and the metric that category cares about (see 1.2.1)",
+      "Says whether a person waits on each request, so online or offline (see 1.2.2)",
+      "Places the users as consumers or businesses and draws the cost versus uptime priority (see 1.2.3)",
+      "Mentions any compliance constraint on where data may be processed",
+      "Commits to one metric to optimise first and justifies it"
+    ]
+  },
+  "terms": [
+    "AI-native application",
+    "Online inference",
+    "Offline inference",
+    "Throughput",
+    "Data sovereignty"
+  ],
+  "subsectionCards": [
+    {
+      "number": "1.2.1",
+      "title": "AI-Native Applications",
+      "hook": "Eight app categories, eight different numbers to optimise.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "1.2.2",
+      "title": "Online versus Offline",
+      "hook": "Is someone waiting? Latency if yes, throughput if no.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "1.2.3",
+      "title": "Consumer versus B2B",
+      "hook": "Consumers punish cost, businesses punish downtime, regulators punish both.",
+      "readingMinutes": 1
+    }
+  ]
+}

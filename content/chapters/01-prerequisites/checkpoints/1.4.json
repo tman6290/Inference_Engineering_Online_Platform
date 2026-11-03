@@ -1,0 +1,626 @@
+{
+  "sectionNumber": "1.4",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-01",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 1,
+      "prompt": "Your chatbot dashboard shows a steady mean TTFT of 400 ms, yet support tickets keep describing multi-second waits before anything appears. Which number should you add to the dashboard first?",
+      "answerFormat": "one option",
+      "options": [
+        "Mean end-to-end latency, which also counts time spent streaming tokens",
+        "Median TTFT, which stays stable when a few odd requests spike",
+        "P99 TTFT, which shows how slow the worst 1% of requests really are",
+        "Total TPS, which shows whether the service produces enough tokens"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. A tail percentile exposes the slow requests that an average smooths over (see 1.4.1).",
+      "rejectedCopy": "That number still won't show you the requests the tickets describe. Which statistic looks at the slow end of the distribution?",
+      "hint": "The complaints are about a minority of requests. Which statistic is built to describe a minority?",
+      "explanation": "The tickets describe rare slow requests, the tail of a right-skewed distribution. P99 TTFT reports exactly that tail. The median is tempting because it resists outliers, but resisting outliers is the problem here: it hides the slow requests even better than the mean does.",
+      "reread": "1.4.1",
+      "sourceQuote": "The naive approach is to simply look at an average (mean) TTFT or TPS. However, this does not tell the whole story."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-02",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 1,
+      "prompt": "A benchmark report lists a mean total response time of 1.8 s and a P50 of 1.2 s. A teammate thinks the benchmark script must have a bug, because the two should be close. What do you tell them?",
+      "answerFormat": "one option",
+      "options": [
+        "It's expected: a few very slow requests pull the mean above the median",
+        "It's a bug: latency means and medians should agree to within a few percent",
+        "It's expected: the median always runs higher than the mean for latency data",
+        "It's a bug: failed requests were probably logged with a time of zero"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. LLM response times are right-skewed, so outliers drag the mean above P50 (see 1.4.1).",
+      "rejectedCopy": "Think about which way a handful of very slow requests moves each statistic.",
+      "hint": "Picture nine requests at 1 s and one at 10 s. Compute the mean and the median.",
+      "explanation": "Response times bunch around a typical value with a long tail of slow requests. The mean adds those slow values in directly, so it rises; the median only cares about the middle request. A mean above P50 is the normal signature of that skew. The idea that they should match holds only for symmetric distributions.",
+      "reread": "1.4.1",
+      "sourceQuote": "Mean latency is generally higher than P50 latency due to outliers in the right-skewed distribution of inference times."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-03",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 3,
+      "prompt": "A scheduler change cuts P50 TTFT on your chat product by 20% but doubles P99 TTFT. The author wants to ship it because \"most users get faster responses\". What is the soundest response?",
+      "answerFormat": "one option",
+      "options": [
+        "Ship it: P50 is the metric that describes what the typical user experiences",
+        "Ship it: P99 is only 1% of requests, small enough to treat as measurement noise",
+        "Hold it: switch the dashboard to mean TTFT, which balances the middle and the tail",
+        "Hold it: a doubled tail hurts reliability, so find out why P99 grew first"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Good performance work protects the tail as well as the middle (see 1.4.1).",
+      "rejectedCopy": "Think about how often a user who sends many messages a day will hit the slow tail.",
+      "hint": "A heavy user sends hundreds of messages. How many of those land beyond P99?",
+      "explanation": "Users remember the stalls, and a frequent user meets the P99 case several times a day. Doubling it trades a small typical gain for a worse, less predictable product. Dismissing P99 as noise is the tempting mistake: it is a measured tail, not random error, and it is often what drives trust in the product.",
+      "reread": "1.4.1",
+      "sourceQuote": "good performance work also focuses on reducing P90/P99 latencies for a more reliable user experience."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-04",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "After traffic doubled, client-side P90 TTFT jumped from 400 ms to 1.5 s. Server-side inference TTFT, measured on the GPU, stayed flat at about 200 ms. Where should you look first?",
+      "answerFormat": "one option",
+      "options": [
+        "Profile the attention kernels for a regression under load",
+        "Look at queue time and replica capacity, such as how autoscaling reacts",
+        "Quantise the model so prefill finishes sooner and frees up GPU time",
+        "Shorten the system prompt so each request carries less prefill work"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. The GPU work didn't change, so the extra time sits outside inference (see 1.4.2).",
+      "rejectedCopy": "Compare the two measurements. Which part of the request did the GPU timing leave out?",
+      "hint": "End-to-end time includes things the GPU timer never sees. Which of those grows with traffic?",
+      "explanation": "Inference-only TTFT is flat, so model work is not the cause. The end-to-end number grew with load, which points at requests waiting in a queue for a free replica. Kernel profiling or quantisation is the tempting reflex, but it would at most trim the 200 ms of GPU time, not the extra second spent waiting.",
+      "reread": "1.4.2",
+      "sourceQuote": "When inference time is fast but end-to-end time is slow, turn your attention to infrastructure rather than model performance optimization."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-05",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "An agent calls your model to produce a JSON tool call, then parses it and acts. Nobody watches the tokens stream. Which latency metric matters for this call?",
+      "answerFormat": "one option",
+      "options": [
+        "TTFT, because the agent sits idle until output starts",
+        "Perceived TPS, because a JSON tool call can run long",
+        "Total TPS, since agents share one service",
+        "Total response time, from request to last token"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. A partial tool call is useless, so only the complete response counts (see the start of 1.4).",
+      "rejectedCopy": "Ask when the agent can actually do something with the output.",
+      "hint": "Can the agent act on the first half of a JSON object?",
+      "explanation": "TTFT and TPS describe how streaming feels to a person reading along. An agent can't use a half-finished tool call, so it waits for the whole thing; the number that matters is total response time. TTFT is tempting because the agent is waiting, but an early first token buys it nothing.",
+      "reread": "1.4",
+      "sourceQuote": "For other requests, like a tool call for an agent, you instead measure latency as total response time as the tokens aren't useful individually."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-06",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "Provider A advertises \"2,000 TPS\" for a model. Provider B advertises \"90 TPS\" for the same model. Before comparing them, what do you need to find out?",
+      "answerFormat": "one option",
+      "options": [
+        "Which GPU each provider runs, since newer hardware explains a large gap",
+        "Whether each figure is per-user TPS or total TPS across the service",
+        "Whether each figure is a P50 or a P99, since tails can differ a lot",
+        "Whether both providers count tokens with the same tokenizer"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. TPS can mean per-user speed or service throughput, and these two numbers look like one of each (see 1.4).",
+      "rejectedCopy": "Both numbers are labelled TPS. Is that label specific enough to compare them?",
+      "hint": "One number is more than twenty times the other. What could make both honest?",
+      "explanation": "TPS is used both for what one user sees (perceived TPS, a latency metric) and for everything the service generates per second (total TPS, a throughput metric). 2,000 smells like a service total and 90 like one stream. Percentiles also matter, but a P50 versus P99 gap doesn't explain a 20× difference the way two different meanings of TPS does.",
+      "reread": "1.4",
+      "sourceQuote": "TPS can be a latency metric (tokens per second per user) or a throughput metric (tokens per second for the entire inference service)."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-07",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "Users of your document-QA feature paste 30,000-token contracts. They complain that nothing appears for several seconds, but once text starts it streams quickly. Which part of inference explains the delay?",
+      "answerFormat": "one option",
+      "options": [
+        "Prefill, which is compute-bound and grows with prompt length",
+        "Decode, which is bound by memory bandwidth on long contexts",
+        "The network round trip that carries the long response back",
+        "Detokenising output, which slows as the context fills"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. The first token waits for the whole prompt to be processed, and that is prefill (see 1.4).",
+      "rejectedCopy": "The stream is fast once it starts. Which phase runs before the first token exists?",
+      "hint": "Split the request into the work before the first token and the work after it.",
+      "explanation": "TTFT is dominated by prefill, a compute-heavy pass over every input token, so a huge prompt means a long wait. Decode is the tempting answer because it is the famous bottleneck, but it sets the speed of the stream, and users say the stream is fine.",
+      "reread": "1.4",
+      "sourceQuote": "Based on compute-bound prefill"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-08",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "Users say answers \"start right away, then crawl out word by word\". Which metric describes the crawl?",
+      "answerFormat": "one option",
+      "options": [
+        "TTFT, since a slow start stretches every later token",
+        "Total TPS, the token rate of the whole service",
+        "Perceived TPS, or equivalently inter-token latency",
+        "P50 queue time, which delays each token in the stream"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. The speed of the stream after the first token is per-user TPS, the inverse of ITL (see 1.4).",
+      "rejectedCopy": "The first token is fine. Which metric covers what happens after it?",
+      "hint": "One metric covers the wait for the first token; another covers the spacing of the ones after it.",
+      "explanation": "The start is quick, so TTFT is fine. The slow part is the gap between tokens, which is inter-token latency, or its inverse, perceived TPS. Total TPS is tempting because it says TPS, but it measures the whole service's output and can look great while each user's stream crawls.",
+      "reread": "1.4",
+      "sourceQuote": "Perceived TPS: The observed tokens per second per user after the first token (latency)."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-09",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 1,
+      "prompt": "A product manager reads \"P95 TTFT = 800 ms\" in a weekly report and asks what it means. Which explanation is correct?",
+      "answerFormat": "one option",
+      "options": [
+        "95% of requests took exactly 800 ms to receive the first token back",
+        "The slowest 5% of requests averaged 800 ms before their first token",
+        "95% of output tokens, across requests, came within 800 ms",
+        "About 1 in 20 requests waited over 800 ms for the first token"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. P95 is the line that 95% of requests come in under, so one in twenty is slower (see 1.4.1).",
+      "rejectedCopy": "A percentile is a cut point in the sorted list of requests. What sits on either side of it?",
+      "hint": "Sort 100 requests by TTFT. Where is the 95th one, and how many come after it?",
+      "explanation": "P95 is a threshold: 95% of requests are at or below it, and roughly 5%, one in twenty, are slower. Reading it as the average of the slow 5% is a common slip; that describes a different statistic, and it would always be higher than P95.",
+      "reread": "1.4.1",
+      "sourceQuote": "1 in every 20 requests is slower"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-10",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 3,
+      "prompt": "You ship a quantised model and GPU inference time per request drops 40%. A week later, users report the app feels no faster. What is the most likely explanation?",
+      "answerFormat": "one option",
+      "options": [
+        "Quantisation made outputs longer, so the extra tokens cancelled out the gain",
+        "Users can't notice a 40% latency change outside a side-by-side test",
+        "Most of the wait happens outside the GPU, in the network or the queue",
+        "The benchmark reported P50 instead of the mean, so it overstated the gain"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. Inference-only gains only show up when inference is a big share of what users wait for (see 1.4.2).",
+      "rejectedCopy": "The GPU numbers really did improve. What else is in the time a user waits?",
+      "hint": "If inference is 300 ms of a 3 s wait, how much does a 40% cut save?",
+      "explanation": "Inference-only time proves the optimisation worked on the GPU. End-to-end time is what users feel, and if network or queue time dominates it, a 40% cut to a small slice barely moves the total. Blaming perception is tempting, but a 40% drop in the whole wait would be very noticeable.",
+      "reread": "1.4.2",
+      "sourceQuote": "Inference time tells you how effective your model performance work is, while end-to-end metrics reveal your users' perception of how fast your application is."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-11",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 3,
+      "prompt": "Two teams compare inference engines. Team A reports \"mean TTFT 310 ms\"; Team B reports \"P50 TTFT 260 ms\" on the same model and prompts. Team B claims their engine is faster. What is the right call?",
+      "answerFormat": "one option",
+      "options": [
+        "No call yet: rerun both on matching percentiles, tail included",
+        "Team B is faster: same model and prompts, and 260 ms is well below 310 ms",
+        "Team A is faster: a mean counts every request, so it is the fairer number",
+        "Call it a tie: mean and P50 are interchangeable here"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Comparisons only hold when both sides report the same statistic (see 1.4.1).",
+      "rejectedCopy": "Check whether the two numbers are measuring the same thing.",
+      "hint": "In a right-skewed distribution, which is usually bigger: the mean or the median?",
+      "explanation": "Mean and P50 differ even for one engine, because the tail pulls the mean up. Team B's lower number could come entirely from reporting the median. Comparing 260 to 310 directly is the tempting mistake; you need both engines on the same percentiles, and P90/P99 as well, to judge the tail.",
+      "reread": "1.4.1",
+      "sourceQuote": "One important distinction when discussing and comparing metrics is what percentile you are measuring."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.4-mc-12",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "You replaced the attention kernel and want to know whether the new one made generation faster. Which measurement isolates that answer?",
+      "answerFormat": "one option",
+      "options": [
+        "End-to-end latency in the user's browser",
+        "Inference-only time on the GPU, before and after",
+        "Total requests served per day, before and after",
+        "P99 network round-trip time, before and after"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. Inference-only time strips out network and queueing, so it reflects the kernel change (see 1.4.2).",
+      "rejectedCopy": "Which measurement would move even if you hadn't touched the kernel?",
+      "hint": "You want a number that only the GPU work can change.",
+      "explanation": "A kernel change affects GPU time, so measure GPU time. End-to-end latency is tempting because it is what users feel, but network and queue noise can hide or fake a kernel improvement.",
+      "reread": "1.4.2",
+      "sourceQuote": "the on-GPU time required to generate tokens"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-01",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "A streamed reply shows an inter-token latency of 25 ms. What perceived TPS does the user see?",
+      "answerFormat": "number, in tokens/s",
+      "answer": 40,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "tokens/s",
+      "methodHint": "ITL is seconds per token. TPS is tokens per second. Convert ms to s first.",
+      "workedSolution": "25 ms = 0.025 s per token. 1 / 0.025 = 40 tokens per second.",
+      "explanation": "Perceived TPS is the inverse of the gap between tokens: 1000 / ITL in ms. Multiplying instead of dividing, or forgetting the ms-to-s step, gives 0.04 or 25.",
+      "reread": "1.4",
+      "sourceQuote": "An ITL of 10 milliseconds equates to 100 tokens per second per user."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-02",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "Your latency target for a voice assistant is a perceived TPS of 80. What inter-token latency does that require?",
+      "answerFormat": "number, in ms",
+      "answer": 12.5,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.1
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Invert tokens per second to get seconds per token, then convert to ms.",
+      "workedSolution": "1 / 80 = 0.0125 s per token = 12.5 ms.",
+      "explanation": "ITL and perceived TPS are reciprocals: ITL in ms = 1000 / TPS. A target of 80 tokens per second leaves 12.5 ms between tokens.",
+      "reread": "1.4",
+      "sourceQuote": "Inter-token latency (ITL): The time between subsequent tokens."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-03",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 3,
+      "prompt": "A streamed answer has a TTFT of 300 ms and 500 output tokens in total. After the first token, the remaining 499 tokens arrive at a steady perceived TPS of 50. What is the total response time from request to last token?",
+      "answerFormat": "number, in ms",
+      "answer": 10280,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 5
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Total = TTFT + (tokens after the first) / TPS. Keep the units consistent.",
+      "workedSolution": "499 / 50 = 9.98 s = 9980 ms. 300 + 9980 = 10280 ms.",
+      "explanation": "TTFT already includes the first token, so only the 499 later tokens are paced by TPS. Using all 500 tokens gives 10300 ms, which counts the first token twice.",
+      "reread": "1.4",
+      "sourceQuote": "How many tokens each second does the user receive after the first token is generated?"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-04",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 1,
+      "prompt": "Ten requests have these TTFTs, in ms: 180, 190, 195, 200, 210, 220, 240, 260, 900, 2400. What is the mean TTFT?",
+      "answerFormat": "number, in ms",
+      "answer": 499.5,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Add all ten values and divide by ten.",
+      "workedSolution": "180 + 190 + 195 + 200 + 210 + 220 + 240 + 260 + 900 + 2400 = 4995. 4995 / 10 = 499.5 ms.",
+      "explanation": "The mean is 499.5 ms, more than double the median of 210 ms (the 5th value), and higher than eight of the ten requests. Two outliers set it. That is why 1.4.1 prefers percentiles.",
+      "reread": "1.4.1",
+      "sourceQuote": "LLM total response time is generally a right-skewed distribution, where most times concentrate around a mode, but outliers can take significantly longer."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-05",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 2,
+      "prompt": "Using the nearest-rank method (sort ascending, take the value at rank ceil(p × n / 100)), what is the P90 TTFT of these ten requests, in ms: 180, 190, 195, 200, 210, 220, 240, 260, 900, 2400?",
+      "answerFormat": "number, in ms",
+      "answer": 900,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "The list is already sorted. Work out the rank, then count along the list.",
+      "workedSolution": "n = 10, rank = ceil(90 × 10 / 100) = 9. The 9th value is 900 ms.",
+      "explanation": "With nearest rank, P90 is the 9th of 10 values: 900 ms, so one request in ten is slower. A spreadsheet that interpolates would give 1050 ms instead; that is why the method has to be stated.",
+      "reread": "1.4.1",
+      "sourceQuote": "1 in every 10 requests is slower"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-06",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 1,
+      "prompt": "Your service handles 120,000 chat requests an hour. About how many requests each hour are slower than the P99 latency?",
+      "answerFormat": "number, in requests",
+      "answer": 1200,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "requests",
+      "methodHint": "P99 leaves a fixed share of requests above it.",
+      "workedSolution": "1 in 100 requests is slower than P99. 120,000 / 100 = 1,200 requests per hour.",
+      "explanation": "A 1% tail sounds small, but at this volume it is 1,200 slow replies every hour, twenty a minute. That is why tail latency gets engineering attention.",
+      "reread": "1.4.1",
+      "sourceQuote": "1 in every 100 requests is slower"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-07",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "A replica is serving 32 concurrent streams. Each user sees a steady perceived TPS of 60. What is the replica's total TPS?",
+      "answerFormat": "number, in tokens/s",
+      "answer": 1920,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "tokens/s",
+      "methodHint": "Total TPS adds up what every concurrent stream generates each second.",
+      "workedSolution": "32 streams × 60 tokens/s = 1,920 tokens/s.",
+      "explanation": "Perceived TPS is per user (latency); total TPS is what the service produces (throughput). Same model, same moment, two very different numbers, which is why the label matters.",
+      "reread": "1.4",
+      "sourceQuote": "Total TPS: The total number of tokens generated each second by the inference service (throughput)."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-08",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "The client measures TTFT at 650 ms. Server logs show the request waited 400 ms in the queue and inference TTFT (prefill on the GPU) took 180 ms. Assuming the rest is network, how much network time is in the client's TTFT?",
+      "answerFormat": "number, in ms",
+      "answer": 70,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 1
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "End-to-end TTFT = network + queue + inference TTFT. Solve for network.",
+      "workedSolution": "650 - 400 - 180 = 70 ms.",
+      "explanation": "End-to-end TTFT stacks network and queue on top of GPU time. Here only 180 of the 650 ms is inference; 470 ms is infrastructure, and queueing is most of it.",
+      "reread": "1.4.2",
+      "sourceQuote": "an end-to-end measurement that accounts for network latency and any queue time."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-09",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 3,
+      "prompt": "An agent's tool call is not streamed. The request spends 40 ms on the network (both directions combined), 60 ms in the queue and 150 ms in prefill, which produces the first of 120 output tokens. Each later token takes 15 ms. What is the end-to-end total response time?",
+      "answerFormat": "number, in ms",
+      "answer": 2035,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 5
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Add network, queue and prefill, then add the decode time for the tokens after the first.",
+      "workedSolution": "Before the first token: 40 + 60 + 150 = 250 ms. After it: 119 tokens × 15 ms = 1785 ms. Total: 250 + 1785 = 2035 ms.",
+      "explanation": "Prefill produces token 1, so only 119 tokens are paced at 15 ms. Using 120 gives 2050 ms. For a tool call this total is the number that matters, since the agent can't act until the JSON is complete.",
+      "reread": "1.4.2",
+      "sourceQuote": "Both inference-only and end-to-end metrics are valuable to know."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.4-calc-10",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "In a load test, a replica serves a batch of 16 requests at once. Each request generates 400 output tokens, and the batch finishes generating all of its tokens in 10 seconds. What total TPS did the replica deliver?",
+      "answerFormat": "number, in tokens/s",
+      "answer": 640,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "tokens/s",
+      "methodHint": "Total TPS is all tokens generated divided by the wall-clock time.",
+      "workedSolution": "16 × 400 = 6,400 tokens. 6,400 / 10 s = 640 tokens/s.",
+      "explanation": "That is the throughput number. Each user meanwhile saw only about 40 tokens/s (400 / 10). Quoting 640 as if one user received it is the mix-up 1.4 warns about.",
+      "reread": "1.4",
+      "sourceQuote": "TPS can be a latency metric (tokens per second per user) or a throughput metric (tokens per second for the entire inference service)."
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-01",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "Give the four-letter abbreviation for the metric that measures how long a user waits before the first output token appears in a streamed reply.",
+      "answerFormat": "****",
+      "acceptedAnswers": ["TTFT", "time to first token"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Spell out the full name and take the initials.",
+      "explanation": "TTFT, time to first token. Lower is better, and it is driven by prefill.",
+      "reread": "1.4",
+      "sourceQuote": "With streaming output, how long does it take for a user to see the first output token?"
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-02",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "Which phase of inference, the compute-bound one, mostly determines TTFT? Give its one-word name.",
+      "answerFormat": "*******",
+      "acceptedAnswers": ["prefill", "pre-fill", "prefill phase"],
+      "hint": "It runs over the whole input before any output exists.",
+      "explanation": "Prefill processes every prompt token in one compute-heavy pass, and the first output token comes out of it. Decode is the other phase and governs TPS instead.",
+      "reread": "1.4",
+      "sourceQuote": "Based on compute-bound prefill"
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-03",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "Which phase of inference, limited by memory bandwidth, determines how fast tokens stream after the first one? Give its one-word name.",
+      "answerFormat": "******",
+      "acceptedAnswers": ["decode", "decoding", "decode phase"],
+      "hint": "It produces one token per step, after the prompt has been processed.",
+      "explanation": "Decode generates tokens one step at a time, and each step waits on memory reads, so it sets TPS and inter-token latency.",
+      "reread": "1.4",
+      "sourceQuote": "Based on bandwidth-bound decode"
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-04",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 1,
+      "prompt": "Give the three-letter abbreviation for the time between one generated token and the next.",
+      "answerFormat": "***",
+      "acceptedAnswers": ["ITL", "inter-token latency", "intertoken latency"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It is a kind of latency measured between tokens.",
+      "explanation": "ITL, inter-token latency. It is the reciprocal of perceived TPS: 20 ms ITL is 50 tokens per second.",
+      "reread": "1.4",
+      "sourceQuote": "Inter-token latency (ITL): The time between subsequent tokens."
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-05",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 1,
+      "prompt": "Which percentile label (P followed by a number) is the median latency?",
+      "answerFormat": "***",
+      "acceptedAnswers": ["P50", "50th percentile", "p 50"],
+      "hint": "Half the requests are faster, half are slower.",
+      "explanation": "P50 is the median: one request in two is slower. It describes the typical request but says nothing about the tail.",
+      "reread": "1.4.1",
+      "sourceQuote": "Median latency"
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-06",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.1",
+      "difficulty": 2,
+      "prompt": "Most LLM response times bunch near a typical value, with a long tail of much slower ones. What is that distribution shape called? (Two words, hyphenated.)",
+      "answerFormat": "*****-******",
+      "acceptedAnswers": ["right-skewed", "right skew", "positively skewed", "skewed right"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Name the side the long tail is on, then add the word for a lopsided distribution.",
+      "explanation": "Right-skewed: the tail stretches toward long times. That tail is what pulls the mean above the median.",
+      "reread": "1.4.1",
+      "sourceQuote": "LLM total response time is generally a right-skewed distribution"
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-07",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "Inference-only time looks fast, but end-to-end time is slow. In one word, where should you look for the problem instead of model optimisation?",
+      "answerFormat": "**************",
+      "acceptedAnswers": ["infrastructure", "infra"],
+      "hint": "Think about everything around the model: network, queues, replicas.",
+      "explanation": "Infrastructure. The GPU work is already fast, so the missing time is in network, queueing or capacity, which model tuning can't fix.",
+      "reread": "1.4.2",
+      "sourceQuote": "turn your attention to infrastructure rather than model performance optimization."
+    },
+    {
+      "kind": "text",
+      "id": "1.4-text-08",
+      "sectionNumber": "1.4",
+      "subsectionNumber": "1.4.2",
+      "difficulty": 2,
+      "prompt": "Perceived TPS is the per-user latency flavour of TPS. What two-word name does the section give the throughput flavour, measured across the whole service?",
+      "answerFormat": "***** ***",
+      "acceptedAnswers": ["total TPS", "total tokens per second"],
+      "hint": "It adds up the output of every user at once.",
+      "explanation": "Total TPS counts every token the service generates each second. It is a throughput metric and says nothing about how fast any one user's stream is.",
+      "reread": "1.4",
+      "sourceQuote": "Total TPS: The total number of tokens generated each second by the inference service (throughput)."
+    }
+  ]
+}

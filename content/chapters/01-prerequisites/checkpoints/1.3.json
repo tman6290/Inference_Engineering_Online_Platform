@@ -1,0 +1,644 @@
+{
+  "sectionNumber": "1.3",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-01",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 1,
+      "prompt": "Your team is choosing a model to answer customer questions about your insurance policies. A colleague proposes picking whichever candidate has the highest MMLU score. What should you do instead?",
+      "answerFormat": "one option",
+      "options": [
+        "Agree: MMLU spans dozens of subjects, including law and finance, so the top scorer should also lead on insurance",
+        "Load-test every candidate at your expected peak traffic and pick the one with the lowest time to first token",
+        "Pick the most recent release, since newer models usually hold the top benchmark scores",
+        "Score each shortlisted model on an eval set built from real customer questions about your policies"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Benchmarks are fine for a shortlist, but the decision comes from evals built on your own product's tasks (see 1.3.1).",
+      "rejectedCopy": "Think about what the chosen model will actually be asked every day, and which test resembles that.",
+      "hint": "What separates an eval from a general intelligence benchmark?",
+      "explanation": "An eval is tailored to your product, domain and tasks, so it measures what you will ship. Trusting the MMLU leader is the tempting mistake: MMLU tests common academic tasks, and benchmarks are saturated or gamed, so a lead there says little about insurance questions. Latency matters later, once you know the model is good enough.",
+      "reread": "1.3.1",
+      "sourceQuote": "evals are tailored to specific products, domains, and tasks."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-02",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 2,
+      "prompt": "You plan to quantize a production model from FP16 to FP8 to cut latency. The model is already live and nobody has scored it on your product's tasks. What should happen before you quantize?",
+      "answerFormat": "one option",
+      "options": [
+        "Nothing; FP8 keeps enough precision that output quality cannot measurably change",
+        "Quantize first, then run the eval suite once on the FP8 model and check it passes",
+        "Run the eval suite on the unmodified FP16 model and record its score as the baseline",
+        "Benchmark tokens per second on both versions under the same load and keep the faster one"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. Optimisations that can cost quality need a baseline score from the unmodified model to compare against (see 1.3.1).",
+      "rejectedCopy": "After quantizing, how would you know whether quality moved?",
+      "hint": "A single score means little without something to compare it to.",
+      "explanation": "Some optimisations risk lowering quality, so you score the original model first and compare. Scoring only the FP8 model is the tempting shortcut, but one number cannot show a drop. Speed benchmarks measure performance, not quality.",
+      "reread": "1.3.1",
+      "sourceQuote": "Some performance optimization techniques risk reducing model quality, requiring a baseline to compare against."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-03",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 2,
+      "prompt": "A new model launches with a world-record score on a popular coding benchmark. On your internal coding evals it does worse than the model you already run. Which explanation fits best?",
+      "answerFormat": "one option",
+      "options": [
+        "Your internal evals are probably flawed, since a record on a widely used public benchmark is hard to fake",
+        "The benchmark has become a target labs optimise for, so it no longer tracks real capability well",
+        "Coding benchmarks score generation speed while your internal evals score correctness, so the two disagree",
+        "New models need a month of live traffic before they learn your tasks and perform well"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. That is Goodhart's Law at work: once a benchmark becomes the target, it stops being a good measure (see 1.3.1).",
+      "rejectedCopy": "Consider what happens to a score once everyone competes to beat it.",
+      "hint": "There is a named law about measures that turn into targets.",
+      "explanation": "Labs have strong incentives to post benchmark records with each release, so benchmarks get saturated or gamed. Blaming your own evals is the tempting reaction, but your evals measure your tasks directly; check them by looking at the data, not by deferring to a leaderboard.",
+      "reread": "1.3.1",
+      "sourceQuote": "Intelligence benchmarks are useful for shortlisting models, but they have become saturated or even gamed."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-04",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 2,
+      "prompt": "Your eval set for a contract-review tool has 500 items. Every candidate model, from 3B to 400B parameters, scores 98-99%, because most items ask the model to find the signing date. How should you change the eval?",
+      "answerFormat": "one option",
+      "options": [
+        "Add another 500 items of the same kind so the confidence intervals narrow and small gaps become visible",
+        "Keep it as is and ship the 3B model, since it ties with the 400B model at a fraction of the serving cost",
+        "Rebuild it around the hardest clauses the tool must interpret, such as indemnity and liability caps",
+        "Replace it with a public legal benchmark so your results are comparable with what other teams report"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. An eval earns its keep on the hardest problems the model must solve; easy items cannot separate candidates (see 1.3.1).",
+      "rejectedCopy": "If every model passes, what is the eval actually telling you?",
+      "hint": "Where do strong and weak models actually differ?",
+      "explanation": "A useful eval concentrates on the hardest problems the product needs solved. Shipping the 3B model is the tempting move, but a test that every model aces cannot show whether the small one handles the hard clauses. More easy items only add precision to a measurement of the wrong thing.",
+      "reread": "1.3.1",
+      "sourceQuote": "Have a clear idea of the hardest problems a model needs to solve and focus evaluation there."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-05",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 1,
+      "prompt": "Your product found its market: traffic grew 50-fold in six months and the bill for a frontier model's pay-per-token API is now your largest cost. What is the best first move?",
+      "answerFormat": "one option",
+      "options": [
+        "Move to an even larger frontier model so quality has headroom as traffic grows",
+        "Self-host the same frontier model on reserved GPUs and spend a quarter tuning its runtime engine",
+        "Build evals from your real traffic and test whether a smaller, cheaper model passes them",
+        "Stay on the pay-per-token API; inference cost rarely justifies engineering time, even at this scale"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. At scale the goal becomes the smallest model that is smart enough, and evals are how you find out (see 1.3 and 1.3.1).",
+      "rejectedCopy": "Early-stage advice and at-scale advice point in opposite directions. Which stage is this team in?",
+      "hint": "Which decision has a bigger effect on cost than any runtime tuning?",
+      "explanation": "Before product-market fit, APIs are right; once you scale, the advice flips toward finding the smallest model that does the job, checked with evals. Self-hosting the same giant model and tuning the engine is the tempting path, but model choice is the biggest performance lever, so check for a smaller model first. The answer may still be a frontier model, but it is worth checking.",
+      "reread": "1.3",
+      "sourceQuote": "But when it's time to scale, the opposite advice applies."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-06",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 2,
+      "prompt": "Two open models score the same on your evals and have similar parameter counts. Model A uses a widely adopted Llama-style architecture. Model B uses a novel custom attention design that came out last month. You plan to optimise inference heavily. Which do you choose?",
+      "answerFormat": "one option",
+      "options": [
+        "Model B, because newer attention designs are built with serving efficiency in mind and run faster",
+        "Either one; modern inference engines compile any architecture to the same kernels, so support is equal",
+        "Model B, because a custom attention design leaves more room for your own kernels to beat the baseline",
+        "Model A, because popular architectures get the deepest support from inference engines, kernels and tooling"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Engines vary in how deeply they support each architecture, so a popular one unlocks more optimisations (see 1.3; DeepSeek's distills used Llama and Qwen for the same reason, 1.3.3).",
+      "rejectedCopy": "Think about which model your inference engine has already been tuned for.",
+      "hint": "The model you pick limits which optimisations are available.",
+      "explanation": "Your choice of model also decides which inference optimisations you can use, and support is deepest for popular architectures. Picking the novel design is tempting, but new is not the same as fast: without kernels and engine support, it may run slower. This is also why DeepSeek put its R1 distills on Llama and Qwen.",
+      "reread": "1.3",
+      "sourceQuote": "Inference engines vary in the depth of support for different model architectures."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-07",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 1,
+      "prompt": "You can fund one fine-tuning project aimed at replacing a 300B general model with a model of a few billion parameters. Which product is the best candidate?",
+      "answerFormat": "one option",
+      "options": [
+        "A general assistant that answers whatever employees type, from HR policy to code review",
+        "A feature that turns analysts' plain-English questions into SQL for one warehouse schema",
+        "A creative-writing tool that drafts stories, poems and scripts across many genres and tones",
+        "A research agent that browses the web and writes sourced summaries on any topic users choose"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. Text-to-SQL is a cleanly scoped domain with a constrained output language, which is where small fine-tuned models shine (see 1.3.2).",
+      "rejectedCopy": "Which task has the narrowest range of correct outputs?",
+      "hint": "Small models do best when the domain is tightly bounded and easy to grade.",
+      "explanation": "SQL is a constrained language and one schema narrows it further, so a small fine-tuned model can match a general model on that task. The open-ended products are the tempting picks because they look valuable, but their range of inputs and outputs is too wide for a few billion parameters to cover.",
+      "reread": "1.3.2",
+      "sourceQuote": "SQL is a relatively constrained language"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-08",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 1,
+      "prompt": "You fine-tune an 8B open model on your company's support transcripts. Compared with the base model, what has changed?",
+      "answerFormat": "one option",
+      "options": [
+        "The values of the weights; the architecture and parameter count stay the same",
+        "New layers were added on top for the support domain, so the parameter count grew",
+        "The model was pruned to fewer parameters, dropping knowledge the domain does not need",
+        "The tokenizer was rebuilt from the transcripts' vocabulary, but the weights are untouched"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Fine-tuning moves the weight values; the overall architecture is unchanged (see 1.3.2 and Figure 1.2).",
+      "rejectedCopy": "Picture the network before and after. Did its shape change?",
+      "hint": "Look at Figure 1.2: what is the same in both drawings?",
+      "explanation": "Fine-tuning adapts a pre-trained model with new data by updating its weights, so the same architecture and size serve afterwards. Thinking the model grew new layers is the tempting error; some adapter methods add small extras, but the section's point is that the architecture stays put, which is why serving cost stays the same.",
+      "reread": "1.3.2",
+      "sourceQuote": "Fine-tuning a model changes the values of the model weights while keeping the same overall architecture."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-09",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 3,
+      "prompt": "A team wants to fine-tune a 3B model to review contracts 'across all areas of law'. They have 200 unlabelled contracts and no evals yet, and plan to start training next week. Which gap matters most?",
+      "answerFormat": "one option",
+      "options": [
+        "They lack a tight scope, evaluation criteria and good labelled data, which a small fine-tune depends on",
+        "The model is too small; fine-tuning only gives reliable gains on models of 70B parameters and above",
+        "They should distill from a large model instead, since distillation is the more common technique",
+        "They need far more training GPUs; at this model size, compute matters more than data quality or scope"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Big size reductions come from a cleanly scoped domain, strong eval criteria and high-quality labelled data (see 1.3.2).",
+      "rejectedCopy": "Compare this team's situation with what made the text-to-SQL example work.",
+      "hint": "List the three ingredients behind the section's text-to-SQL success story.",
+      "explanation": "The section's example worked because the domain was narrow, the evaluation was clear and the labelled data was good; this team has none of the three. Switching to distillation is the tempting fix, but distillation is the less common technique and would not fix the missing scope or evals.",
+      "reread": "1.3.2",
+      "sourceQuote": "a cleanly scoped domain, a strong set of evaluation criteria, and high-quality labeled data"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-10",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 2,
+      "prompt": "Two plans for a small model: Plan X generates prompt and answer pairs with a large model and trains the small model on those pairs. Plan Y trains the small model to match the large model's per-token output probabilities. Which statement is correct?",
+      "answerFormat": "one option",
+      "options": [
+        "Plan Y is distillation; Plan X is fine-tuning on synthetic data from the large model",
+        "Both plans are distillation, since each trains the small model on the large model's outputs",
+        "Plan X is distillation; Plan Y is fine-tuning on the large model's probability scores",
+        "Neither is distillation, since the student must to share the teacher's architecture"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Distillation shows the student the teacher's full probability distributions, not just its final answers (see 1.3.3).",
+      "rejectedCopy": "Look at what each plan gives the small model to learn from: final text, or something richer.",
+      "hint": "What does the student see in distillation that it would not see in an input-output pair?",
+      "explanation": "Training on the teacher's final answers is fine-tuning on synthetic data. Distillation trains on the teacher's probability distribution over tokens, which carries more information per example. Calling both distillation is the common mix-up because a large model is involved in each.",
+      "reread": "1.3.3",
+      "sourceQuote": "Unlike fine-tuning on synthetic data, where the model is trained on input-output pairs"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-11",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 2,
+      "prompt": "Your 200B teacher model has a known habit: it pads answers with long disclaimers. You distill it into a 7B student. What should you expect from the student?",
+      "answerFormat": "one option",
+      "options": [
+        "It probably shows the same padding, because distillation copies the teacher's behaviour, flaws included",
+        "It drops the habit, because distillation transfers capabilities but not the teacher's stylistic quirks",
+        "It pads even more, because small students tend to exaggerate the dominant style in a teacher's outputs",
+        "It cannot be predicted, because the student learns its own style from scratch on the distillation data"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Distillation teaches the student to emulate the teacher's behaviour, good and bad (see 1.3.3).",
+      "rejectedCopy": "What is the student actually trained to imitate?",
+      "hint": "The student learns from every output distribution, not a filtered best-of list.",
+      "explanation": "The student is trained to reproduce the teacher's behaviour, so the teacher's habits come along. Expecting only the strengths to transfer is the tempting assumption. If you want the habit gone, fine-tuning on curated domain data targets quality directly.",
+      "reread": "1.3.3",
+      "sourceQuote": "distillation teaches the model how to emulate the behavior – good and bad – of a larger model."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-12",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 3,
+      "prompt": "A frontier lab releases 8B, 70B and 400B versions of a new model family. A colleague assumes the 8B and 70B were distilled from the 400B. What is the usual practice?",
+      "answerFormat": "one option",
+      "options": [
+        "Your colleague is right; labs routinely distill the smaller sizes from the largest one to save training cost",
+        "The small sizes are the 400B model with layers pruned away, shipped without any further training",
+        "The small sizes are heavily quantized copies of the 400B model, so they share its exact weights",
+        "Each size is usually trained independently, so the large model's biases do not cap the smaller ones"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Labs generally train each size separately so the big model's biases don't limit the smaller ones (see 1.3.3).",
+      "rejectedCopy": "Distillation copies a teacher's behaviour, flaws included. Would a lab want that for every size?",
+      "hint": "Think about what a student inherits and whether a lab would want that ceiling.",
+      "explanation": "When a lab ships several sizes, it usually trains them independently to keep the large model's biases out. Assuming distillation is tempting because it sounds efficient, but distillation is mainly useful when only a large model exists and someone wants a smaller, more accessible version.",
+      "reread": "1.3.3",
+      "sourceQuote": "the smaller models are generally not distilled from the larger ones."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.3-mc-13",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 2,
+      "prompt": "DeepSeek-R1 has 671B parameters. Alongside it, DeepSeek released distilled students built on Llama 3 and Qwen 2.5. For a team serving reasoning on a tight GPU budget, what was the main practical gain?",
+      "answerFormat": "one option",
+      "options": [
+        "The distills matched or beat R1 on reasoning benchmarks while using a fraction of its parameters",
+        "The distills were small and ran on architectures that already had mature performance work",
+        "The distills could run on CPUs alone, so the team needed no GPU budget at all",
+        "The distills used a brand-new architecture designed only for reasoning, which made them cheap to serve"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. The distills kept R1-like reasoning in small models on Llama and Qwen, which existing optimisation work already supported (see 1.3.3).",
+      "rejectedCopy": "Were the distills smarter than R1, or just easier to run?",
+      "hint": "Consider both their size and the architectures they were built on.",
+      "explanation": "The distills reasoned in a similar style to R1 but scored worse on benchmarks. Their value was size plus a popular architecture with existing performance work. Thinking they beat R1 is the tempting error: a student usually trades some intelligence for size.",
+      "reread": "1.3.3",
+      "sourceQuote": "could take advantage of existing performance work for the Llama and Qwen architectures."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-01",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 1,
+      "prompt": "DeepSeek-R1 has 671 billion parameters. Stored in FP8, each parameter takes 1 byte. How much memory do the weights alone need? Use 1 GB = 10^9 bytes.",
+      "answerFormat": "number, in GB",
+      "answer": 671,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "GB",
+      "acceptedUnits": [
+        {
+          "unit": "TB",
+          "factor": 1000
+        },
+        {
+          "unit": "MB",
+          "factor": 0.001
+        }
+      ],
+      "methodHint": "Weight memory = parameters × bytes per parameter.",
+      "workedSolution": "671 × 10^9 parameters × 1 byte = 671 × 10^9 bytes = 671 GB (0.671 TB).",
+      "explanation": "Weight memory scales with parameter count and precision. At 671 GB, R1's weights alone fill several 80 GB GPUs, which is why DeepSeek also shipped small distills. A common slip is using 2 bytes per parameter, which is FP16, not FP8.",
+      "reread": "1.3.3",
+      "sourceQuote": "As the model was so large (671B parameters), they also released distilled versions of the model"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-02",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 2,
+      "prompt": "You want to serve DeepSeek-R1 (671 billion parameters) in FP16, at 2 bytes per parameter, on GPUs with 80 GB of memory each. Ignoring the KV cache and activations, what is the minimum whole number of GPUs that can hold the weights? Use 1 GB = 10^9 bytes.",
+      "answerFormat": "whole number, in GPUs",
+      "answer": 17,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0
+      },
+      "unit": "GPUs",
+      "acceptedUnits": [],
+      "methodHint": "Find the weight memory, divide by memory per GPU, then round up.",
+      "workedSolution": "671 × 10^9 × 2 bytes = 1,342 GB. 1,342 ÷ 80 = 16.775, which rounds up to 17 GPUs.",
+      "explanation": "You cannot use part of a GPU, so 16.775 rounds up to 17; 16 GPUs hold only 1,280 GB. Rounding down to 16 is the usual slip. In practice you would need more, since the KV cache and activations need room too.",
+      "reread": "1.3.3",
+      "sourceQuote": "As the model was so large (671B parameters)"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-03",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 1,
+      "prompt": "Your eval set has 500 questions drawn from real product traffic. A fine-tuned 3B candidate answers 461 of them correctly. What is its accuracy?",
+      "answerFormat": "number, in %",
+      "answer": 92.2,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.1
+      },
+      "unit": "%",
+      "acceptedUnits": [],
+      "methodHint": "Correct answers ÷ total questions × 100.",
+      "workedSolution": "461 ÷ 500 = 0.922, so the accuracy is 92.2%.",
+      "explanation": "Accuracy is the share of eval items answered correctly. A common slip is dividing the misses (39) by the total, which gives the error rate of 7.8% instead.",
+      "reread": "1.3.1",
+      "sourceQuote": "Model evaluation, or evals, is the practice of systematically measuring model intelligence."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-04",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 2,
+      "prompt": "Your 400-item eval has 300 easy items and 100 hard ones. A small candidate gets 290 easy items and 62 hard items right. By how many percentage points does its overall accuracy exceed its accuracy on the hard items?",
+      "answerFormat": "number, in percentage points",
+      "answer": 26,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.5
+      },
+      "unit": "percentage points",
+      "acceptedUnits": [],
+      "methodHint": "Work out overall accuracy over all 400 items, then hard-only accuracy over the 100 hard items, and subtract.",
+      "workedSolution": "Overall: (290 + 62) ÷ 400 = 352 ÷ 400 = 88%. Hard only: 62 ÷ 100 = 62%. Gap: 88 − 62 = 26 percentage points.",
+      "explanation": "The headline 88% hides a 62% score on exactly the problems that matter most, which is why evals should focus on the hardest cases. A common slip is averaging the two slice accuracies (96.7% and 62%) instead of pooling the counts.",
+      "reread": "1.3.1",
+      "sourceQuote": "Have a clear idea of the hardest problems a model needs to solve and focus evaluation there."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-05",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 2,
+      "prompt": "A 70B model serves your text-to-SQL feature on 16 GPUs. A fine-tuned 4B model passes the same evals and carries the same traffic on 4 GPUs. GPUs cost $2.50 per GPU-hour and run 24 hours a day. The fine-tuning project, including data labelling, cost $9,000. How many days until the GPU savings repay it?",
+      "answerFormat": "number, in days",
+      "answer": 12.5,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "days",
+      "acceptedUnits": [
+        {
+          "unit": "weeks",
+          "factor": 7
+        },
+        {
+          "unit": "hours",
+          "factor": 0.041666667
+        }
+      ],
+      "methodHint": "GPUs saved × price per GPU-hour × 24 gives the daily saving; divide the one-off cost by it.",
+      "workedSolution": "GPUs saved: 16 − 4 = 12. Daily saving: 12 × $2.50 × 24 = $720. Payback: $9,000 ÷ $720 = 12.5 days.",
+      "explanation": "Payback compares a one-off cost with a recurring saving. A common slip is to divide by the 4B model's daily cost ($240) instead of the difference between the two fleets. The saving is real only because the small model passed the evals first.",
+      "reread": "1.3.2",
+      "sourceQuote": "If you can fine-tune a small model to pass your evals, you set yourself up for an easier time hitting your latency and cost targets"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-06",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 2,
+      "prompt": "A general-purpose coding model with 400 billion parameters writes your SQL today. A fine-tuned 4-billion-parameter model matches it on your evals. Both are stored in FP16 at 2 bytes per parameter. How much weight memory does the switch free? Use 1 GB = 10^9 bytes.",
+      "answerFormat": "number, in GB",
+      "answer": 792,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "GB",
+      "acceptedUnits": [
+        {
+          "unit": "TB",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Compute each model's weight memory (parameters × bytes per parameter) and subtract.",
+      "workedSolution": "Large: 400 × 10^9 × 2 = 800 GB. Small: 4 × 10^9 × 2 = 8 GB. Freed: 800 − 8 = 792 GB.",
+      "explanation": "Weight memory scales linearly with parameters, so a 100-fold cut in parameters cuts weight memory 100-fold too. A common slip is forgetting the factor of 2 bytes and answering 396.",
+      "reread": "1.3.2",
+      "sourceQuote": "a tiny fine-tuned model of just a few billion parameters can reach equivalent performance on this specific task."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-07",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 3,
+      "prompt": "Your large teacher model costs $3.00 per million tokens to serve. A distilled student passes your evals and costs $0.40 per million tokens. Traffic is 50 million tokens per day. Collecting the teacher's probability distributions and training the student cost $26,000 once. How many days until the switch pays for itself?",
+      "answerFormat": "number, in days",
+      "answer": 200,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "days",
+      "acceptedUnits": [
+        {
+          "unit": "weeks",
+          "factor": 7
+        }
+      ],
+      "methodHint": "Find the saving per million tokens, multiply by daily volume, then divide the one-off cost by the daily saving.",
+      "workedSolution": "Saving per million tokens: $3.00 − $0.40 = $2.60. Daily saving: 50 × $2.60 = $130. Payback: $26,000 ÷ $130 = 200 days.",
+      "explanation": "The daily saving is the price gap times volume. A common slip is using the student's full price ($0.40 × 50 = $20) as the saving, which gives 1,300 days. At this traffic level the run pays back in about seven months, so whether to distill depends on volume.",
+      "reread": "1.3.3",
+      "sourceQuote": "What if you could retain most of the intelligence of a large model at a fraction of the size?"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.3-calc-08",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 3,
+      "prompt": "A model scores 85% on your 300-item eval. The standard error of an accuracy p measured on n items is sqrt(p × (1 − p) ÷ n). What is the standard error here, in percentage points?",
+      "answerFormat": "number, in percentage points",
+      "answer": 2.06,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "percentage points",
+      "acceptedUnits": [],
+      "methodHint": "Use p = 0.85 and n = 300, take the square root, then multiply by 100.",
+      "workedSolution": "0.85 × 0.15 = 0.1275. 0.1275 ÷ 300 = 0.000425. sqrt(0.000425) ≈ 0.0206, which is about 2.06 percentage points.",
+      "explanation": "With about 2 points of noise, a 1-point gap between two models on this eval is not evidence that one is better. Being precise about what you measure includes knowing how much a score can wobble. A common slip is forgetting to multiply by 100 and answering 0.02.",
+      "reread": "1.3.1",
+      "sourceQuote": "High conviction model evaluation is a prerequisite for inference engineering."
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-01",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 1,
+      "prompt": "What short name does the section give to tests that measure model quality on your own product, domain and tasks?",
+      "answerFormat": "*****",
+      "acceptedAnswers": ["evals", "eval", "evaluations", "model evaluation", "model evals"],
+      "normalisation": {},
+      "hint": "It is a five-letter abbreviation of a longer word.",
+      "explanation": "Evals are tailored to your product, unlike general intelligence benchmarks such as MMLU or SWE-bench.",
+      "reread": "1.3.1",
+      "sourceQuote": "Model evaluation, or evals, is the practice of systematically measuring model intelligence."
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-02",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 1,
+      "prompt": "Which law says that once a measure becomes a target, it stops being a good measure?",
+      "answerFormat": "a named law, the surname is enough",
+      "acceptedAnswers": [
+        "Goodhart's Law",
+        "Goodharts Law",
+        "Goodhart Law",
+        "Goodhart",
+        "Goodhart's"
+      ],
+      "normalisation": {},
+      "hint": "It is named after a British economist; the surname starts with G.",
+      "explanation": "Goodhart's Law explains why benchmarks lose value once labs compete to set records on them.",
+      "reread": "1.3.1",
+      "sourceQuote": "when a measure becomes a target, it ceases to be a good measure"
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-03",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.1",
+      "difficulty": 2,
+      "prompt": "Name the rating system, borrowed from chess, that the section mentions for ranking models by head-to-head win rate.",
+      "answerFormat": "***",
+      "acceptedAnswers": ["Elo", "Elo rating", "Elo score"],
+      "normalisation": {},
+      "hint": "Three letters, from the surname of a physics professor and chess master.",
+      "explanation": "Elo ratings come from pairwise comparisons, which makes them a better overall gauge than saturated benchmarks, though still no substitute for your own evals.",
+      "reread": "1.3.1",
+      "sourceQuote": "like Elo rating on head-to-head win rate versus other models"
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-04",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 1,
+      "prompt": "What is the practice called when you take a pre-trained foundation model and adapt it to a specific use case by training on new data?",
+      "answerFormat": "****-******",
+      "acceptedAnswers": ["fine-tuning", "finetuning", "fine-tune", "finetune"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "A hyphenated term: an adjective meaning 'precise' plus a word for adjusting an instrument.",
+      "explanation": "Fine-tuning updates the weights of an existing model with domain data while keeping its architecture.",
+      "reread": "1.3.2",
+      "sourceQuote": "Fine-tuning is the practice of taking a pre-trained foundation model and adapting it to a specific use case"
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-05",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 1,
+      "prompt": "The section's example of a domain where a tiny fine-tuned model can match a huge coding model is translating English into which query language?",
+      "answerFormat": "***",
+      "acceptedAnswers": ["SQL", "Structured Query Language"],
+      "normalisation": {},
+      "hint": "The language used to query relational databases.",
+      "explanation": "SQL is constrained enough that a fine-tuned model of a few billion parameters can reach the quality of a general model hundreds of billions of parameters in size.",
+      "reread": "1.3.2",
+      "sourceQuote": "translating English into SQL, a language used to query databases."
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-06",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.2",
+      "difficulty": 2,
+      "prompt": "Fine-tuning changes the values of a model's weights. Name the one thing Figure 1.2 shows staying the same.",
+      "answerFormat": "************",
+      "acceptedAnswers": [
+        "architecture",
+        "the architecture",
+        "model architecture",
+        "overall architecture"
+      ],
+      "normalisation": {},
+      "hint": "It describes the shape of the network: its layers and how they connect.",
+      "explanation": "The architecture is untouched, so a fine-tuned model costs the same to serve as its base; any saving comes from starting with a smaller base.",
+      "reread": "1.3.2",
+      "sourceQuote": "Fine-tuning a model changes the values of the model weights while keeping the same overall architecture."
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-07",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 1,
+      "prompt": "In distillation, what is the large model whose behaviour the small model learns to copy called?",
+      "answerFormat": "*******",
+      "acceptedAnswers": ["teacher", "teacher model", "the teacher"],
+      "normalisation": {},
+      "hint": "The small model is called the student.",
+      "explanation": "A large teacher trains a small student. The student's training signal is the teacher's output probabilities.",
+      "reread": "1.3.3",
+      "sourceQuote": "Distillation is the process of using a large \"teacher\" model to train a smaller \"student\" model"
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-08",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 2,
+      "prompt": "Which 671B-parameter reasoning model, released in January 2025, came with distilled versions built on Llama 3 and Qwen 2.5? Give the model name.",
+      "answerFormat": "********-**",
+      "acceptedAnswers": ["DeepSeek-R1", "DeepSeekR1", "R1"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "The lab's name, a hyphen, then a letter and a digit.",
+      "explanation": "DeepSeek-R1's distills kept similar reasoning behaviour at a far smaller size and ran on well-optimised architectures.",
+      "reread": "1.3.3",
+      "sourceQuote": "In January 2025, open model research lab DeepSeek released their then-flagship reasoning model DeepSeek-R1."
+    },
+    {
+      "kind": "text",
+      "id": "1.3-text-09",
+      "sectionNumber": "1.3",
+      "subsectionNumber": "1.3.3",
+      "difficulty": 3,
+      "prompt": "Fine-tuning on synthetic data trains on the teacher's final answers. What does distillation show the student instead? Two words.",
+      "answerFormat": "*********** *************",
+      "acceptedAnswers": [
+        "probability distributions",
+        "probability distribution",
+        "output probabilities",
+        "token probabilities",
+        "logits",
+        "soft labels"
+      ],
+      "normalisation": {},
+      "hint": "Not just which token the teacher picked, but how likely it found every token.",
+      "explanation": "The full probability distribution tells the student how confident the teacher was and which alternatives it considered, which is far more signal than one final answer.",
+      "reread": "1.3.3",
+      "sourceQuote": "distillation shows the student model the teacher model's actual probability distributions, not just its final answers."
+    }
+  ]
+}

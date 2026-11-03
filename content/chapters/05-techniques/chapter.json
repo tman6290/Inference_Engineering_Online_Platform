@@ -1,0 +1,6 @@
+{
+  "slug": "05-techniques",
+  "title": "Techniques",
+  "lessons": ["5.2"],
+  "exercises": ["5.2-expected-tokens", "5.2-acceptance-log"]
+}

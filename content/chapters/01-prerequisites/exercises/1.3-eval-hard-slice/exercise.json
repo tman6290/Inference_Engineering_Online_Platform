@@ -1,0 +1,33 @@
+{
+  "id": "1.3-eval-hard-slice",
+  "sectionNumber": "1.3",
+  "title": "Score a text-to-SQL eval and read the hard slice",
+  "brief": "Your team wants to replace a frontier model with a small fine-tuned model for a text-to-SQL feature (see 1.3.2). Before anyone touches latency, the small model has to pass your evals (see 1.3.1). `eval_results.jsonl` holds 20 eval items, each tagged `easy` or `hard`, with the reference query and what each model wrote.\n\nWrite the scorer: normalise queries so cosmetic differences (case, spacing, a trailing semicolon) don't count as errors, then compute accuracy overall and per slice. Report the **small model's accuracy on the hard items**.\n\nPython standard library only. The tests use their own tiny sample, so they won't give the answer away.",
+  "steps": [
+    "Open `score_eval.py` and read the docstrings. `load_rows` and `main` are already written.",
+    "Implement `normalise_sql` following the four rules in its docstring.",
+    "Implement `is_correct` using `normalise_sql`.",
+    "Implement `accuracy`, including the optional `tag` filter and the ValueError cases.",
+    "Run `python -m pytest -q` until every test passes.",
+    "Run `python score_eval.py`. Read off the small model's hard-slice accuracy and compare it with its overall score."
+  ],
+  "answerFormat": "number, in %",
+  "answer": {
+    "kind": "calculation",
+    "answer": 62.5,
+    "tolerance": { "kind": "absolute", "value": 0.1 },
+    "unit": "%",
+    "acceptedUnits": []
+  },
+  "solution": {
+    "walkthrough": "**Normalise first.** Several of the small model's answers differ from the reference only cosmetically: q01 is lowercase with a semicolon, q03 has a double space and a line break, q08 has padding. After lowercasing, stripping, dropping trailing semicolons and collapsing whitespace they match, so all 12 easy items count as correct for both models.\n\n**Hard items (q13 to q20), small model:**\n\n| Item | Verdict | Why |\n|---|---|---|\n| q13 | correct | identical join and GROUP BY |\n| q14 | wrong | filters an aggregate in WHERE instead of HAVING |\n| q15 | correct | only a trailing semicolon differs |\n| q16 | wrong | inner JOIN where a LEFT JOIN is needed, so it can never find unsold products |\n| q17 | correct | only case differs |\n| q18 | correct | identical, including ORDER BY |\n| q19 | wrong | uses AVG() directly in WHERE instead of a subquery |\n| q20 | correct | only a trailing semicolon differs |\n\nThat is 5 of 8, so the hard-slice accuracy is 5 ÷ 8 = **62.5%**.\n\n**The full report:** the frontier model scores 95.0% overall and 87.5% on hard items (it drops the ORDER BY on q18). The small model scores 85.0% overall (17 of 20) and 100% on easy items.\n\n**What it means.** The small model's 85% headline looks close to the frontier's 95%, but on the hard items, the ones the evals should focus on, it gets 62.5% against 87.5%. Its errors are real semantic mistakes (HAVING versus WHERE, join type, subqueries), not formatting. Before shipping it, you would add more hard items, fine-tune on labelled examples of these patterns, and re-run the eval. Also look at the data: lowercasing string literals is a shortcut that could hide a wrong filter value, and exact match marks some equivalent queries wrong, which is why real text-to-SQL evals often execute the queries and compare results.",
+    "finalAnswer": { "kind": "calculation", "value": 62.5, "unit": "%" }
+  },
+  "starterFiles": ["score_eval.py", "eval_results.jsonl"],
+  "tests": {
+    "runner": "pytest",
+    "command": "python -m pytest -q",
+    "files": ["test_score_eval.py"]
+  },
+  "estimatedMinutes": 25
+}

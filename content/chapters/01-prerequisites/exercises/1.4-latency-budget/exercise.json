@@ -1,0 +1,25 @@
+{
+  "id": "1.4-latency-budget",
+  "sectionNumber": "1.4",
+  "title": "Split a slow response into inference and infrastructure time",
+  "brief": "A user says the support chatbot feels slow. You pull the trace for one of their streamed replies. The server-side dashboard only shows inference time, and it looks healthy. Work out what the user actually waited, end to end (see 1.4.2), and how much of the wait for the first token happened off the GPU.\n\nThe trace for one request:\n\n| Stage | Time |\n| --- | --- |\n| Network, client to server | 35 ms |\n| Waiting in the request queue | 420 ms |\n| Prefill (first token generated) | 180 ms |\n| Network, server to client | 35 ms |\n| Output tokens in total | 301 |\n| Inter-token latency after the first token | 18 ms |\n\nAssume the network delay back to the client is the same for every token, so it shifts the stream later but doesn't stretch the gaps between tokens.\n\nReport the **end-to-end total response time** the user saw, from sending the request to receiving the last token.",
+  "steps": [
+    "Add up everything that happens before the first token reaches the client. That is the TTFT the user sees.",
+    "Work out how many gaps there are between 301 tokens, and how long they take at 18 ms each.",
+    "Add the two to get the end-to-end total response time.",
+    "Compare the user's TTFT with the inference-only TTFT (prefill alone). What share of the first-token wait was queue and network?"
+  ],
+  "answerFormat": "number, in ms",
+  "answer": {
+    "kind": "calculation",
+    "answer": 6070,
+    "tolerance": { "kind": "absolute", "value": 5 },
+    "unit": "ms",
+    "acceptedUnits": [{ "unit": "s", "factor": 1000 }]
+  },
+  "solution": {
+    "walkthrough": "**TTFT as the user sees it.** 35 ms out + 420 ms queue + 180 ms prefill + 35 ms back = **670 ms**.\n\n**Streaming the rest.** 301 tokens have 300 gaps between them. 300 × 18 ms = **5400 ms**. (18 ms ITL is about 55.6 perceived TPS.)\n\n**End-to-end total response time.** 670 + 5400 = **6070 ms**, about 6.1 s.\n\n**Inference-only view.** The GPU spent 180 ms on prefill and 5400 ms on decode: 5580 ms. The dashboard's TTFT says 180 ms; the user's TTFT was 670 ms. Of that 670 ms, 490 ms (73%) was queue and network, and the queue alone was 420 ms (63%).\n\n**What to do with it.** Decode dominates total time, so faster tokens would shorten the whole reply. But the part users notice first, the blank screen before anything streams, is mostly queueing. A faster kernel would cut at most the 180 ms prefill share. More replicas or better autoscaling would attack the 420 ms. This is the case 1.4.2 describes: inference looks fine, end-to-end doesn't, so look at infrastructure.\n\nA common slip is to multiply 301 × 18 ms = 5418 ms and report 6088 ms. The first token is already counted inside the 670 ms, so only the 300 gaps after it add time.",
+    "finalAnswer": { "kind": "calculation", "value": 6070, "unit": "ms" }
+  },
+  "estimatedMinutes": 10
+}

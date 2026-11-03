@@ -1,0 +1,601 @@
+{
+  "sectionNumber": "1.1",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-01",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "A three-person startup is testing an AI meeting-notes app with a few hundred beta users. Traffic swings wildly day to day. The CTO wants to keep infrastructure work to a minimum while the team figures out what customers will pay for. How should they serve the model?",
+      "answerFormat": "one option",
+      "options": [
+        "Rent one dedicated GPU and run an open-source inference engine on it to cut per-token cost",
+        "Call a shared pay-per-token API and pay only for the tokens the beta actually uses",
+        "Buy a single GPU server and host it on-premises so there is no recurring rental bill",
+        "Rent a full 8-GPU node up front so traffic spikes never run into capacity limits"
+      ],
+      "correctIndex": 1,
+      "explanation": "Before product-market fit, a shared API costs nothing when idle, needs only an API key and has no cold starts. A dedicated GPU, rented or bought, is billed for every hour whether the beta users show up or not, and someone has to run it. The tempting 'rent one GPU' option looks cheap per token but only pays off at sustained volume.",
+      "reread": "1.1",
+      "sourceQuote": "Most AI products start with pay-per-token APIs because the tradeoffs make sense while looking for product-market fit",
+      "acceptedCopy": "Right. Small, unpredictable traffic and a team searching for fit is the textbook case for shared inference (see 1.1).",
+      "rejectedCopy": "Consider what each option costs on a day when almost nobody uses the app, and who has to operate it.",
+      "hint": "Which option charges only for what is consumed?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-02",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "In a design review, an engineer says: \"We picked an open-weights model, so we have to run our own GPUs. Shared APIs are only for closed models.\" What is the best correction?",
+      "answerFormat": "one option",
+      "options": [
+        "Shared endpoints host many open models too; openness and serving style are two separate decisions",
+        "The engineer is right: open weights can only be served from dedicated GPUs that the team operates itself",
+        "Closed models can never run on dedicated hardware, so openness and serving style are really one decision",
+        "Open-weights licenses forbid third-party hosting, so the team must buy its own GPUs rather than rent them"
+      ],
+      "correctIndex": 0,
+      "explanation": "Plenty of providers host open models behind shared pay-per-token endpoints, and some closed-model labs offer dedicated setups to big customers. The two axes overlap but are not the same decision. What open weights add is the freedom to deploy dedicated without anyone's permission; they don't force it.",
+      "reread": "1.1",
+      "sourceQuote": "there are plenty of shared endpoints for open models and many model labs offer large customers some kind of dedicated setup for their closed models",
+      "acceptedCopy": "Right. Model openness and serving style are related but independent decisions (see 1.1).",
+      "rejectedCopy": "Think about whether you have seen hosted APIs that serve open-weights models.",
+      "hint": "Can you pay per token for a model whose weights are public?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-03",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "Your support chatbot runs entirely on a shared model API. Last Tuesday the provider had a two-hour outage and your chatbot was down for the same two hours, even though your own servers were healthy. Which drawback of shared inference does this show?",
+      "answerFormat": "one option",
+      "options": [
+        "Cold starts while the provider reloads the model after the outage ends",
+        "Per-token cost that grows with how much the chatbot is used",
+        "Your product can be no more available than the provider behind it",
+        "Lack of control over the quality and version of the model you call"
+      ],
+      "correctIndex": 2,
+      "explanation": "When every request depends on one external endpoint, its downtime becomes your downtime. Cold starts are a dedicated-deployment concern (a shared model is always loaded), and cost or quality control have nothing to do with an outage.",
+      "reread": "1.1",
+      "sourceQuote": "Provider uptime caps product uptime, noisy neighbors",
+      "acceptedCopy": "Right. On a shared API, the provider's uptime is the ceiling on yours (see 1.1).",
+      "rejectedCopy": "Your servers were fine. Ask what the chatbot depends on that you don't run.",
+      "hint": "Whose availability limits yours here?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-04",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Your p99 latency on a shared LLM endpoint jumps several times a week. Your own traffic is flat during those spikes, and your prompts have not changed. What is the most likely explanation?",
+      "answerFormat": "one option",
+      "options": [
+        "The model is cold-starting between requests because your traffic is low",
+        "Surge pricing during busy hours makes the provider process your requests more slowly",
+        "Other customers on the same shared endpoint are sending heavy bursts of traffic",
+        "Your API key is being rotated by the provider, forcing a fresh TLS handshake each time"
+      ],
+      "correctIndex": 2,
+      "explanation": "A shared endpoint serves many tenants on the same hardware. When another tenant's burst arrives, everyone's requests queue behind it, so your latency moves even though your load did not. Cold starts are the tempting answer, but a shared model stays loaded and available.",
+      "reread": "1.1",
+      "sourceQuote": "Provider uptime caps product uptime, noisy neighbors",
+      "acceptedCopy": "Right. That is the noisy-neighbor problem of shared inference (see 1.1).",
+      "rejectedCopy": "Your load and inputs are constant. Think about who else uses the same endpoint.",
+      "hint": "You are not the only one sending requests to that model."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-05",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "A legal-tech company fine-tuned an open model on its own contract corpus. The shared API they use today offers only the stock base model. Which of the section's reasons for going dedicated applies?",
+      "answerFormat": "one option",
+      "options": [
+        "Scale, because a fine-tuned model generates more tokens",
+        "Orchestration, because fine-tuning adds a training step to the pipeline",
+        "Cold starts, because a fine-tuned model must be loaded on its own GPU",
+        "Specialization, because they need to serve a model of their own"
+      ],
+      "correctIndex": 3,
+      "explanation": "Running a custom or fine-tuned model is the specialization trigger: a generic shared endpoint serves the provider's weights, not yours. Scale is about volume and orchestration about multi-model pipelines; neither is the issue here. Cold starts are a drawback of dedicated serving, not a reason for it.",
+      "reread": "1.1",
+      "sourceQuote": "You are running a custom or fine-tuned model, or you have specific latency or uptime requirements.",
+      "acceptedCopy": "Right. Custom weights are a specialization reason to deploy dedicated (see 1.1).",
+      "rejectedCopy": "Their volume isn't mentioned. Focus on what they want to serve.",
+      "hint": "What is special about the model they want to run?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-06",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Your finance lead notices that the model API bill doubled exactly when token volume doubled, and asks why there are no volume savings. Your product already pushes billions of tokens a month. What explains the bill, and what would change it?",
+      "answerFormat": "one option",
+      "options": [
+        "Shared pricing hides a fixed platform fee per token, and only a closed-model contract removes it",
+        "The provider is overcharging; moving to a cheaper shared API would make cost grow more slowly than usage",
+        "Per-token pricing is linear by design; a busy dedicated GPU spreads its fixed hourly price over more tokens",
+        "Cold starts at high volume add a surcharge to every token, which a larger API tier would waive"
+      ],
+      "correctIndex": 2,
+      "explanation": "Consumption pricing is linear by design: twice the tokens, twice the bill. Dedicated GPUs are billed per hour, so once they are well utilised, extra tokens cost little extra. Moving to another per-token API keeps the same linear shape, which is why that tempting answer doesn't fix the problem.",
+      "reread": "1.1",
+      "sourceQuote": "Cost scales linearly with usage",
+      "acceptedCopy": "Right. Linear per-token cost at high volume is the scale trigger for dedicated deployments (see 1.1).",
+      "rejectedCopy": "Think about the shape of a per-token bill as volume grows, whichever vendor sends it.",
+      "hint": "What does a per-unit price do to total cost as units double?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-07",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "A team moved from a shared API to two always-on dedicated GPUs. Their traffic is modest, mostly during office hours. Their inference bill went up, not down. What did they overlook?",
+      "answerFormat": "one option",
+      "options": [
+        "Dedicated GPUs charge per token on top of the hourly rate, so the bill doubles at low volume",
+        "Shared APIs are cheaper than dedicated GPUs at every volume, so moving off them costs more",
+        "The GPUs cold-start on every request after a quiet spell, and providers bill each cold start",
+        "Dedicated GPUs bill every hour, so idle nights and weekends raise the minimum monthly spend"
+      ],
+      "correctIndex": 3,
+      "explanation": "A dedicated deployment has a cost floor: you pay for GPU hours whether or not requests arrive. With modest, office-hours traffic, most of those hours are idle, so the cost per token is high. 'Shared is cheaper at every volume' is the tempting overcorrection; at high, steady volume dedicated wins.",
+      "reread": "1.1",
+      "sourceQuote": "adds to your engineering surface area and increases the floor of your monthly spend on inference",
+      "acceptedCopy": "Right. Going dedicated raises the floor of your monthly spend, which only pays off with enough volume (see 1.1).",
+      "rejectedCopy": "Count how many hours a week those GPUs are paid for versus how many they are busy.",
+      "hint": "What do you pay for a rented GPU at 3 a.m. on a Sunday?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-08",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "prompt": "Four engineers each argue for moving off a shared API this quarter. Which argument meets the section's bar for switching?",
+      "answerFormat": "one option",
+      "options": [
+        "Our measured volume already makes GPU hours cheaper than per-token pricing at realistic utilisation",
+        "Traffic might grow tenfold next year, so building the dedicated stack now saves a rushed migration later",
+        "A competitor just announced its own GPU cluster, and we risk looking behind if we stay on an API",
+        "Running our own inference stack would be a valuable learning experience for the whole engineering team"
+      ],
+      "correctIndex": 0,
+      "explanation": "The section asks for a clear and immediate business need. Measured volume that already beats per-token pricing is one. Expected future growth is the tempting answer, but it is speculative: until it arrives you'd carry the higher spend floor and the engineering load for nothing. Competitors and learning goals are not business needs for your product.",
+      "reread": "1.1",
+      "sourceQuote": "Only switch once there is a clear and immediate business need.",
+      "acceptedCopy": "Right. A measured, present-day cost advantage is a concrete scale trigger (see 1.1).",
+      "rejectedCopy": "Two of these are about other people and one is about the future. Look for a need that exists now.",
+      "hint": "Which argument rests on numbers you already have?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-09",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Your app gets almost no traffic until a nightly batch of users arrives at 2 a.m. local time. A teammate worries that the first requests each night will be slow while the model spins up. You serve through a shared API. Is the worry justified?",
+      "answerFormat": "one option",
+      "options": [
+        "No: the provider keeps a shared model loaded for all its customers, so it never spins up",
+        "Yes: shared endpoints unload a model after a few minutes without traffic from your account",
+        "Yes: shared providers spin the model down overnight and charge a cold-start fee to reload it",
+        "No, but only because a cron job can pre-warm the shared endpoint a few minutes before 2 a.m."
+      ],
+      "correctIndex": 0,
+      "explanation": "Because many customers send traffic to the same shared model, the provider keeps it running; you never wait for it to load. Spin-up delay is a cold start, which is a concern for dedicated deployments that scale replicas down when idle. The cron option assumes a problem that doesn't exist.",
+      "reread": "1.1",
+      "sourceQuote": "No cold start times, model is always available",
+      "acceptedCopy": "Right. Always-on availability with no cold starts is one of the pros of shared inference (see 1.1).",
+      "rejectedCopy": "Think about who else is using that model while your users are asleep.",
+      "hint": "Is the shared model ever idle from the provider's point of view?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-10",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "A voice agent chains speech-to-text, an LLM and text-to-speech for every user turn. Each model is called on a different vendor's API in a different region, and network round trips now eat a large share of the latency budget. What does the section suggest?",
+      "answerFormat": "one option",
+      "options": [
+        "Replace all three models with one larger shared multimodal model so there is no pipeline at all",
+        "Run the models as dedicated deployments placed together, cutting the network hops between pipeline steps",
+        "Keep the three vendors but buy higher rate limits from each so requests stop queuing",
+        "Fine-tune the LLM to produce shorter responses so each text-to-speech call finishes sooner"
+      ],
+      "correctIndex": 1,
+      "explanation": "Multi-model pipelines are the orchestration trigger: when several models serve one request, co-located dedicated deployments remove cross-vendor network latency and simplify deployment. Higher rate limits are the tempting fix, but they address throttling, not the round-trip time between providers.",
+      "reread": "1.1",
+      "sourceQuote": "Your product relies on multiple models and multi-step pipelines and you need to minimize network latency and deployment complexity.",
+      "acceptedCopy": "Right. That is the orchestration reason for dedicated deployments (see 1.1).",
+      "rejectedCopy": "The time is lost between the steps, not inside them. Which option shortens the distance?",
+      "hint": "Where is the latency going: in the models, or between them?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-11",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "During a product launch your shared API starts returning HTTP 429 (too many requests), and the provider says your account tier is capped. Which drawback of shared inference is this?",
+      "answerFormat": "one option",
+      "options": [
+        "Cold starts on the provider's side while it scales up for the launch",
+        "Cost growing linearly with usage until the account hits its budget",
+        "Noisy neighbors on the shared endpoint slowing down your requests",
+        "You don't control the rate limits the provider sets for your account"
+      ],
+      "correctIndex": 3,
+      "explanation": "429 responses with a stated account cap are the provider enforcing its rate limits, which you can't change on a shared endpoint. Noisy neighbors are tempting, but they show up as slower responses caused by other tenants, not as an explicit cap on your account.",
+      "reread": "1.1",
+      "sourceQuote": "No control over latency, model quality, or rate limits",
+      "acceptedCopy": "Right. Rate limits are set by the provider, not by you (see 1.1).",
+      "rejectedCopy": "The provider told you why. Match their reason to the list of shared-inference drawbacks.",
+      "hint": "What does HTTP 429 mean?"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "1.1-mc-12",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "prompt": "A large enterprise is committed to a closed frontier model but needs guaranteed capacity and isolation from other tenants. A colleague says their only option is to switch to an open model. Is that right?",
+      "answerFormat": "one option",
+      "options": [
+        "Yes: closed frontier models are only ever sold through shared endpoints, whatever the contract size",
+        "Not necessarily: some closed labs sell big customers dedicated capacity; open weights just give fuller control",
+        "Yes: a deployment only counts as dedicated when it runs open weights on hardware you control",
+        "No: an enterprise contract lets the team download the closed model's weights and deploy them on any cloud"
+      ],
+      "correctIndex": 1,
+      "explanation": "Shared versus dedicated is not the same question as open versus closed. Big customers can often arrange dedicated capacity with a closed-model lab. The difference is control: with open weights you can deploy dedicated wherever and however you like, with no one's permission. Downloading closed weights is the tempting mistake; closed means the weights aren't available.",
+      "reread": "1.1",
+      "sourceQuote": "Shared versus dedicated inference is not exactly the same conversation as closed versus open models",
+      "acceptedCopy": "Right. Closed models can come with dedicated setups for large customers; open weights make dedicated unrestricted (see 1.1).",
+      "rejectedCopy": "Consider what model labs offer their biggest customers, and what 'closed' says about the weights.",
+      "hint": "Is serving style tied to whether the weights are public?"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-01",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "Illustrative prices: a shared API charges $0.60 per million tokens. A dedicated GPU rents for $3.00 per hour and you keep it running for all 730 hours of a month. Ignoring the GPU's capacity limit, at what monthly token volume do the two options cost the same? Give the answer in millions of tokens.",
+      "answerFormat": "number, in M tokens (millions of tokens)",
+      "answer": 3650,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "M tokens",
+      "acceptedUnits": [
+        {
+          "unit": "B tokens",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Work out the GPU's monthly cost, then ask how many millions of tokens at the shared price add up to the same amount.",
+      "workedSolution": "GPU per month: $3.00 × 730 h = $2,190. Break-even volume: $2,190 ÷ $0.60 per M tokens = 3,650 M tokens (3.65 B tokens) per month.",
+      "explanation": "Below 3,650 M tokens a month the per-token API is cheaper; above it the fixed GPU price wins, as long as the GPU can actually serve that much. A common slip is to use 24 hours instead of 730, which gives a daily figure, not a monthly one.",
+      "reread": "1.1",
+      "sourceQuote": "it's more economical to pay per GPU than per million tokens"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-02",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Illustrative numbers: a dedicated GPU rents for $4.00 per hour and can serve at most 2,500 tokens per second at full load. Over the day it averages 40% utilisation. What is your effective cost per million tokens served?",
+      "answerFormat": "number, in USD per million tokens",
+      "answer": 1.1111,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.03
+      },
+      "unit": "USD",
+      "acceptedUnits": [],
+      "methodHint": "Find the tokens served in one hour at full load, scale by utilisation, then divide the hourly price by millions of tokens served.",
+      "workedSolution": "Full load: 2,500 tokens/s × 3,600 s = 9,000,000 tokens/h. At 40%: 3,600,000 tokens/h = 3.6 M tokens/h. Cost per M tokens: $4.00 ÷ 3.6 = $1.11.",
+      "explanation": "You pay the full hourly price even when the GPU is 60% idle, so the idle share is spread over the tokens you do serve. Forgetting utilisation gives $0.44, which overstates how cheap dedicated serving is.",
+      "reread": "1.1",
+      "sourceQuote": "Rent GPUs and set up an inference service exclusively for your application, paying per hour of GPU time"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-03",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "This month your product used 1.5 billion tokens on a shared API and the bill was $1,200. Marketing expects token volume to grow 6× by next quarter, with the same price per token. What will the monthly API bill be?",
+      "answerFormat": "number, in USD",
+      "answer": 7200,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "USD",
+      "acceptedUnits": [],
+      "methodHint": "Per-token pricing has no fixed part. How does the bill change when volume is multiplied?",
+      "workedSolution": "Price: $1,200 ÷ 1,500 M tokens = $0.80 per M tokens. New volume: 1,500 × 6 = 9,000 M tokens. Bill: 9,000 × $0.80 = $7,200 (equivalently $1,200 × 6).",
+      "explanation": "Shared inference cost is linear in usage, so 6× the tokens means 6× the bill. There are no volume savings built in, which is what makes high volume a reason to look at dedicated GPUs.",
+      "reread": "1.1",
+      "sourceQuote": "Cost scales linearly with usage"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-04",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Illustrative numbers: to avoid a single point of failure, your dedicated deployment always runs 2 GPUs at $2.50 per GPU-hour, 24 hours a day, for a 30-day month. This month the product served only 500 million tokens. What was your effective cost per million tokens?",
+      "answerFormat": "number, in USD per million tokens",
+      "answer": 7.2,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "USD",
+      "acceptedUnits": [],
+      "methodHint": "Total the GPU-hours you paid for, whatever the traffic, then divide by millions of tokens served.",
+      "workedSolution": "Hours: 24 × 30 = 720 per GPU. Cost: 2 × 720 × $2.50 = $3,600. Per M tokens: $3,600 ÷ 500 = $7.20.",
+      "explanation": "The $3,600 is a floor: it is owed even at zero traffic. Spread over low volume it makes each token expensive. Counting only one GPU gives $3.60, which hides the cost of redundancy.",
+      "reread": "1.1",
+      "sourceQuote": "adds to your engineering surface area and increases the floor of your monthly spend on inference"
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-05",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "prompt": "Illustrative numbers: a dedicated GPU costs $3.60 per hour and serves at most 2,000 tokens per second. A shared API serves the same model for $1.00 per million tokens. What average utilisation must the GPU sustain for its cost per million tokens to match the shared price?",
+      "answerFormat": "number, in % (percent of full capacity)",
+      "answer": 50,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 1
+      },
+      "unit": "%",
+      "acceptedUnits": [
+        {
+          "unit": "fraction",
+          "factor": 100
+        }
+      ],
+      "methodHint": "First find the cost per million tokens at 100% utilisation. Then ask what fraction of full load makes it equal the shared price.",
+      "workedSolution": "Full load: 2,000 × 3,600 = 7,200,000 tokens/h = 7.2 M tokens/h. Cost per M at 100%: $3.60 ÷ 7.2 = $0.50. Break-even utilisation: $0.50 ÷ $1.00 = 0.5 = 50%.",
+      "explanation": "At utilisation u the cost per M tokens is $0.50 ÷ u, which equals $1.00 when u = 50%. Busier than that and the dedicated GPU is cheaper; quieter and the shared API wins. Dividing the other way ($1.00 ÷ $0.50 = 2) is a common slip that has no meaning as a utilisation.",
+      "reread": "1.1",
+      "sourceQuote": "You are processing enough volume of traffic that it's more economical to pay per GPU than per million tokens."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-06",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "A research assistant calls 4 models in sequence for every user query. Calling each one on an external shared API adds 120 ms of network overhead per call. Running all four as co-located dedicated deployments cuts that overhead to 5 ms per call. How much latency does the move save per query?",
+      "answerFormat": "number, in ms",
+      "answer": 460,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "ms",
+      "acceptedUnits": [
+        {
+          "unit": "s",
+          "factor": 1000
+        }
+      ],
+      "methodHint": "Find the saving per call, then multiply by the number of sequential calls.",
+      "workedSolution": "Saving per call: 120 − 5 = 115 ms. Four sequential calls: 4 × 115 = 460 ms (0.46 s) per query.",
+      "explanation": "Sequential calls add their overheads, so a pipeline multiplies network latency by its length. Using 120 ms × 4 = 480 ms forgets that the co-located setup still has a small per-call cost.",
+      "reread": "1.1",
+      "sourceQuote": "Your product relies on multiple models and multi-step pipelines and you need to minimize network latency and deployment complexity."
+    },
+    {
+      "kind": "calculation",
+      "id": "1.1-calc-07",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 3,
+      "prompt": "Every request to your product needs both your own backend and a shared model API. Your backend is available 99.95% of the time and the provider's API 99.9% of the time, and their failures are independent. What is the best availability your product can reach? Give it as a percentage to two decimal places.",
+      "answerFormat": "number, in % (to two decimal places)",
+      "answer": 99.85,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0.01
+      },
+      "unit": "%",
+      "acceptedUnits": [
+        {
+          "unit": "fraction",
+          "factor": 100
+        }
+      ],
+      "methodHint": "When both must be up, multiply their availabilities as fractions.",
+      "workedSolution": "0.9995 × 0.999 = 0.9985005, which is 99.85%. That is lower than either part on its own.",
+      "explanation": "Chained dependencies multiply, so your product can never be more available than the provider (99.9%) and is in fact a little less. Taking the lower figure, 99.9%, is the tempting answer; it is the ceiling, not the result.",
+      "reread": "1.1",
+      "sourceQuote": "Provider uptime caps product uptime, noisy neighbors"
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-01",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "You send requests to a provider's public endpoint and pay per million tokens consumed. What does the section call this way of adding a model to a product?",
+      "answerFormat": "****** *********",
+      "acceptedAnswers": ["shared inference", "shared", "shared endpoint", "shared endpoints"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Many customers send traffic to the same endpoint. Two words.",
+      "explanation": "Shared inference is the consumption-priced option: no fixed cost, but your bill grows with usage. Its opposite is a dedicated deployment, billed per GPU hour.",
+      "reread": "1.1",
+      "sourceQuote": "Send your traffic to a public API endpoint for a given model and pay per million tokens or some other consumption-based metric."
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-02",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "A dedicated deployment is billed by time rather than by tokens. Name the billing unit.",
+      "answerFormat": "*** ****",
+      "acceptedAnswers": [
+        "GPU hour",
+        "GPU hours",
+        "hour of GPU time",
+        "per GPU hour",
+        "hour",
+        "hours"
+      ],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Think of how cloud providers price a rented accelerator. Two words: the hardware, then the time unit.",
+      "explanation": "Dedicated GPUs are billed per GPU hour whether they serve one request or millions, which is why utilisation drives their cost per token.",
+      "reread": "1.1",
+      "sourceQuote": "Rent GPUs and set up an inference service exclusively for your application, paying per hour of GPU time"
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-03",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "The section gives three reasons to move to dedicated deployments. Which one names the case where your token volume is high enough that GPU-hour pricing beats per-token pricing? One word.",
+      "answerFormat": "*****",
+      "acceptedAnswers": ["scale"],
+      "normalisation": {},
+      "hint": "Which of the three reasons is about how much traffic you handle, rather than what you run?",
+      "explanation": "Scale is the economic trigger: past a certain volume, a busy GPU costs less per token than a shared API. The other two triggers are about model needs and pipelines, not volume.",
+      "reread": "1.1",
+      "sourceQuote": "You are processing enough volume of traffic that it's more economical to pay per GPU than per million tokens."
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-04",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "Of the three reasons to go dedicated, which one covers running a custom or fine-tuned model, or meeting strict latency or uptime requirements? One word.",
+      "answerFormat": "**************",
+      "acceptedAnswers": ["specialization", "specialisation"],
+      "normalisation": {},
+      "hint": "Which reason is about your model or requirements being unusual, rather than your volume?",
+      "explanation": "Specialization covers needs a generic shared endpoint can't meet: your own weights, or latency and uptime targets the provider won't promise.",
+      "reread": "1.1",
+      "sourceQuote": "You are running a custom or fine-tuned model, or you have specific latency or uptime requirements."
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-05",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Of the three reasons to go dedicated, which one applies when your product chains several models in multi-step pipelines and you want to cut network latency and deployment complexity? One word.",
+      "answerFormat": "*************",
+      "acceptedAnswers": ["orchestration"],
+      "normalisation": {},
+      "hint": "It's the word for coordinating many moving parts, as a conductor does with musicians.",
+      "explanation": "Orchestration is the pipeline trigger. Specialization is the tempting answer, but it is about the model itself, not about how several models are wired together.",
+      "reread": "1.1",
+      "sourceQuote": "Your product relies on multiple models and multi-step pipelines and you need to minimize network latency and deployment complexity."
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-06",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "What kind of model, defined by whether its weights are freely available, makes unrestricted dedicated inference possible?",
+      "answerFormat": "**** *****",
+      "acceptedAnswers": [
+        "open model",
+        "open models",
+        "open",
+        "open weights",
+        "open-weights model",
+        "open-weight model",
+        "open source model"
+      ],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It's the opposite of a closed model. Two words.",
+      "explanation": "With an open model you hold the weights, so you can deploy them on your own GPUs however you like. Closed models may be offered dedicated by their lab, but only on the lab's terms.",
+      "reread": "1.1",
+      "sourceQuote": "one of the key motivations for adopting open models is that it unlocks unrestricted dedicated inference"
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-07",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "On a shared endpoint, other customers' traffic bursts can slow your requests even though your own load is steady. What two-word name does the section give to those other customers?",
+      "answerFormat": "***** *********",
+      "acceptedAnswers": [
+        "noisy neighbors",
+        "noisy neighbours",
+        "noisy neighbor",
+        "noisy neighbour"
+      ],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Think of an apartment building with thin walls.",
+      "explanation": "Noisy neighbors are tenants sharing the same hardware whose load spills into your latency. Dedicated deployments avoid them because the GPUs serve only your traffic.",
+      "reread": "1.1",
+      "sourceQuote": "Provider uptime caps product uptime, noisy neighbors"
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-08",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 1,
+      "prompt": "Complete the sentence with one word: on shared inference, cost grows ________ with usage.",
+      "answerFormat": "********",
+      "acceptedAnswers": ["linearly", "linear", "proportionally", "proportionately"],
+      "normalisation": {},
+      "hint": "Plot the bill against tokens used. What shape is the line?",
+      "explanation": "A fixed price per token means the bill is a straight line through zero: double the tokens, double the bill. That linearity is why high volume eventually favours paying per GPU hour instead.",
+      "reread": "1.1",
+      "sourceQuote": "Cost scales linearly with usage"
+    },
+    {
+      "kind": "text",
+      "id": "1.1-text-09",
+      "sectionNumber": "1.1",
+      "subsectionNumber": null,
+      "difficulty": 2,
+      "prompt": "Most AI products begin on pay-per-token APIs while they search for a particular milestone. Name it (three words).",
+      "answerFormat": "*******-****** ***",
+      "acceptedAnswers": ["product-market fit", "PMF"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It's the point where a startup has found customers who really want what it built.",
+      "explanation": "Before product-market fit, flexibility and low overhead matter more than unit cost, so a shared API is the sensible default. Dedicated inference comes later, once usage and requirements are known.",
+      "reread": "1.1",
+      "sourceQuote": "Most AI products start with pay-per-token APIs because the tradeoffs make sense while looking for product-market fit"
+    }
+  ]
+}

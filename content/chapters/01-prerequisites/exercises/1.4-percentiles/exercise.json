@@ -1,0 +1,33 @@
+{
+  "id": "1.4-percentiles",
+  "sectionNumber": "1.4",
+  "title": "Compute latency percentiles from request timings",
+  "brief": "You have client-side timings for 20 streamed chat requests in `requests.csv`: when each request was sent, when its first token arrived, when its last token arrived, and how many tokens it returned. Write the small library a load-test report needs: TTFT, end-to-end latency, perceived TPS, and nearest-rank percentiles (see 1.4.1). Then run it on the sample and report the **P90 end-to-end latency**.\n\nPercentile method, so everyone gets the same number: **nearest rank**. Sort the values ascending, take rank `ceil(p × n / 100)` counted from 1, and return the value at that rank. No interpolation.\n\nPython standard library only. The tests use their own small samples, so they won't give the answer away.",
+  "steps": [
+    "Open `latency.py` and read the docstrings. `load_requests` and `main` are already written.",
+    "Implement `percentile` with the nearest-rank method, including the ValueError cases.",
+    "Implement `ttft_ms`, `e2e_ms` and `perceived_tps`. Perceived TPS counts only the tokens after the first one.",
+    "Implement `summarize` using the functions above.",
+    "Run `python -m pytest -q` until every test passes.",
+    "Run `python latency.py` and read off `e2e_p90`. Compare it with `e2e_mean` and `e2e_p50`."
+  ],
+  "answerFormat": "number, in ms",
+  "answer": {
+    "kind": "calculation",
+    "answer": 5550,
+    "tolerance": { "kind": "absolute", "value": 0.5 },
+    "unit": "ms",
+    "acceptedUnits": [{ "unit": "s", "factor": 1000 }]
+  },
+  "solution": {
+    "walkthrough": "**Per-request numbers.** End-to-end latency is `last_token_ms - sent_ms`. For r01 that is 2610 - 0 = 2610 ms; for r10 it is 12650 - 2050 = 10600 ms.\n\n**Sorted end-to-end latencies (ms):** 995, 1185, 1405, 1605, 1790, 2000, 2215, 2410, 2610, 2825, 3220, 3430, 3860, 3950, 4230, 4650, 5240, 5550, 10580, 10600.\n\n**Nearest rank for P90:** n = 20, so rank = ceil(90 × 20 / 100) = ceil(18) = 18. The 18th value is **5550 ms** (request r20).\n\nThe rest of the summary for comparison: P50 is rank 10 = 2825 ms; P99 is rank ceil(19.8) = 20 = 10600 ms; the mean is 74350 / 20 = 3717.5 ms. The mean sits well above the median because two requests (r10 and r16) took over 10 seconds. That is the right skew 1.4.1 warns about: a mean of 3.7 s describes almost no real request.\n\nOn TTFT the tail is even sharper: P50 is 220 ms, but P90 is 1450 ms and P99 is 3100 ms. Most of the slow end-to-end requests got slow before the first token arrived, which points at queueing rather than decode speed (see 1.4.2).\n\n**Why the method matters.** A linear-interpolation percentile (the default in many libraries) puts P90 at 5550 + 0.1 × (10580 - 5550) = 6053 ms. Neither number is wrong, but two reports that use different methods can't be compared. State the method next to the number.\n\n**Perceived TPS** divides the tokens after the first by the decode time: r01 has 120 tokens over 2.4 s, so 50 tokens per second. For TPS a *low* percentile is the bad tail, so a report would quote P10 TPS next to P90 TTFT.",
+    "finalAnswer": { "kind": "calculation", "value": 5550, "unit": "ms" }
+  },
+  "starterFiles": ["latency.py", "requests.csv"],
+  "tests": {
+    "runner": "pytest",
+    "command": "python -m pytest -q",
+    "files": ["test_latency.py"]
+  },
+  "estimatedMinutes": 30
+}

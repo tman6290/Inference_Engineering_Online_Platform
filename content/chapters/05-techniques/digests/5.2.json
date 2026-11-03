@@ -1,0 +1,144 @@
+{
+  "lesson": "5.2",
+  "oneLine": "Decode waits on memory, so the GPU's maths units idle. Speculative decoding spends that idle compute guessing a few tokens ahead, then has the big model check every guess in one pass.",
+  "summary": "Each decode step streams the whole model through memory to emit one token. At small and medium batch sizes the tensor cores finish their share early and wait. Speculative decoding treats that wait as a budget: a cheap speculator proposes a short run of tokens, and the target model scores the whole run in a single forward pass, keeping the longest prefix it agrees with plus one token of its own.\n\nThe gain shows up in tokens per second and inter-token latency. Time to first token stays where it was, because prefill is untouched.\n\nThe four algorithms differ in where the guesses come from. Draft-target pairs the model with a small sibling (see 5.2.1). Medusa grafts extra decoder heads onto the target (see 5.2.2). EAGLE trains a small drafter that reads the target's hidden states and is the usual default (see 5.2.3). N-gram speculation looks guesses up in a dictionary built from the prompt, and Lookahead Decoding builds that dictionary on the fly (see 5.2.4).\n\nAll of them lose their edge at high temperature and at large batch sizes, where no compute is left over.",
+  "mechanism": [
+    {
+      "title": "Draft",
+      "body": "A cheap speculator proposes k tokens that it thinks the target would write next."
+    },
+    {
+      "title": "Validate",
+      "body": "The target model scores all k guesses together in a single forward pass."
+    },
+    {
+      "title": "Accept + 1",
+      "body": "Keep guesses up to the first mismatch, then the target appends one token of its own."
+    }
+  ],
+  "callout": {
+    "name": "The sudoku rule",
+    "body": "Filling in a sudoku takes effort; confirming a completed grid takes a glance. For the target model, producing a token is the filling in and checking a draft token is the glance. Speculation profits only while the glance stays much cheaper than the effort."
+  },
+  "figureRefs": [
+    {
+      "figure": "5.3",
+      "lookFor": "The point where the first wrong draft token appears, and how every guess after it is thrown away."
+    },
+    {
+      "figure": "5.4",
+      "lookFor": "Each Medusa head sits on the same model and guesses a different future position."
+    },
+    {
+      "figure": "5.5",
+      "lookFor": "EAGLE takes hidden states from the target, not raw tokens, as its input."
+    },
+    {
+      "figure": "5.6",
+      "lookFor": "A prefix in the dictionary pointing at a remembered suffix, which becomes the draft."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Lever 1",
+      "title": "Draft token cost",
+      "body": "Time to produce one guess, as a share of a target pass. Cheaper drafts leave more profit."
+    },
+    {
+      "label": "Lever 2",
+      "title": "Draft length",
+      "body": "Guesses per pass. Later positions rarely survive, so long runs mostly add cost."
+    },
+    {
+      "label": "Lever 3",
+      "title": "Acceptance rate",
+      "body": "Share of guesses the target keeps. Temperature, subject matter and the drafter all move it."
+    }
+  ],
+  "workedExample": {
+    "title": "How many tokens per pass, really?",
+    "setup": "Draft length 5. Each guess matches the target with probability p, and one miss discards every later guess, so position i survives with probability p^i. Expected accepted tokens is the sum of those chances, and the target always adds one more. Each draft token costs 5% of a target pass, so a speculative pass takes 1 + 5 × 0.05 = 1.25 target passes. Compare a well-matched drafter (p = 0.8) with one running at high temperature (p = 0.6).",
+    "table": {
+      "columns": ["Draft position", "P(accepted), p = 0.8", "P(accepted), p = 0.6"],
+      "rows": [
+        ["1", "0.800", "0.600"],
+        ["2", "0.640", "0.360"],
+        ["3", "0.512", "0.216"],
+        ["4", "0.410", "0.130"],
+        ["5", "0.328", "0.078"],
+        ["Sum (accepted)", "2.69", "1.38"],
+        ["Tokens per pass (+1)", "3.69", "2.38"],
+        ["Speedup (÷ 1.25)", "2.95×", "1.91×"]
+      ]
+    },
+    "conclusion": {
+      "text": "At p = 0.8 each pass yields about 3.69 tokens and the speedup is close to 3×. Drop acceptance to 0.6 and the same setup gives under 2×: position 5 survives only 8% of the time but still costs its full drafting time.",
+      "keyNumber": "3.69 tokens per pass"
+    }
+  },
+  "checkQuestion": {
+    "kind": "scenario_mc",
+    "id": "5.2-check",
+    "sectionNumber": "5.2",
+    "subsectionNumber": "5.2.1",
+    "difficulty": 1,
+    "prompt": "Which metric does speculative decoding improve?",
+    "answerFormat": "one option",
+    "options": [
+      "Time to first token on long prompts",
+      "Tokens per second during decode",
+      "Both TTFT and decode, equally",
+      "Neither; it mainly saves GPU memory"
+    ],
+    "correctIndex": 1,
+    "acceptedCopy": "Right. Speculation squeezes more tokens out of each decode pass, so per-user tokens per second rises and inter-token latency falls (see 5.2).",
+    "rejectedCopy": "Think about which phase of inference the draft tokens take part in.",
+    "hint": "Draft tokens are guesses about output that has not been written yet.",
+    "explanation": "Speculative decoding changes the decode loop: each pass can emit several tokens instead of one, so tokens per second climbs. Prefill, which sets time to first token, runs exactly as before, so TTFT does not improve. It also costs memory rather than saving it.",
+    "reread": "5.2",
+    "sourceQuote": "Speculative decoding only improves TPS/ITL, not TTFT."
+  },
+  "reflect": {
+    "prompt": "A teammate wants to set the draft length to 16 because \"more guesses means more tokens per pass\". Explain to them why that usually backfires, using the three levers.",
+    "modelAnswer": "A draft position only pays off if every guess before it was accepted, so its survival chance is the per-token acceptance rate raised to its position. At p = 0.8 the 10th guess survives about 11% of the time and the 16th under 3%. Each of those guesses still has to be drafted, and drafting is not free: it costs compute and memory, and it lengthens every pass whether or not the guess survives. So past a modest length the extra expected tokens are smaller than the extra time per pass, and throughput per user falls. The right length depends on draft cost and acceptance rate together, which is why short, high-acceptance runs are the usual target. The exception is n-gram speculation on code edits, where acceptance is so high that runs longer than ten tokens still pay.",
+    "points": [
+      "Survival of position i is p to the power i, because one miss discards the rest.",
+      "Every draft token adds time to the pass whether or not it is accepted.",
+      "Past some length the added cost exceeds the added expected tokens.",
+      "Very high acceptance, such as n-gram on code edits, justifies longer runs."
+    ]
+  },
+  "terms": [
+    "Speculative decoding",
+    "Inter-token latency (ITL)",
+    "Temperature",
+    "EAGLE (speculation)",
+    "N-gram speculation"
+  ],
+  "subsectionCards": [
+    {
+      "number": "5.2.1",
+      "title": "Draft-Target Speculative Decoding",
+      "hook": "Two models. Quick to set up, the most overhead.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "5.2.2",
+      "title": "Medusa",
+      "hook": "Extra decoder heads grafted onto the target. Rare in production now.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "5.2.3",
+      "title": "EAGLE",
+      "hook": "A purpose-trained drafter fed hidden states. The default choice.",
+      "readingMinutes": 1
+    },
+    {
+      "number": "5.2.4",
+      "title": "N-gram Speculation and Lookahead Decoding",
+      "hook": "No draft model at all. Wins on code, where output echoes input.",
+      "readingMinutes": 1
+    }
+  ]
+}

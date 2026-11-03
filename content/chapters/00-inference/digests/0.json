@@ -1,0 +1,101 @@
+{
+  "lesson": "0",
+  "oneLine": "Serving generative models well takes three layers working together: a fast runtime on each GPU instance, infrastructure that scales and survives failures, and tooling that gives engineers the right amount of control.",
+  "summary": "Classic ML inference was easy: small models, cheap CPUs, a thin software stack. Generative models break that. Copying weights onto a GPU gets you a demo, not a production service.\n\nThe chapter splits the work into three layers. The **runtime** makes one model on one instance as fast and efficient as possible, using inference engines, low-level kernels and a toolbox of techniques: batching, KV cache reuse, quantization, speculation, parallelism and disaggregation. The **infrastructure** takes over when one instance isn't enough: first autoscaling replicas, then, past a few hundred GPUs, finding capacity across regions and clouds, and finally pooling all of it as one fleet. The **tooling** decides how much of this engineers see, somewhere between a black-box API and raw compute.\n\nThe rest of the book follows that map: prerequisites, models, hardware, software, techniques, modalities and production.",
+  "mechanism": [
+    {
+      "title": "Optimise one instance",
+      "body": "The runtime squeezes speed and efficiency out of a single model on its GPUs."
+    },
+    {
+      "title": "Scale the fleet",
+      "body": "Infrastructure adds replicas, then capacity across regions and clouds, then one shared pool."
+    },
+    {
+      "title": "Expose the right controls",
+      "body": "Tooling sits between a black box and raw machines, balancing control against productivity."
+    },
+    {
+      "title": "Make them cooperate",
+      "body": "Only the three layers together handle mission-critical traffic at scale."
+    }
+  ],
+  "callout": {
+    "name": "A systems problem, not a kernel problem",
+    "body": "However fast one model server becomes, traffic eventually outgrows it. Past that point the fix is more replicas, more capacity and better placement, which no CUDA kernel can provide."
+  },
+  "figureRefs": [
+    {
+      "figure": "0.1",
+      "lookFor": "Runtime optimisations and infrastructure optimisations shown as two halves of one stack."
+    },
+    {
+      "figure": "0.2",
+      "lookFor": "Speculation as an example of a runtime technique that cuts latency."
+    },
+    {
+      "figure": "0.3",
+      "lookFor": "Several cloud providers' GPUs gathered into one pool of capacity."
+    }
+  ],
+  "keyCards": [
+    {
+      "label": "Runtime",
+      "title": "Six techniques recur all book",
+      "body": "Batching, caching, quantization, speculation, parallelism and disaggregation make one instance faster."
+    },
+    {
+      "label": "Infrastructure",
+      "title": "Problems change with scale",
+      "body": "Autoscaling first, then capacity across clouds, then one unified pool without silos."
+    },
+    {
+      "label": "Tooling",
+      "title": "Neither black box nor bare metal",
+      "body": "Good tooling gives enough control for confidence and enough abstraction for speed."
+    }
+  ],
+  "workedExample": {
+    "title": "When the runtime stops being enough",
+    "setup": "An illustrative service peaks at 2,400 requests per minute. A tuned model server handles 180 requests per minute at the latency target, and the team keeps 20% headroom for spikes. Replicas needed = peak ÷ per-replica capacity, then scaled up for headroom and rounded up to whole replicas.",
+    "table": {
+      "columns": ["Step", "Calculation", "Result"],
+      "rows": [
+        ["Raw replicas", "2,400 ÷ 180", "13.3"],
+        ["With 20% headroom", "13.3 × 1.2", "16.0"],
+        ["Rounded up", "ceil(16.0)", "16 replicas"]
+      ]
+    },
+    "conclusion": {
+      "text": "No runtime tuning makes one server absorb this peak. Sixteen replicas, scaled up and down with traffic, is an infrastructure job: the second layer.",
+      "keyNumber": "16 replicas"
+    }
+  },
+  "checkQuestion": {
+    "kind": "text",
+    "id": "0-text-01",
+    "sectionNumber": "0",
+    "subsectionNumber": null,
+    "difficulty": 1,
+    "prompt": "Your single model server is as fast as it can get, but peak traffic still overwhelms it. Which of the three layers of an inference stack has to solve this next?",
+    "answerFormat": "**************",
+    "acceptedAnswers": ["infrastructure", "the infrastructure layer", "infrastructure layer"],
+    "normalisation": {},
+    "hint": "The runtime optimises one instance. Which layer deals with many instances across clusters?",
+    "explanation": "Infrastructure scales across replicas, clusters, regions and clouds. The runtime is the tempting answer, but it only makes a single instance faster, and that instance is already maxed out.",
+    "reread": "0",
+    "sourceQuote": "Scaling across clusters, regions, and clouds without creating silos while maintaining excellent uptime"
+  },
+  "reflect": {
+    "prompt": "A teammate says inference is just picking a fast engine like vLLM and buying GPUs. Using the three layers from Chapter 0, explain what that plan leaves out.",
+    "modelAnswer": "Picking a good engine only covers part of the runtime layer, and even the runtime needs more than an engine: kernels and techniques such as batching, KV cache reuse, quantization and speculation decide how much work each GPU does. Then there is infrastructure. One server will be overwhelmed at peak, so we need autoscaling replicas, and at larger scale we need capacity across regions and cloud providers, pooled so that one cluster isn't starved while another sits idle. That also gives us resilience when a region fails. Finally, tooling: engineers need enough control to run critical workloads and enough abstraction to ship quickly. Buying GPUs and installing vLLM addresses none of the last two layers.",
+    "points": [
+      "An engine is only one piece of the runtime layer; techniques and kernels matter too.",
+      "Infrastructure handles traffic beyond one instance: autoscaling, then multi-region and multi-cloud capacity.",
+      "A unified pool avoids silos and improves reliability.",
+      "Tooling balances control with productivity for the engineers running it."
+    ]
+  },
+  "terms": ["Inference", "Inference engine", "Autoscaling", "KV cache", "Speculative decoding"],
+  "subsectionCards": []
+}

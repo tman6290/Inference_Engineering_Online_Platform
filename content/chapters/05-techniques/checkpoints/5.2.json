@@ -1,0 +1,602 @@
+{
+  "sectionNumber": "5.2",
+  "questions": [
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-01",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "You enabled speculation on a chat model. The dashboard shows inter-token latency down 40%, but time to first token on long RAG prompts is unchanged. A teammate files a bug saying speculation is broken for TTFT. What do you reply?",
+      "answerFormat": "one option",
+      "options": [
+        "Expected: speculation speeds up decode, while TTFT comes from prefill, which it leaves alone",
+        "A bug: the draft model should prefill the prompt in parallel with the target and cut TTFT",
+        "Expected for now: TTFT drops once the acceptance rate warms up over the first few thousand requests",
+        "Raise the draft length: more draft tokens per pass also shortens the wait for the first token"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Draft tokens are guesses about output, so the gain lands in decode: tokens per second and inter-token latency (see 5.2).",
+      "rejectedCopy": "Ask which phase produces the first token, and whether any draft token exists yet at that point.",
+      "hint": "The first output token comes out of prefill. Where do draft tokens enter the picture?",
+      "explanation": "Speculation lets each decode pass emit more than one token, so ITL drops and TPS rises. The first token is produced at the end of prefill, before there is anything to speculate on, so TTFT is untouched. The tempting fix of a longer draft only changes decode, and a draft model's own prefill adds work rather than removing it.",
+      "reread": "5.2",
+      "sourceQuote": "Speculative decoding only improves TPS/ITL, not TTFT."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-02",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 2,
+      "prompt": "A creative-writing feature raised sampling temperature from 0.2 to 1.0. Nothing else changed, yet the measured acceptance rate of your speculator roughly halved. What is the most likely cause?",
+      "answerFormat": "one option",
+      "options": [
+        "Higher temperature flattens the target's distribution, so its sampled tokens are harder for any speculator to guess",
+        "Higher temperature pushes the target into a compute-bound regime, so draft tokens get rejected without full validation",
+        "The draft model's KV cache gets evicted more often at high temperature, so its drafts lose context and drift",
+        "Temperature also lengthens the draft sequence, and longer drafts lower the acceptance rate at every position"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. More randomness in the target's choices means more misses for the speculator (see 5.2).",
+      "rejectedCopy": "Think about what temperature does to the probabilities the target samples from.",
+      "hint": "A guess only counts if it matches what the target actually picks. How predictable is that pick at high temperature?",
+      "explanation": "Acceptance depends on how often the speculator's guess equals the target's sampled token. At high temperature the target spreads probability across many tokens, so even a perfect copy of its distribution guesses wrong more often. Temperature does not change draft length or make the target compute-bound; those are separate knobs.",
+      "reread": "5.2",
+      "sourceQuote": "higher temperatures yield token distributions that are harder to predict, reducing the effectiveness of speculative decoding."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-03",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 2,
+      "prompt": "Speculation doubled per-user TPS in your low-traffic benchmark. In production at peak, with batches of 128 requests, the gain disappeared and p99 latency got worse. What should the serving config do?",
+      "answerFormat": "one option",
+      "options": [
+        "Raise the draft length at peak so each pass carries more accepted tokens across the whole batch",
+        "Swap in a larger draft model at peak so the higher acceptance rate pays for the extra validation",
+        "Turn speculation off dynamically above a batch-size threshold and keep it on for batches below that",
+        "Lower the temperature for every request at peak, since sharper distributions raise acceptance a lot"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. Speculation spends spare compute; at large batches there is none to spend, so engines disable it there (see 5.2).",
+      "rejectedCopy": "Ask what resource speculation borrows, and whether a batch of 128 leaves any of it free.",
+      "hint": "Speculation works because decode at small batch leaves something unused. Does that stay true as the batch grows?",
+      "explanation": "Validation of draft tokens uses compute that sits idle at small batch sizes. A large batch already saturates compute, so verification competes with real work and slows every request. Longer drafts or a larger drafter make that worse, and changing users' temperature alters their outputs. Gating speculation on batch size is the standard answer.",
+      "reread": "5.2",
+      "sourceQuote": "At higher batch sizes, speculative decoding must be dynamically disabled as compute is too saturated to afford verification."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-04",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 2,
+      "prompt": "You raised the draft length from 4 to 12 expecting a big jump in tokens per pass. Per-user TPS went down instead. Which explanation fits?",
+      "answerFormat": "one option",
+      "options": [
+        "The target can only validate four draft tokens per pass, so the extra eight are drafted and then ignored",
+        "Late draft positions rarely survive, because one rejection drops every token after it, but each still costs time",
+        "Longer drafts raise acceptance at early positions so much that the extra accepted tokens saturate bandwidth",
+        "Draft length has no real effect on decode speed, so the drop is benchmark noise and a rerun will show the gain"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. Survival odds shrink geometrically with position while cost grows linearly, so short, high-acceptance runs win (see 5.2).",
+      "rejectedCopy": "Compare how much each extra draft position adds in expected tokens with how much it adds in time.",
+      "hint": "What has to be true for the 10th draft token to be kept?",
+      "explanation": "A draft token at position i is kept only if all i − 1 before it were accepted, so its expected contribution is p^i. With p around 0.8 the 12th position contributes under 0.07 tokens, but drafting and checking it costs real time on every pass. There is no fixed four-token validation limit; the loss comes from paying for guesses that almost never survive.",
+      "reread": "5.2",
+      "sourceQuote": "once a single draft token is rejected as wrong, all subsequent tokens in the sequence are also rejected."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-05",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "You are setting up draft-target speculation for a 70B Llama model and have no time to train anything. Which draft model is the best starting point?",
+      "answerFormat": "one option",
+      "options": [
+        "A 34B model from the same family, chosen because it gives the highest acceptance rate",
+        "A 1B model from a different family with its own tokenizer but stronger benchmark scores",
+        "A second copy of the 70B model on another GPU, so its drafts agree with the target almost always",
+        "A 1B model from the same Llama family that shares the target's tokenizer and vocabulary"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Same family means a shared tokenizer and similar behaviour, and at least ten times smaller keeps drafting cheap (see 5.2.1).",
+      "rejectedCopy": "Weigh two things together: how cheap the drafter is to run and how closely it mimics the target.",
+      "hint": "The rule of thumb sets a size ratio, and the drafter has to speak the same token vocabulary.",
+      "explanation": "A good drafter is cheap to run and agrees with the target often. A small sibling in the same family shares the tokenizer and tends to make the same choices, and 1B is well over ten times smaller than 70B. The 34B model would agree more often but costs about half a target pass per guess, which wipes out the gain. A different tokenizer makes the drafts hard to compare at all.",
+      "reread": "5.2.1",
+      "sourceQuote": "As a rule of thumb, the draft model should be at least ten times smaller by parameter count than the target model."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-06",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 2,
+      "prompt": "After enabling draft-target speculation on an H100, the engine reports that the maximum number of concurrent sequences dropped by about 15%. The target model and its quantization are unchanged. Why?",
+      "answerFormat": "one option",
+      "options": [
+        "Validation makes the target keep a second copy of its KV cache so it can roll back rejected tokens",
+        "Speculation forces the engine to switch from paged KV allocation to contiguous per-sequence blocks",
+        "The draft model's weights, activations and KV cache now sit in GPU memory beside the target's own",
+        "Draft tokens are held in CPU memory and must be paged back onto the GPU before each target pass"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. A draft model is a second model on the GPU, with its own weights, activations and KV cache (see 5.2.1).",
+      "rejectedCopy": "Count what is resident on the GPU now that was not there before.",
+      "hint": "Draft-target is the method with the most overhead. What does a second model need in memory?",
+      "explanation": "The drafter is a full model, however small. Its weights, its activations and a KV cache for every sequence all live in VRAM next to the target's, which leaves less room for target KV cache and so fewer concurrent sequences. The target does not duplicate its own cache to validate drafts; it scores them in an ordinary forward pass.",
+      "reread": "5.2.1",
+      "sourceQuote": "the inference engine must store the draft model’s weights, activations, and KV cache in memory"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-07",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.2",
+      "difficulty": 2,
+      "prompt": "You are reviewing a model card for \"Mistral-7B-Medusa-3\". A colleague asks what was changed compared with the base model. What do you tell them?",
+      "answerFormat": "one option",
+      "options": [
+        "A separate 3B draft model was distilled from it and ships alongside, sharing its tokenizer and vocabulary",
+        "Fine-tuning grafted three extra decoder heads onto the model, each proposing a token further ahead",
+        "The weights were quantized to 3 bits so a drafting copy of the model fits in the spare memory beside it",
+        "A dictionary of common 3-token sequences from the training data was attached for the model to look up"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. Medusa fine-tunes the target to carry two to four extra decoder heads, so there is no second model to run (see 5.2.2).",
+      "rejectedCopy": "Medusa was built to avoid one particular piece of draft-target overhead. Which piece?",
+      "hint": "Where do Medusa's guesses come from: another model, a lookup table, or the target itself?",
+      "explanation": "Medusa removes the separate draft model by modifying the target: fine-tuning adds a few decoder heads beside the usual one, and each head predicts a later token in sequence. Those guesses are checked on the next pass like any other draft. A distilled 3B drafter is draft-target, and a token dictionary is n-gram speculation.",
+      "reread": "5.2.2",
+      "sourceQuote": "The ordinary architecture of an LLM contains a single decoder head, but Medusa adds an additional two to four heads"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-08",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.3",
+      "difficulty": 2,
+      "prompt": "Your draft-target setup pairs a large target with an off-the-shelf 0.5B chat model and gets mediocre acceptance. A teammate proposes EAGLE instead. What is the core reason EAGLE tends to accept far more drafts?",
+      "answerFormat": "one option",
+      "options": [
+        "EAGLE drafters have more parameters than off-the-shelf small models, so they simply predict the target better",
+        "EAGLE is trained only to speculate and reads the target's hidden states, which a normal drafter never sees",
+        "EAGLE runs its drafter at temperature 0 internally, which forces its guesses to match the target's greedy picks",
+        "EAGLE drafts only one token per pass, and a single draft token is almost always accepted by the target"
+      ],
+      "correctIndex": 1,
+      "acceptedCopy": "Right. EAGLE is purpose-built and fed the target's own hidden states from early, middle and late layers (see 5.2.3).",
+      "rejectedCopy": "Think about what an off-the-shelf small model was originally trained to be, and what input it is missing.",
+      "hint": "During a forward pass the target builds up internal context about the next tokens. Who gets to use it?",
+      "explanation": "A small pretrained LLM was built to be a decent standalone chatbot, not a predictor of one specific large model. EAGLE is trained for exactly that job and takes the target's hidden states as input, so its guesses track the target closely, often for up to about eight tokens. EAGLE is usually under a billion parameters, so size is not the reason.",
+      "reread": "5.2.3",
+      "sourceQuote": "EAGLE is a draft model trained to accept hidden states as input and generate speculative tokens as output."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-09",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.3",
+      "difficulty": 3,
+      "prompt": "Profiling your draft-target deployment shows gaps on the GPU timeline between each draft step and the target's validation, with the CPU orchestrating the two models in turn. Which change attacks that specific overhead?",
+      "answerFormat": "one option",
+      "options": [
+        "Move to EAGLE attached to the target's module, so a single forward pass runs both target and speculator",
+        "Use a larger draft model so that fewer draft steps are needed and the CPU hands off control less often",
+        "Switch all traffic, open-ended chat included, to n-gram speculation so there is no draft model to schedule",
+        "Raise the draft length so the CPU coordinates fewer, longer rounds between the draft and target models"
+      ],
+      "correctIndex": 0,
+      "acceptedCopy": "Right. Attaching EAGLE to the same PyTorch module as the target gives one unified pipeline with no CPU round trips between models (see 5.2.3).",
+      "rejectedCopy": "The gaps come from two separate models taking turns. Which option stops them being separate?",
+      "hint": "Look for the option that changes where the speculator lives, not how much it guesses.",
+      "explanation": "The idle gaps are CPU coordination between two independently run models. EAGLE can sit inside the target's module, so each forward pass computes both, and the round trips vanish. A longer draft reduces round counts but lowers acceptance per position and keeps the split. N-gram removes the drafter but performs poorly on chat.",
+      "reread": "5.2.3",
+      "sourceQuote": "This unified pipeline solves the other problem with draft-target decoding, where multiple round trips to the CPU were needed"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-10",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.4",
+      "difficulty": 2,
+      "prompt": "You serve a code-editing feature: the user pastes a 400-line file and asks for a small refactor, and the model returns the full file with a few lines changed. Which speculation method should you try first?",
+      "answerFormat": "one option",
+      "options": [
+        "Medusa, since its extra decoder heads are fine-tuned to specialise in predicting code tokens",
+        "Draft-target with a larger drafter, because a long file needs a stronger model to guess well",
+        "None; speculation stops helping once the output runs to hundreds of lines, so leave it off",
+        "N-gram speculation, since most of the output repeats token sequences already in the prompt"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. When output echoes input, a dictionary built from the prompt predicts long runs correctly, and n-gram beats EAGLE in that niche (see 5.2.4).",
+      "rejectedCopy": "Look at where most of the output text already exists before decode starts.",
+      "hint": "Which method needs no draft model and gets its guesses straight from the prompt?",
+      "explanation": "Rewriting a file mostly copies text already present in the input. N-gram speculation looks up the latest token in a dictionary built during prefill and proposes the suffix that followed it, so drafts can run past ten tokens with high acceptance. Medusa has no special code ability, and long outputs are where speculation helps most, not least.",
+      "reread": "5.2.4",
+      "sourceQuote": "N-gram speculation is mostly used for code completion and code revision, where syntax is predictable and output closely matches input."
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-11",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.4",
+      "difficulty": 3,
+      "prompt": "You tried n-gram speculation on an open-ended chat assistant and acceptance was poor, because replies rarely repeat the prompt. The GPUs run at small batch sizes with compute to spare, and you cannot train an EAGLE head yet. What is the best next experiment?",
+      "answerFormat": "one option",
+      "options": [
+        "Lengthen the n-grams in the dictionary so that each rare hit carries many more accepted tokens",
+        "Raise the temperature so the target's choices spread across more of the n-gram dictionary's entries",
+        "Lookahead Decoding, which builds n-grams during inference and pays for them with extra compute",
+        "Medusa, since its extra heads can be added at serving time and need no fine-tuning of the target"
+      ],
+      "correctIndex": 2,
+      "acceptedCopy": "Right. Lookahead Decoding generates its own n-grams while decoding, so it relies less on repetitive context, and spare compute pays for it (see 5.2.4).",
+      "rejectedCopy": "The problem is where the dictionary's entries come from. Which option gives it a different source?",
+      "hint": "You have no training budget but you do have idle compute. Which method spends compute instead of training?",
+      "explanation": "Plain n-gram speculation only knows sequences from the prompt, so it misses when replies are new text. Lookahead Decoding generates n-grams during inference, which generalises beyond repetitive context but costs compute, and this deployment has compute to spare. Longer n-grams just make the misses longer, and Medusa requires fine-tuning the target.",
+      "reread": "5.2.4",
+      "sourceQuote": "Lookahead Decoding is more general than n-gram speculation as it doesn’t rely as much on highly repetitive context"
+    },
+    {
+      "kind": "scenario_mc",
+      "id": "5.2-mc-12",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.3",
+      "difficulty": 2,
+      "prompt": "After rolling out EAGLE, per-user TPS rose 2.5× as planned, but finance reports that cost per million output tokens also went up. What explains both numbers?",
+      "answerFormat": "one option",
+      "options": [
+        "The inference engine bills the EAGLE heads as a separate model, adding their tokens to the output count",
+        "Rejected draft tokens are counted as generated output and billed, even though users never see them",
+        "EAGLE raises time to first token, so each request holds its GPU longer and costs more per token",
+        "Speculation needs spare compute, so batches are now smaller, which cuts total throughput per GPU"
+      ],
+      "correctIndex": 3,
+      "acceptedCopy": "Right. Faster per-user decode came from keeping batches small, and smaller batches mean fewer total tokens per GPU-hour (see 5.2.3).",
+      "rejectedCopy": "Separate per-user speed from total tokens produced per GPU. Which one did the rollout trade away?",
+      "hint": "What did you have to do to batch size to leave compute free for validation?",
+      "explanation": "Speculation is a latency optimisation that depends on idle compute, which only exists at reduced batch sizes. Each user gets tokens faster, but the GPU serves fewer users at once, so total throughput falls and cost per token rises. Rejected drafts are discarded, not emitted or billed, and TTFT is unaffected by speculation.",
+      "reread": "5.2.3",
+      "sourceQuote": "adopting EAGLE for improved latency requires reduced batch sizes, lowering throughput and increasing cost."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-01",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "A speculator drafts 3 tokens per pass. Each draft token matches the target with probability 0.9, and a rejection discards every later draft token. How many draft tokens does the target accept per pass, on average? Do not count the extra token the target generates itself.",
+      "answerFormat": "number, in tokens",
+      "answer": 2.439,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "tokens",
+      "acceptedUnits": [],
+      "methodHint": "Position i is kept only if positions 1 to i all match, so it survives with probability 0.9^i. Add the three survival chances.",
+      "workedSolution": "0.9 + 0.9² + 0.9³ = 0.9 + 0.81 + 0.729 = 2.439 accepted draft tokens per pass.",
+      "explanation": "Expected accepted tokens is the sum of each position's survival probability, p + p² + … + p^k. The tempting shortcut 3 × 0.9 = 2.7 ignores that a miss discards everything after it.",
+      "reread": "5.2",
+      "sourceQuote": "Token acceptance rate is high early in the draft sequence, but draft tokens get less reliable deeper in the sequence."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-02",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "A speculator proposes 5 draft tokens. Checking them against what the target would produce: tokens 1 and 2 match, token 3 does not, and tokens 4 and 5 would have matched. How many tokens does this forward pass emit in total?",
+      "answerFormat": "number, in tokens",
+      "answer": 3,
+      "tolerance": {
+        "kind": "absolute",
+        "value": 0
+      },
+      "unit": "tokens",
+      "acceptedUnits": [],
+      "methodHint": "Keep drafts up to the first mismatch, then add the target's own token.",
+      "workedSolution": "Accepted drafts: tokens 1 and 2 (N = 2). Token 3 is rejected, so 4 and 5 are discarded even though they match. The target adds one token of its own: N + 1 = 2 + 1 = 3 tokens.",
+      "explanation": "Only the prefix up to the first rejection survives, and the target always contributes one token, giving N + 1. Counting tokens 4 and 5 is the tempting error: after a rejection the later drafts were conditioned on a wrong token, so they are thrown away.",
+      "reread": "5.2",
+      "sourceQuote": "This generates N+1 tokens per forward pass, or iteration through the decode loop, where N is the number of accepted draft tokens."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-03",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 2,
+      "prompt": "Draft length 4, per-token acceptance probability 0.8 (a rejection discards later drafts). Each draft token takes 0.04 of the time of one target forward pass, and a validating pass costs the same as a normal decode pass. What is the speedup in tokens per second over plain decode, which yields 1 token per pass?",
+      "answerFormat": "number, as a multiple (x), e.g. 2.1",
+      "answer": 2.898,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "x",
+      "acceptedUnits": [],
+      "methodHint": "Tokens per pass = 1 + p + p² + p³ + p⁴. Time per pass = 1 + 4 × 0.04 target passes. Divide.",
+      "workedSolution": "Tokens per pass = 1 + 0.8 + 0.64 + 0.512 + 0.4096 = 3.3616. Time per pass = 1 + 4 × 0.04 = 1.16. Speedup = 3.3616 / 1.16 ≈ 2.898×.",
+      "explanation": "Speedup is tokens per pass divided by the cost of a pass, both measured against plain decode. Forgetting the draft cost gives 3.36×, which overstates the gain by about 16%.",
+      "reread": "5.2",
+      "sourceQuote": "Draft token cost: The time it takes to generate a draft token."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-04",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 2,
+      "prompt": "Without speculation, one decode pass takes 20 ms and emits 1 token. With speculation each pass takes 24 ms (drafting plus validation) and emits 3.0 tokens on average. What is the per-user decode speed with speculation?",
+      "answerFormat": "number, in tokens/s",
+      "answer": 125,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "tokens/s",
+      "acceptedUnits": [],
+      "methodHint": "Tokens per second = tokens per pass ÷ seconds per pass.",
+      "workedSolution": "3.0 tokens / 0.024 s = 125 tokens/s. For comparison, plain decode gives 1 / 0.020 s = 50 tokens/s, so the speedup is 2.5×.",
+      "explanation": "The longer pass is the price of drafting; it is repaid because each pass yields three tokens. Dividing 3.0 by the old 20 ms (150 tokens/s) is the tempting error, because it forgets that speculation makes each pass slower.",
+      "reread": "5.2",
+      "sourceQuote": "it would generate far more tokens per second."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-05",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 3,
+      "prompt": "With draft length 4, your speculator's per-token acceptance probability is 0.85 at low temperature. A product change raises temperature and acceptance falls to 0.6. Rejection discards later drafts, and the target always adds 1 token. How many fewer tokens per pass does the system now produce?",
+      "answerFormat": "number, in tokens",
+      "answer": 1.403,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "tokens",
+      "acceptedUnits": [],
+      "methodHint": "Work out 1 + p + p² + p³ + p⁴ for p = 0.85 and for p = 0.6, then subtract.",
+      "workedSolution": "At 0.85: 1 + 0.85 + 0.7225 + 0.614125 + 0.52200625 = 3.70863. At 0.6: 1 + 0.6 + 0.36 + 0.216 + 0.1296 = 2.3056. Difference = 3.70863 − 2.3056 ≈ 1.403 tokens per pass.",
+      "explanation": "Acceptance enters as powers, so a drop in p hits the later draft positions hardest. Scaling linearly (0.25 × 4 = 1.0 token lost) underestimates the damage.",
+      "reread": "5.2",
+      "sourceQuote": "The big one is temperature"
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-06",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "Your target model has 70 billion parameters. Using the rule of thumb for draft-target speculation, what is the largest draft model you should consider?",
+      "answerFormat": "number, in billions of parameters (B)",
+      "answer": 7,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "B",
+      "acceptedUnits": [
+        {
+          "unit": "M",
+          "factor": 0.001
+        }
+      ],
+      "methodHint": "The rule sets a minimum size ratio between target and drafter.",
+      "workedSolution": "The draft model should be at least 10× smaller than the target: 70B ÷ 10 = 7B at most.",
+      "explanation": "A drafter at least ten times smaller keeps each guess cheap relative to a target pass. A bigger drafter may agree more often, but its cost per guess eats the gain.",
+      "reread": "5.2.1",
+      "sourceQuote": "the draft model should be at least ten times smaller by parameter count than the target model."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-07",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.4",
+      "difficulty": 3,
+      "prompt": "On a code-revision workload, n-gram speculation drafts 12 tokens per pass and each matches with probability 0.95 (a rejection discards later drafts). Including the target's own token, how many tokens does each pass emit on average?",
+      "answerFormat": "number, in tokens",
+      "answer": 9.733,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "tokens",
+      "acceptedUnits": [],
+      "methodHint": "1 + p + p² + … + p¹² is a geometric series: (1 − p¹³) / (1 − p).",
+      "workedSolution": "0.95¹³ ≈ 0.51334. (1 − 0.51334) / 0.05 = 0.48666 / 0.05 ≈ 9.733 tokens per pass.",
+      "explanation": "With acceptance this high, even position 12 survives about 54% of the time, which is why n-gram runs longer than ten tokens pay off on code. Forgetting the +1 from the target gives 8.73.",
+      "reread": "5.2.4",
+      "sourceQuote": "While EAGLE can generate eight or so draft tokens with a decent acceptance rate, n-gram sequences can exceed ten tokens."
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-08",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.2",
+      "difficulty": 2,
+      "prompt": "A Medusa model has 4 extra heads, so it drafts 4 tokens per pass. Each draft matches with probability 0.5, and a rejection discards later drafts. Including the token from the ordinary decoder head, how many tokens does each pass emit on average?",
+      "answerFormat": "number, in tokens",
+      "answer": 1.9375,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "tokens",
+      "acceptedUnits": [],
+      "methodHint": "1 + p + p² + p³ + p⁴ with p = 0.5.",
+      "workedSolution": "1 + 0.5 + 0.25 + 0.125 + 0.0625 = 1.9375 tokens per pass.",
+      "explanation": "Low acceptance caps the gain however many heads you add: even infinitely many heads at p = 0.5 would give at most 2 tokens per pass. This is the limit on draft count and acceptance that kept Medusa out of most production stacks.",
+      "reread": "5.2.2",
+      "sourceQuote": "Medusa is still limited on draft token count and draft token acceptance rate"
+    },
+    {
+      "kind": "calculation",
+      "id": "5.2-calc-09",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.3",
+      "difficulty": 3,
+      "prompt": "Compare two speculators on the same target, ignoring drafting cost. Medusa with 3 heads drafts 3 tokens at acceptance 0.6. EAGLE drafts 8 tokens at acceptance 0.8. In both, a rejection discards later drafts and the target adds 1 token. How many times more tokens per pass does EAGLE emit?",
+      "answerFormat": "number, as a multiple (x), e.g. 1.5",
+      "answer": 1.989,
+      "tolerance": {
+        "kind": "relative",
+        "value": 0.02
+      },
+      "unit": "x",
+      "acceptedUnits": [],
+      "methodHint": "Tokens per pass = (1 − p^(k+1)) / (1 − p). Work out each, then divide EAGLE by Medusa.",
+      "workedSolution": "Medusa: 1 + 0.6 + 0.36 + 0.216 = 2.176. EAGLE: (1 − 0.8⁹) / 0.2 = (1 − 0.134218) / 0.2 = 4.32891. Ratio = 4.32891 / 2.176 ≈ 1.989×.",
+      "explanation": "EAGLE wins on both levers at once: longer drafts and higher acceptance. Higher acceptance matters more, because it is what lets the extra positions survive. Using 8 / 3 as the ratio ignores that later positions are kept less often.",
+      "reread": "5.2.3",
+      "sourceQuote": "generate sequences of up to eight draft tokens (two times more than Medusa) with a very high acceptance rate."
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-01",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "In speculative decoding, what is the name for the original model you are trying to accelerate, the one that validates the draft tokens?",
+      "answerFormat": "****** *****",
+      "acceptedAnswers": ["target model", "the target model", "target"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Two words. The drafts are aimed at matching it.",
+      "explanation": "The target model is the model whose output you want; the speculator only proposes, and the target decides what is kept.",
+      "reread": "5.2",
+      "sourceQuote": "The target model, or the underlying model that you’re trying to accelerate, performs validation on these tokens"
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-02",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "Name the lever that measures what share of draft tokens the target model keeps.",
+      "answerFormat": "********** ****",
+      "acceptedAnswers": [
+        "acceptance rate",
+        "token acceptance rate",
+        "draft acceptance rate",
+        "draft token acceptance rate"
+      ],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Two words; it is the third of the three levers.",
+      "explanation": "Acceptance rate is the percentage of draft tokens the target accepts. With draft token cost and draft length, it decides the speedup.",
+      "reread": "5.2",
+      "sourceQuote": "Token acceptance rate: The percentage of draft tokens that are accepted by the target model."
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-03",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.1",
+      "difficulty": 1,
+      "prompt": "During decode at low batch sizes, one GPU resource sits mostly idle while weights stream from memory. Speculation spends it. Which resource?",
+      "answerFormat": "*******",
+      "acceptedAnswers": ["compute", "spare compute", "idle compute", "FLOPS", "tensor cores"],
+      "normalisation": {},
+      "hint": "Decode is memory-bound. What is the other thing a GPU has a lot of?",
+      "explanation": "Decode waits on memory bandwidth, leaving compute idle. Speculation uses that compute to validate several draft tokens in one pass, which is why it stops paying once large batches use the compute up.",
+      "reread": "5.2",
+      "sourceQuote": "Speculative decoding takes advantage of that spare compute to try to generate multiple tokens per forward pass through the target model."
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-04",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.2",
+      "difficulty": 1,
+      "prompt": "Which speculation method fine-tunes the target model to carry two to four extra decoder heads, so that no separate draft model is needed?",
+      "answerFormat": "******",
+      "acceptedAnswers": ["Medusa"],
+      "normalisation": {},
+      "hint": "Named after a figure from Greek myth with many heads.",
+      "explanation": "Medusa grafts extra decoder heads onto the target by fine-tuning. It inspired EAGLE but sees little production use today.",
+      "reread": "5.2.2",
+      "sourceQuote": "Fine-tuning a model for Medusa means grafting additional decoder heads onto the model."
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-05",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.3",
+      "difficulty": 1,
+      "prompt": "Which speculation method uses a small, purpose-built draft model trained on hidden states from an early, a middle and a late layer of the target?",
+      "answerFormat": "*****",
+      "acceptedAnswers": ["EAGLE"],
+      "normalisation": {},
+      "hint": "Five letters, a bird of prey.",
+      "explanation": "EAGLE is the default choice for general speculation among teams able to train its heads, and inference engines support it well.",
+      "reread": "5.2.3",
+      "sourceQuote": "it is trained on a set of three hidden states: one from an early layer, one from a middle layer"
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-06",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.3",
+      "difficulty": 2,
+      "prompt": "EAGLE does not draft from raw tokens alone. What does it take from inside the target model as input?",
+      "answerFormat": "****** ******",
+      "acceptedAnswers": ["hidden states", "hidden state", "the hidden states", "activations"],
+      "normalisation": {},
+      "hint": "Two words for the intermediate representations passed between layers.",
+      "explanation": "The target builds up context about upcoming tokens in its hidden states. Traditional draft models never see them; EAGLE is trained to read them, which is why its acceptance is so high.",
+      "reread": "5.2.3",
+      "sourceQuote": "LLMs accumulate a lot of context about the predicted tokens in the form of hidden states between layers."
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-07",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.4",
+      "difficulty": 2,
+      "prompt": "N-gram speculation has no draft model. What data structure, first built during prefill, supplies its draft tokens?",
+      "answerFormat": "*-**** **********",
+      "acceptedAnswers": [
+        "n-gram dictionary",
+        "ngram dictionary",
+        "n-gram table",
+        "n-gram lookup table",
+        "dictionary"
+      ],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "It maps a starting token to the sequence that followed it in the input.",
+      "explanation": "The engine records common sequences from the input in an n-gram dictionary. During decode, the newest token is looked up and any stored suffix becomes the draft, which the target verifies as usual.",
+      "reread": "5.2.4",
+      "sourceQuote": "The n-gram dictionary maps a single starting token to an observed sequence of N tokens (the n-gram)."
+    },
+    {
+      "kind": "text",
+      "id": "5.2-text-08",
+      "sectionNumber": "5.2",
+      "subsectionNumber": "5.2.4",
+      "difficulty": 2,
+      "prompt": "Which method resembles n-gram speculation but generates its n-grams during inference, so it relies less on repetitive context at the cost of extra compute?",
+      "answerFormat": "********* ********",
+      "acceptedAnswers": ["Lookahead Decoding", "lookahead", "look-ahead decoding"],
+      "normalisation": {
+        "foldHyphens": true
+      },
+      "hint": "Two words; the first says it peeks ahead.",
+      "explanation": "Lookahead Decoding fills its dictionary as it decodes rather than only from the prompt, so it generalises beyond code edits, provided the system has compute to spare.",
+      "reread": "5.2.4",
+      "sourceQuote": "A similar method to n-gram speculation is Lookahead Decoding, which generates n-grams during inference to fill the dictionary."
+    }
+  ]
+}

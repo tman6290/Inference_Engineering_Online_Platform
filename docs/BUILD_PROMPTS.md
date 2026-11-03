@@ -34,7 +34,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 02 | Auth for two seats | done (see git log: `auth:` commit) |
 | 03 | Ingest the book | done (`book:` commit; 36 sections, not 42) |
 | 04 | Content schemas, grading and validation | done (`content:` commit, 2026-11-03) |
-| 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | |
+| 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | pilot done (`content:` commit, 2026-11-03); reused by 13 |
 | 06 | The Lesson page | |
 | 07 | Checkpoints and exercises | |
 | 08 | Progress, uptime, recall queue, Home | |
@@ -162,7 +162,8 @@ For every section in scope, write under content/chapters/<nn>-<slug>/:
 1. digests/<section>.json: a DigestSchema digest. The summary and mechanism explain for a working engineer; the worked example uses real arithmetic; the check question and the reflect prompt land where the idea lands; terms match the glossary. Cite subsections ("see 5.2.1"); never copy sentences from the book.
 2. checkpoints/<section>.json: a bank of ≥ 24 questions covering every subsection, in the required mix. Distractors are mistakes a real engineer makes; hints teach without giving the answer away; no trick wording. Anything that can only be judged by reading free-form prose becomes a reflect prompt or a candidate for the chapter's project, not a question.
 3. exercises/<id>/: 1 to 3 per section where hands-on work helps (estimating memory, computing throughput, reading a benchmark, a tiny script). Brief, steps, a checkable answer, a full solution walkthrough, and starter files plus local tests when code is involved.
-4. chapter.json with the chapter's sections and exercise ids. Run `pnpm content:validate` until clean.
+4. chapter.json with the chapter's sections and exercise ids. Run `pnpm content:balance` (spreads correct answers evenly over A–D), then `pnpm content:validate` until clean. Write wrong options as specific and as long as the right one: the validator fails a bank where the correct option is the longest, or the shortest, in more than 40% of its multiple-choice questions.
+4b. Questions on a section's opening text (before its first subsection) take the first subsection as `subsectionNumber` and the section itself as `reread`. Calculation prompts state every number and modelling assumption they rely on (percentile method, independence of acceptance, rounding to whole GPUs).
 5. Work every calculation answer and exercise answer out a second time from scratch, independently of the first pass, and fix any disagreement.
 6. Report in the commit message body: sections done, questions and exercises per section, and anything in the book that was ambiguous or hard to make checkable.
 

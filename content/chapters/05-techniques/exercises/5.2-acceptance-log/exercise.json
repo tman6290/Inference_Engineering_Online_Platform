@@ -1,0 +1,27 @@
+{
+  "id": "5.2-acceptance-log",
+  "sectionNumber": "5.2",
+  "title": "Read a speculation log and work out real tokens per second",
+  "brief": "Benchmarks quote acceptance rates; logs show what you actually got. An engine running EAGLE-style speculation with a draft length of 4 printed how many draft tokens the target accepted on ten consecutive passes for one request:\n\n```\npass:      1  2  3  4  5  6  7  8  9  10\naccepted:  4  2  4  0  3  1  4  2  0  3\n```\n\nFrom the profiler: a validating target pass takes 25 ms, and each draft token takes 2 ms to produce. Without speculation, a plain decode pass also takes 25 ms and emits one token.\n\nWork out the request's decode speed with speculation, in tokens per second.",
+  "steps": [
+    "Add up the accepted draft tokens across the ten passes.",
+    "Add the one token the target generates on every pass, and divide by ten to get tokens per pass.",
+    "Work out the time of one speculative pass: validation plus four draft tokens.",
+    "Divide tokens per pass by seconds per pass.",
+    "Compare with plain decode at 25 ms per token, and note the overall share of draft tokens that were accepted."
+  ],
+  "answerFormat": "number, in tokens/s",
+  "answer": {
+    "kind": "calculation",
+    "answer": 100,
+    "tolerance": { "kind": "relative", "value": 0.02 },
+    "unit": "tokens/s",
+    "acceptedUnits": [{ "unit": "tokens/ms", "factor": 1000 }]
+  },
+  "solution": {
+    "walkthrough": "**Accepted drafts:** 4 + 2 + 4 + 0 + 3 + 1 + 4 + 2 + 0 + 3 = 23.\n\n**Tokens emitted:** each pass adds one token from the target, so 23 + 10 = 33 tokens over 10 passes, or 3.3 tokens per pass (N + 1 per pass, see 5.2).\n\n**Pass time:** 25 ms validation + 4 × 2 ms drafting = 33 ms.\n\n**Speed:** 3.3 tokens / 0.033 s = **100 tokens/s**. Plain decode gives 1 / 0.025 s = 40 tokens/s, so speculation is worth 2.5× on this request.\n\nThe overall acceptance is 23 of 40 drafts, or 57.5%. That number understates how good the speculator is at position 1: because a rejection throws away everything after it, later positions are rarely even in play. Passes 4 and 9 accepted nothing and still paid for four drafts, which is the overhead that makes short, high-acceptance drafts the usual target.",
+    "finalAnswer": { "kind": "calculation", "value": 100, "unit": "tokens/s" }
+  },
+  "starterFiles": [],
+  "estimatedMinutes": 10
+}

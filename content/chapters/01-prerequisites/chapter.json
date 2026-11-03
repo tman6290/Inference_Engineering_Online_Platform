@@ -1,0 +1,15 @@
+{
+  "slug": "01-prerequisites",
+  "title": "Prerequisites",
+  "lessons": ["1.1", "1.2", "1.3", "1.4"],
+  "exercises": [
+    "1.1-break-even-volume",
+    "1.1-cost-at-utilisation",
+    "1.2-agent-unit-economics",
+    "1.2-batch-window",
+    "1.3-distillation-payback",
+    "1.3-eval-hard-slice",
+    "1.4-percentiles",
+    "1.4-latency-budget"
+  ]
+}
