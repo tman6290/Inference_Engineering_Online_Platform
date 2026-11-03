@@ -1,0 +1,282 @@
+{
+  "slug": "04-engine-load-test",
+  "number": 4,
+  "title": "Engine load test: vLLM against SGLang",
+  "chapter": 4,
+  "unlockAfterSection": "4.5",
+  "estimatedHours": 14,
+  "needsGpu": true,
+  "summary": "Serve one open model of 8B parameters or fewer with vLLM and with SGLang on the same rented GPU, load-test both with a harness you write, and find the highest concurrency each engine holds inside a latency SLO. The README opens with which engine you would run and at what concurrency cap.",
+  "deliverables": [
+    "A load-test harness that streams from any OpenAI-compatible endpoint and records TTFT, inter-token gaps, output tokens and errors per request.",
+    "A concurrency sweep with at least five levels (for example 1, 4, 16, 32, 64) against each engine.",
+    "The exact launch command, engine version and GPU for both runs, committed in the repo.",
+    "charts/latency-vs-concurrency.png and charts/throughput-vs-latency.png.",
+    "results.json with every level for both engines and the highest concurrency inside the SLO.",
+    "A Makefile whose check target runs the harness with --dry-run against a fake streaming server on 127.0.0.1, on CPU, writing only under $OUT_DIR."
+  ],
+  "constraints": [
+    "Same model, weights, data type, GPU and maximum context for both engines. Change one thing at a time (see 4.5.2).",
+    "Draw prompts from an open dataset that matches the use case you name, and keep temperature at its production value.",
+    "Warm each engine up before each level and leave warm-up requests out of the numbers.",
+    "make check must finish in under 8 minutes on 2 CPUs with no network and a read-only repo."
+  ],
+  "skills": ["Load testing", "vLLM", "SGLang", "Benchmark design", "SLO setting"],
+  "rubric": [
+    {
+      "dimension": "Fair comparison",
+      "weight": 25,
+      "criteria": [
+        "Both engines ran the same model, GPU, prompts and limits, and the README lists every setting.",
+        "Only the engine changes between the two sweeps."
+      ]
+    },
+    {
+      "dimension": "Realistic load",
+      "weight": 20,
+      "criteria": [
+        "Prompts come from a named dataset that fits the use case (see 4.5.1).",
+        "Arrivals are jittered or Poisson rather than lockstep, and the README says which.",
+        "Each level has at least 100 measured requests."
+      ]
+    },
+    {
+      "dimension": "Analysis",
+      "weight": 25,
+      "criteria": [
+        "The README reads the knee of each curve and ties it to batching and memory behaviour in each engine (see 4.3).",
+        "P95 gets as much attention as P50.",
+        "Errors and timeouts are counted and explained."
+      ]
+    },
+    {
+      "dimension": "Reproducibility",
+      "weight": 15,
+      "criteria": [
+        "make check exercises the same harness code path as the real run.",
+        "Someone with a GPU could rerun the sweep from the README."
+      ]
+    },
+    {
+      "dimension": "Decision",
+      "weight": 15,
+      "criteria": [
+        "The README opens with an engine and a concurrency cap and the SLO they meet.",
+        "Every number in the README appears in results.json."
+      ]
+    }
+  ],
+  "requiredFiles": [
+    "README.md",
+    "results.json",
+    "Makefile",
+    "charts/latency-vs-concurrency.png",
+    "charts/throughput-vs-latency.png"
+  ],
+  "readmeSections": ["## Decision", "## Setup", "## Method", "## Results", "## Limitations"],
+  "resultsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": ["model", "gpu", "slo", "workload", "engines"],
+    "properties": {
+      "model": {
+        "type": "object",
+        "required": ["name", "params_b"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "params_b": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 8
+          }
+        }
+      },
+      "gpu": {
+        "type": "string",
+        "minLength": 1
+      },
+      "slo": {
+        "type": "object",
+        "required": ["ttft_ms_p95", "itl_ms_p95"],
+        "properties": {
+          "ttft_ms_p95": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "itl_ms_p95": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "workload": {
+        "type": "object",
+        "required": ["dataset", "input_tokens_mean", "output_tokens_max", "temperature", "arrival"],
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_tokens_mean": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "output_tokens_max": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "arrival": {
+            "enum": ["poisson", "jittered", "closed_loop"]
+          }
+        }
+      },
+      "engines": {
+        "type": "array",
+        "minItems": 2,
+        "items": {
+          "type": "object",
+          "required": ["name", "version", "launch_cmd", "levels", "max_concurrency_within_slo"],
+          "properties": {
+            "name": {
+              "enum": ["vllm", "sglang"]
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "launch_cmd": {
+              "type": "string",
+              "minLength": 1
+            },
+            "levels": {
+              "type": "array",
+              "minItems": 5,
+              "items": {
+                "type": "object",
+                "required": [
+                  "concurrency",
+                  "requests",
+                  "errors",
+                  "ttft_ms",
+                  "itl_ms",
+                  "output_tps_total"
+                ],
+                "properties": {
+                  "concurrency": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "requests": {
+                    "type": "integer",
+                    "minimum": 100
+                  },
+                  "errors": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "ttft_ms": {
+                    "type": "object",
+                    "required": ["p50", "p95"],
+                    "properties": {
+                      "p50": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "p95": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    }
+                  },
+                  "itl_ms": {
+                    "type": "object",
+                    "required": ["p50", "p95"],
+                    "properties": {
+                      "p50": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "p95": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    }
+                  },
+                  "output_tps_total": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "max_concurrency_within_slo": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            }
+          }
+        },
+        "allOf": [
+          {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "const": "vllm"
+                }
+              },
+              "required": ["name"]
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "const": "sglang"
+                }
+              },
+              "required": ["name"]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "files",
+      "kind": "files",
+      "label": "Required files are in the repo"
+    },
+    {
+      "id": "readme",
+      "kind": "readme",
+      "label": "README has every required section"
+    },
+    {
+      "id": "results",
+      "kind": "results",
+      "label": "results.json matches the schema"
+    },
+    {
+      "id": "make-check",
+      "kind": "run",
+      "label": "make check passes on CPU and prints \"dry-run ok\"",
+      "cmd": "make check",
+      "timeoutSec": 480,
+      "expect": {
+        "exitCode": 0,
+        "stdoutIncludes": ["dry-run ok"]
+      }
+    }
+  ],
+  "bookSections": ["4.3", "4.5", "1.4"]
+}

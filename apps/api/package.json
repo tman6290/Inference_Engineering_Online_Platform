@@ -41,6 +41,7 @@
     "./config": "./src/config.ts",
     "./content": "./src/content/load.ts",
     "./dev/seed": "./src/dev/seed.ts",
-    "./db": "./src/db.ts"
+    "./db": "./src/db.ts",
+    "./projects/sync": "./src/projects/sync.ts"
   }
 }

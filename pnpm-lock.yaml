@@ -102,6 +102,12 @@ importers:
 
   apps/runner:
     dependencies:
+      '@forward-pass/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      dotenv:
+        specifier: ^18.0.7
+        version: 18.0.7
       express:
         specifier: ^5.3.0
         version: 5.3.0
@@ -185,6 +191,9 @@ importers:
 
   packages/shared:
     dependencies:
+      ajv:
+        specifier: ^8.20.0
+        version: 8.20.0
       zod:
         specifier: ^4.6.7
         version: 4.6.7

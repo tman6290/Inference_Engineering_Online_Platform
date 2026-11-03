@@ -18,7 +18,9 @@
     "content:ingest": "tsx scripts/ingest-book.ts",
     "content:validate": "tsx scripts/validate-content.ts",
     "admin": "tsx scripts/admin.ts",
-    "content:balance": "tsx scripts/balance-options.ts"
+    "content:balance": "tsx scripts/balance-options.ts",
+    "runner": "pnpm --filter @forward-pass/runner dev",
+    "runner:image": "pnpm --filter @forward-pass/runner image"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

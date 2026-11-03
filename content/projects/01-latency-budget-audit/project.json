@@ -1,0 +1,229 @@
+{
+  "slug": "01-latency-budget-audit",
+  "number": 1,
+  "title": "Latency budget audit",
+  "chapter": 1,
+  "unlockAfterSection": "1.4",
+  "estimatedHours": 8,
+  "needsGpu": false,
+  "summary": "Pick one LLM feature, write its latency budget, then measure a real streaming endpoint against it: TTFT, inter-token latency and end-to-end time at P50, P90, P95 and P99 for two prompt shapes. The README opens with a verdict on whether the endpoint meets the budget.",
+  "deliverables": [
+    "A streaming client that logs one JSON line per request to data/requests.jsonl: send time, first-token time, every token arrival time, end time, token counts and status.",
+    "At least 150 measured requests for each of two prompt shapes (a short input and a long input), after warm-up.",
+    "An analysis script that turns data/requests.jsonl into results.json.",
+    "A Makefile whose check target recomputes the percentiles from data/requests.jsonl and fails if they disagree with results.json.",
+    "A README that opens with the verdict and names the term that misses the budget, if any."
+  ],
+  "constraints": [
+    "Time every event on the client with a monotonic clock, and stream the response.",
+    "Any endpoint works: a hosted API or a model on your own machine. Name the model and where it ran.",
+    "Leave warm-up requests out of the numbers and report how many you dropped.",
+    "Commit the raw request log. Keep API keys out of the repo.",
+    "make check uses the Python standard library only and needs no network."
+  ],
+  "skills": ["Latency percentiles", "Streaming clients", "Latency budgets", "Measurement design"],
+  "rubric": [
+    {
+      "dimension": "Budget",
+      "weight": 20,
+      "criteria": [
+        "The budget belongs to a named feature and a named kind of user (see 1.2).",
+        "TTFT, inter-token latency and end-to-end time get separate targets, each at a stated percentile.",
+        "The README says why each target has the value it has."
+      ]
+    },
+    {
+      "dimension": "Measurement",
+      "weight": 30,
+      "criteria": [
+        "Every request has client-side timestamps for the first token and each later token.",
+        "Warm-up requests are excluded and counted.",
+        "Both prompt shapes have at least 150 measured requests, with input and output token counts recorded.",
+        "Someone else could rerun the client from the README alone."
+      ]
+    },
+    {
+      "dimension": "Analysis",
+      "weight": 30,
+      "criteria": [
+        "Percentiles in results.json match the raw log (make check proves it).",
+        "The README compares mean with P50 and explains what drives the tail (see 1.4.1).",
+        "The README separates network and queue time from inference time where the data allows (see 1.4.2)."
+      ]
+    },
+    {
+      "dimension": "Communication",
+      "weight": 20,
+      "criteria": [
+        "The verdict comes first and gives the margin in milliseconds.",
+        "Every number in the README appears in results.json.",
+        "Limitations name what this setup cannot tell you."
+      ]
+    }
+  ],
+  "requiredFiles": ["README.md", "results.json", "data/requests.jsonl", "Makefile"],
+  "readmeSections": ["## Verdict", "## Budget", "## Method", "## Results", "## Limitations"],
+  "resultsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": ["endpoint", "feature", "budget", "warmup_requests", "shapes", "meets_budget"],
+    "properties": {
+      "endpoint": {
+        "type": "object",
+        "required": ["provider", "model", "location"],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "enum": ["hosted", "local"]
+          }
+        }
+      },
+      "feature": {
+        "type": "string",
+        "minLength": 1
+      },
+      "budget": {
+        "type": "object",
+        "required": ["ttft_ms_p95", "itl_ms_p95", "e2e_ms_p95"],
+        "properties": {
+          "ttft_ms_p95": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "itl_ms_p95": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "e2e_ms_p95": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "warmup_requests": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "shapes": {
+        "type": "array",
+        "minItems": 2,
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "requests",
+            "errors",
+            "input_tokens_mean",
+            "output_tokens_mean",
+            "ttft_ms",
+            "itl_ms",
+            "e2e_ms",
+            "tps_per_user_p50"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "requests": {
+              "type": "integer",
+              "minimum": 150
+            },
+            "errors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "input_tokens_mean": {
+              "type": "number",
+              "minimum": 0
+            },
+            "output_tokens_mean": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ttft_ms": {
+              "$ref": "#/$defs/pct"
+            },
+            "itl_ms": {
+              "$ref": "#/$defs/pct"
+            },
+            "e2e_ms": {
+              "$ref": "#/$defs/pct"
+            },
+            "tps_per_user_p50": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "meets_budget": {
+        "type": "boolean"
+      }
+    },
+    "$defs": {
+      "pct": {
+        "type": "object",
+        "required": ["mean", "p50", "p90", "p95", "p99"],
+        "properties": {
+          "mean": {
+            "type": "number",
+            "minimum": 0
+          },
+          "p50": {
+            "type": "number",
+            "minimum": 0
+          },
+          "p90": {
+            "type": "number",
+            "minimum": 0
+          },
+          "p95": {
+            "type": "number",
+            "minimum": 0
+          },
+          "p99": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "files",
+      "kind": "files",
+      "label": "Required files are in the repo"
+    },
+    {
+      "id": "readme",
+      "kind": "readme",
+      "label": "README has every required section"
+    },
+    {
+      "id": "results",
+      "kind": "results",
+      "label": "results.json matches the schema"
+    },
+    {
+      "id": "make-check",
+      "kind": "run",
+      "label": "make check passes on CPU and prints \"audit ok\"",
+      "cmd": "make check",
+      "timeoutSec": 120,
+      "expect": {
+        "exitCode": 0,
+        "stdoutIncludes": ["audit ok"]
+      }
+    }
+  ],
+  "bookSections": ["1.2", "1.4"]
+}

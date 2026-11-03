@@ -14,6 +14,8 @@ export function watchContent(
   contentDir: string,
   content: LoadedContent,
   log: (message: string) => void = console.info,
+  /** Runs after each successful reload, e.g. to sync project rows. */
+  onReload: () => void | Promise<void> = () => undefined,
 ): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const reload = () => {
@@ -22,9 +24,13 @@ export function watchContent(
       content.digests = fresh.digests;
       content.banks = fresh.banks;
       content.exercises = fresh.exercises;
+      content.projects = fresh.projects;
       content.revision++;
+      void Promise.resolve(onReload()).catch((error: unknown) =>
+        log(`content: after reload: ${(error as Error).message}`),
+      );
       log(
-        `content: reloaded ${content.digests.size} digest(s), ${content.banks.size} bank(s), ${content.exercises.size} exercise(s)`,
+        `content: reloaded ${content.digests.size} digest(s), ${content.banks.size} bank(s), ${content.exercises.size} exercise(s), ${content.projects.size} project(s)`,
       );
     } catch (error) {
       log(`content: kept the previous version. ${(error as Error).message}`);

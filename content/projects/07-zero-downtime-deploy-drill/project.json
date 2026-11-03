@@ -1,0 +1,268 @@
+{
+  "slug": "07-zero-downtime-deploy-drill",
+  "number": 7,
+  "title": "Zero-downtime deploy drill",
+  "chapter": 7,
+  "unlockAfterSection": "7.6",
+  "estimatedHours": 14,
+  "needsGpu": false,
+  "summary": "Containerize a small model server, put a router in front that shifts traffic from v1 to v2 in canary steps, and run two rollouts under steady load: a good release that reaches 100% with no failed requests, and a bad release that your health gates catch and roll back.",
+  "deliverables": [
+    "A Dockerfile with pinned dependencies for a model server that runs a small model on CPU and exposes a readiness endpoint that answers only after the weights load.",
+    "A router with weighted traffic splitting between two versions and health gates on error rate and P95 latency.",
+    "A load generator that sends a steady request rate for the whole drill.",
+    "A drill script that runs the canary steps (for example 5%, 25%, 50%, 100%), holds each step, checks the gates, and promotes or rolls back.",
+    "Two rollouts recorded in results.json: one good release promoted, one bad release rolled back.",
+    "charts/rollout-timeline.png: request rate, errors and P95 latency over time with the step changes marked.",
+    "A Makefile whose check target runs the drill with --dry-run using in-process stub servers on 127.0.0.1, with no Docker, and writes only under $OUT_DIR."
+  ],
+  "constraints": [
+    "Everything runs on one machine with Docker Compose. No GPU and no cloud spend are needed.",
+    "Keep v1 serving until v2 has held 100% of traffic for one full step.",
+    "The bad release must fail in a way users would notice (errors or slow responses), and you say which.",
+    "make check finishes in under 8 minutes on 2 CPUs with no network and a read-only repo."
+  ],
+  "skills": [
+    "Canary deployment",
+    "Containers",
+    "Health checks",
+    "Observability",
+    "Incident drills"
+  ],
+  "rubric": [
+    {
+      "dimension": "Rollout mechanics",
+      "weight": 30,
+      "criteria": [
+        "The good rollout reaches 100% with zero failed requests during the drill (see 7.4.1).",
+        "v2 receives traffic only after its readiness check passes, and the README reports the cold start (see 7.2.2).",
+        "The Dockerfile pins versions and keeps weights out of the image or explains why not (see 7.1.1)."
+      ]
+    },
+    {
+      "dimension": "Gates and rollback",
+      "weight": 25,
+      "criteria": [
+        "Gate thresholds are stated with the reasoning behind each.",
+        "The bad rollout stops at the first step whose gate fails and returns all traffic to v1.",
+        "The README counts the users the bad release reached before rollback."
+      ]
+    },
+    {
+      "dimension": "Observability",
+      "weight": 25,
+      "criteria": [
+        "Each step reports request count, 5xx count, failed connections and latency at P50 and P95 (see 7.4.3).",
+        "The timeline chart lets a reader see each step change and the rollback."
+      ]
+    },
+    {
+      "dimension": "Runbook and write-up",
+      "weight": 20,
+      "criteria": [
+        "The README opens with the outcome of both rollouts in numbers.",
+        "The runbook tells an on-call engineer what to run and what to watch.",
+        "Every number in the README appears in results.json."
+      ]
+    }
+  ],
+  "requiredFiles": [
+    "README.md",
+    "results.json",
+    "Makefile",
+    "Dockerfile",
+    "charts/rollout-timeline.png"
+  ],
+  "readmeSections": ["## Outcome", "## Architecture", "## Drill", "## Results", "## Runbook"],
+  "resultsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": ["model", "load", "gates", "rollouts"],
+    "properties": {
+      "model": {
+        "type": "string",
+        "minLength": 1
+      },
+      "load": {
+        "type": "object",
+        "required": ["rps", "duration_s"],
+        "properties": {
+          "rps": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "duration_s": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "gates": {
+        "type": "object",
+        "required": ["max_error_rate", "max_p95_ms"],
+        "properties": {
+          "max_error_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "max_p95_ms": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "rollouts": {
+        "type": "array",
+        "minItems": 2,
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "outcome",
+            "cold_start_s",
+            "steps",
+            "total_requests",
+            "failed_requests"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "enum": ["good", "bad"]
+            },
+            "outcome": {
+              "enum": ["promoted", "rolled_back"]
+            },
+            "cold_start_s": {
+              "type": "number",
+              "minimum": 0
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "required": [
+                  "weight_pct",
+                  "duration_s",
+                  "requests",
+                  "errors_5xx",
+                  "failed_connections",
+                  "latency_ms"
+                ],
+                "properties": {
+                  "weight_pct": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "duration_s": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "requests": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "errors_5xx": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "failed_connections": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "latency_ms": {
+                    "type": "object",
+                    "required": ["p50", "p95"],
+                    "properties": {
+                      "p50": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "p95": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "total_requests": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "failed_requests": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "allOf": [
+          {
+            "contains": {
+              "type": "object",
+              "required": ["kind", "outcome"],
+              "properties": {
+                "kind": {
+                  "const": "good"
+                },
+                "outcome": {
+                  "const": "promoted"
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["kind", "outcome"],
+              "properties": {
+                "kind": {
+                  "const": "bad"
+                },
+                "outcome": {
+                  "const": "rolled_back"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "files",
+      "kind": "files",
+      "label": "Required files are in the repo"
+    },
+    {
+      "id": "readme",
+      "kind": "readme",
+      "label": "README has every required section"
+    },
+    {
+      "id": "results",
+      "kind": "results",
+      "label": "results.json matches the schema"
+    },
+    {
+      "id": "make-check",
+      "kind": "run",
+      "label": "make check passes on CPU and prints \"drill ok\"",
+      "cmd": "make check",
+      "timeoutSec": 300,
+      "expect": {
+        "exitCode": 0,
+        "stdoutIncludes": ["drill ok"]
+      }
+    }
+  ],
+  "bookSections": ["7.1", "7.2", "7.4"]
+}

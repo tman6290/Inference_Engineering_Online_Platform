@@ -311,3 +311,91 @@ model TeachBack {
   audioMime String?
   createdAt DateTime @default(now())
 }
+
+// ---------------------------------------------------------------------------
+// Projects: solo deliverables, graded by checks and then a critique. Specs live in
+// content/projects/ and are copied here so submissions can reference them.
+// ---------------------------------------------------------------------------
+
+/// A copy of content/projects/<slug>/project.json and its brief, kept in sync at API start.
+model Project {
+  slug               String       @id
+  number             Int          @unique
+  title              String
+  chapter            Int
+  unlockAfterSection String
+  spec               Json
+  brief              String
+  updatedAt          DateTime     @updatedAt
+  submissions        Submission[]
+}
+
+/// One learner's attempt at a project. Versions count up per learner per project.
+model Submission {
+  id           String           @id @default(uuid())
+  userId       String
+  projectSlug  String
+  project      Project          @relation(fields: [projectSlug], references: [slug])
+  version      Int
+  repoUrl      String
+  /// As submitted, or the commit the runner cloned when none was given.
+  commitSha    String?
+  noteToGrader String?
+  /// queued, checking, critiquing, graded or failed.
+  status       String           @default("queued")
+  /// Why a failed submission failed, in a sentence.
+  failure      String?
+  /// What the runner read from the repo for the critique: file tree, README, results, sources.
+  artifacts    Json?
+  createdAt    DateTime         @default(now())
+  claimedAt    DateTime?
+  gradedAt     DateTime?
+  files        SubmissionFile[]
+  checks       CheckResult[]
+  critique     Critique?
+
+  @@unique([userId, projectSlug, version])
+  @@index([status, createdAt])
+}
+
+/// An upload beside the repo: a PDF, PNG, notebook or zip. Stored under uploads/submissions.
+model SubmissionFile {
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  name         String
+  mime         String
+  size         Int
+  createdAt    DateTime   @default(now())
+
+  @@unique([submissionId, name])
+}
+
+model CheckResult {
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  checkId      String
+  kind         String
+  passed       Boolean
+  /// Capped at 200 KB.
+  log          String
+  durationMs   Int
+  /// Order in the spec.
+  position     Int
+
+  @@unique([submissionId, checkId])
+}
+
+/// The one runtime model call: a structured critique of a checked submission.
+model Critique {
+  id           String     @id @default(uuid())
+  submissionId String     @unique
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  json         Json
+  model        String
+  costUsd      Float?
+  inputTokens  Int
+  outputTokens Int
+  createdAt    DateTime   @default(now())
+}

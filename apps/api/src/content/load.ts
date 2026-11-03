@@ -5,10 +5,12 @@ import {
   checkpointBankSchema,
   digestSchema,
   exerciseSchema,
+  projectSpecSchema,
   type CheckpointBank,
   type Digest,
   type Exercise,
   type LessonId,
+  type ProjectSpec,
 } from '@forward-pass/shared';
 import type { z } from 'zod';
 
@@ -20,12 +22,20 @@ export interface LoadedExercise {
   solutionFiles: string[];
 }
 
+export interface LoadedProject {
+  spec: ProjectSpec;
+  /** README.md: the brief the learner reads, as Markdown. */
+  brief: string;
+}
+
 /** Authored content, loaded once at start-up. Answer keys stay in here, on the server. */
 export interface LoadedContent {
   digests: Map<LessonId, Digest>;
   banks: Map<string, CheckpointBank>;
   /** By id, in chapter.json order. */
   exercises: Map<string, LoadedExercise>;
+  /** By slug, in project-number order. */
+  projects: Map<string, LoadedProject>;
   /** Goes up each time the files are reloaded, so caches built from them know to rebuild. */
   revision: number;
 }
@@ -34,6 +44,7 @@ export const emptyContent = (): LoadedContent => ({
   digests: new Map(),
   banks: new Map(),
   exercises: new Map(),
+  projects: new Map(),
   revision: 0,
 });
 
@@ -81,6 +92,7 @@ const jsonIn = (dir: string) =>
  */
 export function loadContent(contentDir: string): LoadedContent {
   const content = emptyContent();
+  loadProjects(contentDir, content);
   const chaptersDir = path.join(contentDir, 'chapters');
   if (!existsSync(chaptersDir)) return content;
 
@@ -116,4 +128,22 @@ export function loadContent(contentDir: string): LoadedContent {
     }
   }
   return content;
+}
+
+/** content/projects/<slug>/project.json with its README.md brief, in project-number order. */
+function loadProjects(contentDir: string, content: LoadedContent): void {
+  const dir = path.join(contentDir, 'projects');
+  if (!existsSync(dir)) return;
+  const loaded: LoadedProject[] = [];
+  for (const folder of readdirSync(dir, { withFileTypes: true })) {
+    if (!folder.isDirectory()) continue;
+    const file = path.join(dir, folder.name, 'project.json');
+    if (!existsSync(file)) continue;
+    const spec = parseFile(file, projectSpecSchema);
+    const readme = path.join(dir, folder.name, 'README.md');
+    loaded.push({ spec, brief: existsSync(readme) ? readFileSync(readme, 'utf8') : '' });
+  }
+  for (const project of loaded.sort((a, b) => a.spec.number - b.spec.number)) {
+    content.projects.set(project.spec.slug, project);
+  }
 }

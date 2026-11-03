@@ -1,0 +1,280 @@
+{
+  "slug": "02-roofline-calculator",
+  "number": 2,
+  "title": "Roofline calculator for LLM serving",
+  "chapter": 2,
+  "unlockAfterSection": "2.5",
+  "estimatedHours": 10,
+  "needsGpu": false,
+  "summary": "Build a command-line calculator that reads a model's config.json and a GPU spec sheet, then predicts weight and KV-cache memory, arithmetic intensity for prefill and decode at each batch size, the batch size where decode turns compute bound, and a floor on inter-token latency. Use it to pick a GPU for one model before renting anything.",
+  "deliverables": [
+    "A Python package that reads a Hugging Face config.json and a GPU entry from gpus.json and prints the predictions as a table and as JSON.",
+    "gpus.json with at least three GPUs: dense FP16/BF16 TFLOPS, memory bandwidth, memory size, and the source of each figure.",
+    "Predictions for at least three models, one of them using grouped-query attention and one a mixture of experts, each at two or more context lengths and batch sizes 1, 8, 32 and 128.",
+    "charts/roofline.png: the roofline for one GPU with prefill and decode points for one model.",
+    "One reality check: your predicted inter-token latency floor beside a measured or published number for the same model and GPU, with the gap explained.",
+    "Unit tests against figures you work out by hand, run by make check."
+  ],
+  "constraints": [
+    "The calculator core uses the Python standard library only, so make check runs offline.",
+    "State every assumption in the README: data type, what you count as a FLOP, and what you leave out (activations, framework overhead).",
+    "For mixture-of-experts models, use active parameters for decode traffic and total parameters for memory.",
+    "Ship the config.json files you used under configs/ so make check needs no download."
+  ],
+  "skills": ["Roofline analysis", "Arithmetic intensity", "KV-cache sizing", "Capacity planning"],
+  "rubric": [
+    {
+      "dimension": "Correctness",
+      "weight": 35,
+      "criteria": [
+        "Parameter counts land within 2% of the published size for each model.",
+        "KV-cache bytes per token account for the number of KV heads, not only attention heads (see 2.5).",
+        "Decode intensity rises with batch size and the crossover batch matches the GPU's ops:byte ratio (see 2.4.1).",
+        "Unit tests cover the hand-worked example and pass in make check."
+      ]
+    },
+    {
+      "dimension": "Assumptions",
+      "weight": 15,
+      "criteria": [
+        "The README lists each simplification and which way it biases the prediction.",
+        "The mixture-of-experts case separates active and total parameters (see 2.2.4)."
+      ]
+    },
+    {
+      "dimension": "Reality check",
+      "weight": 20,
+      "criteria": [
+        "results.json pairs a predicted floor with a measured or published number and names the source.",
+        "The README names specific causes for the gap."
+      ]
+    },
+    {
+      "dimension": "Decision and write-up",
+      "weight": 30,
+      "criteria": [
+        "The README opens with a GPU choice and a batch-size ceiling for the named model and context length.",
+        "The worked example walks through one prediction step by step.",
+        "The roofline chart has labelled axes, both ceilings, and the points the text discusses."
+      ]
+    }
+  ],
+  "requiredFiles": ["README.md", "results.json", "gpus.json", "Makefile", "charts/roofline.png"],
+  "readmeSections": [
+    "## Decision",
+    "## How the calculator works",
+    "## Worked example",
+    "## Results",
+    "## Reality check"
+  ],
+  "resultsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": ["gpus", "models", "predictions", "reality_check"],
+    "properties": {
+      "gpus": {
+        "type": "array",
+        "minItems": 3,
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "dense_tflops",
+            "bandwidth_tbps",
+            "memory_gb",
+            "ops_per_byte",
+            "source"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dense_tflops": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "bandwidth_tbps": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "memory_gb": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "ops_per_byte": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "models": {
+        "type": "array",
+        "minItems": 3,
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "total_params_b",
+            "active_params_b",
+            "attention",
+            "moe",
+            "bytes_per_param",
+            "kv_bytes_per_token"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "total_params_b": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "active_params_b": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "attention": {
+              "enum": ["mha", "gqa", "mqa", "mla"]
+            },
+            "moe": {
+              "type": "boolean"
+            },
+            "bytes_per_param": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "kv_bytes_per_token": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      },
+      "predictions": {
+        "type": "array",
+        "minItems": 24,
+        "items": {
+          "type": "object",
+          "required": [
+            "model",
+            "gpu",
+            "context_tokens",
+            "batch_size",
+            "decode_intensity",
+            "bound",
+            "weights_gb",
+            "kv_cache_gb",
+            "fits",
+            "itl_floor_ms"
+          ],
+          "properties": {
+            "model": {
+              "type": "string",
+              "minLength": 1
+            },
+            "gpu": {
+              "type": "string",
+              "minLength": 1
+            },
+            "context_tokens": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "batch_size": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "decode_intensity": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "bound": {
+              "enum": ["memory", "compute"]
+            },
+            "weights_gb": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "kv_cache_gb": {
+              "type": "number",
+              "minimum": 0
+            },
+            "fits": {
+              "type": "boolean"
+            },
+            "itl_floor_ms": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      },
+      "reality_check": {
+        "type": "object",
+        "required": ["model", "gpu", "batch_size", "predicted_itl_ms", "measured_itl_ms", "source"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "minLength": 1
+          },
+          "gpu": {
+            "type": "string",
+            "minLength": 1
+          },
+          "batch_size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "predicted_itl_ms": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "measured_itl_ms": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "files",
+      "kind": "files",
+      "label": "Required files are in the repo"
+    },
+    {
+      "id": "readme",
+      "kind": "readme",
+      "label": "README has every required section"
+    },
+    {
+      "id": "results",
+      "kind": "results",
+      "label": "results.json matches the schema"
+    },
+    {
+      "id": "make-check",
+      "kind": "run",
+      "label": "make check passes on CPU and prints \"roofline ok\"",
+      "cmd": "make check",
+      "timeoutSec": 120,
+      "expect": {
+        "exitCode": 0,
+        "stdoutIncludes": ["roofline ok"]
+      }
+    }
+  ],
+  "bookSections": ["2.2", "2.4", "2.5"]
+}

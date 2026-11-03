@@ -17,6 +17,8 @@ export interface AppConfig {
   secureCookies: boolean;
   /** Hops of reverse proxy to trust for the client IP (rate limiting). */
   trustProxy: number;
+  /** Shared secret the runner sends to the internal job routes. */
+  runnerToken: string | undefined;
 }
 
 const envSchema = z.object({
@@ -28,6 +30,7 @@ const envSchema = z.object({
   INVITE_CODE_1: z.string().optional(),
   INVITE_CODE_2: z.string().optional(),
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
+  RUNNER_TOKEN: z.string().optional(),
 });
 
 const blankToUndefined = (value: string | undefined) => (value ? value : undefined);
@@ -50,5 +53,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     inviteCodes: [blankToUndefined(parsed.INVITE_CODE_1), blankToUndefined(parsed.INVITE_CODE_2)],
     secureCookies: parsed.NODE_ENV === 'production',
     trustProxy: parsed.TRUST_PROXY,
+    runnerToken: blankToUndefined(parsed.RUNNER_TOKEN),
   };
 }

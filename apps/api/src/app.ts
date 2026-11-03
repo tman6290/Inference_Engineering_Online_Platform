@@ -14,6 +14,7 @@ import { exerciseRouter } from './routes/exercises';
 import { lessonRouter } from './routes/lessons';
 import { podRouter } from './routes/pod';
 import { progressRouter } from './routes/progress';
+import { projectRouter, type CritiqueRunner } from './routes/projects';
 import { searchRouter } from './routes/search';
 import { emptyContent, type LoadedContent } from './content/load';
 import { healthRouter } from './routes/health';
@@ -31,15 +32,23 @@ export interface AppDeps {
   content?: LoadedContent;
   /** Mounts development-only routes such as POST /api/progress/rebuild. */
   devRoutes?: boolean;
-  /** Where uploads (teach-back audio) are stored. Defaults to uploads/. */
+  /** Where uploads (teach-back audio, submission files) are stored. Defaults to uploads/. */
   uploadsDir?: string;
+  /** Shared secret for the runner's internal routes. */
+  runnerToken?: string;
+  /** Critiques a checked submission. Without one, checked submissions fail with a clear reason. */
+  critique?: CritiqueRunner;
 }
 
 export function createApp(deps: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
   if (deps.trustProxy) app.set('trust proxy', deps.trustProxy);
-  app.use(express.json({ limit: '1mb' }));
+  // The runner's reports carry logs and source files, so internal routes parse their own bodies.
+  const json = express.json({ limit: '1mb' });
+  app.use((req, res, next) =>
+    req.path.startsWith('/api/internal/') ? next() : json(req, res, next),
+  );
   app.use(cookieParser());
 
   // Each app gets its own limiter, so tests don't share counters.
@@ -71,12 +80,16 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', checkpointRouter({ db: deps.db, content }));
   app.use('/api', exerciseRouter({ db: deps.db, content }));
   app.use('/api', searchRouter({ db: deps.db, content }));
+  const uploadsDir = deps.uploadsDir ?? path.join(repoRoot, 'uploads');
+  app.use('/api', podRouter({ db: deps.db, content, uploadsDir }));
   app.use(
     '/api',
-    podRouter({
+    projectRouter({
       db: deps.db,
       content,
-      uploadsDir: deps.uploadsDir ?? path.join(repoRoot, 'uploads'),
+      uploadsDir,
+      runnerToken: deps.runnerToken,
+      critique: deps.critique,
     }),
   );
   app.use('/api', progressRouter({ db: deps.db, content, devRoutes: deps.devRoutes ?? false }));

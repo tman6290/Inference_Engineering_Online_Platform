@@ -1,0 +1,263 @@
+{
+  "slug": "03-local-inference-fit",
+  "number": 3,
+  "title": "Local inference fit test",
+  "chapter": 3,
+  "unlockAfterSection": "3.5",
+  "estimatedHours": 10,
+  "needsGpu": false,
+  "summary": "Decide whether an on-device feature can run on your own computer and on a typical user's weaker one. Run three sizes of one open model family through llama.cpp or Ollama, predict each one's decode ceiling from memory bandwidth, measure the real speed, prefill and memory, and run a sustained test to see what heat does to it.",
+  "deliverables": [
+    "A benchmark script that drives llama.cpp or Ollama and logs one JSON line per request to data/runs.jsonl.",
+    "Three model sizes from one family at the same quantization, for example 1B, 3B and 8B.",
+    "For each size: predicted decode ceiling, measured decode and prefill speed, TTFT at P50 and P95, and peak memory.",
+    "A sustained run of at least 10 minutes on the middle size, with decode speed at the start and at the end.",
+    "A verdict for a named feature: which size ships on-device, for which class of machine, and when the app falls back to the cloud.",
+    "A Makefile whose check target recomputes the predicted ceilings from results.json and flags any measurement above its ceiling."
+  ],
+  "constraints": [
+    "Use your own laptop or desktop. No cloud GPU is needed.",
+    "Give the memory bandwidth figure for your machine with its source.",
+    "Close other heavy programs while you measure and say what was running.",
+    "make check uses the Python standard library only and needs no network."
+  ],
+  "skills": [
+    "Local inference",
+    "Memory-bandwidth reasoning",
+    "Benchmarking",
+    "Hardware trade-offs"
+  ],
+  "rubric": [
+    {
+      "dimension": "Prediction",
+      "weight": 20,
+      "criteria": [
+        "Each ceiling comes from bandwidth divided by bytes read per token, with the working shown (see 3.1.2).",
+        "The README says which quantity limits prefill and which limits decode on this machine."
+      ]
+    },
+    {
+      "dimension": "Measurement",
+      "weight": 30,
+      "criteria": [
+        "Each size has at least 30 measured requests after warm-up, with the prompt and output lengths stated.",
+        "Peak memory comes from a tool reading, not an estimate.",
+        "The sustained run reports decode speed over time, not only an average."
+      ]
+    },
+    {
+      "dimension": "Analysis",
+      "weight": 25,
+      "criteria": [
+        "The README compares measured speed with the ceiling as a percentage and explains the gap.",
+        "The README covers thermals and, on a laptop, battery (see 3.5).",
+        "The README estimates how a median user's machine would fare, with its bandwidth and memory."
+      ]
+    },
+    {
+      "dimension": "Verdict",
+      "weight": 25,
+      "criteria": [
+        "The verdict names the feature, its minimum acceptable speed, and the size that meets it.",
+        "The fallback rule is concrete enough to code.",
+        "Every number in the README appears in results.json."
+      ]
+    }
+  ],
+  "requiredFiles": ["README.md", "results.json", "data/runs.jsonl", "Makefile"],
+  "readmeSections": ["## Verdict", "## Machine", "## Method", "## Results", "## Median user"],
+  "resultsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": ["machine", "runtime", "quantization", "feature", "models", "sustained", "verdict"],
+    "properties": {
+      "machine": {
+        "type": "object",
+        "required": ["name", "chip", "memory_gb", "bandwidth_gbps", "bandwidth_source"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "chip": {
+            "type": "string",
+            "minLength": 1
+          },
+          "memory_gb": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "bandwidth_gbps": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "bandwidth_source": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "runtime": {
+        "type": "object",
+        "required": ["name", "version"],
+        "properties": {
+          "name": {
+            "enum": ["llama.cpp", "ollama"]
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "quantization": {
+        "type": "string",
+        "minLength": 1
+      },
+      "feature": {
+        "type": "object",
+        "required": ["name", "min_decode_tps"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "min_decode_tps": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "models": {
+        "type": "array",
+        "minItems": 3,
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "params_b",
+            "file_gb",
+            "requests",
+            "predicted_decode_tps_ceiling",
+            "decode_tps_p50",
+            "prefill_tps_p50",
+            "ttft_ms",
+            "peak_memory_gb"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "params_b": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "file_gb": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "requests": {
+              "type": "integer",
+              "minimum": 30
+            },
+            "predicted_decode_tps_ceiling": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "decode_tps_p50": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "prefill_tps_p50": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "ttft_ms": {
+              "type": "object",
+              "required": ["p50", "p95"],
+              "properties": {
+                "p50": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "p95": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "peak_memory_gb": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      },
+      "sustained": {
+        "type": "object",
+        "required": ["model", "minutes", "decode_tps_start", "decode_tps_end"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minutes": {
+            "type": "number",
+            "minimum": 10
+          },
+          "decode_tps_start": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "decode_tps_end": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "verdict": {
+        "type": "object",
+        "required": ["ships_local", "fallback_rule"],
+        "properties": {
+          "ships_local": {
+            "type": ["string", "null"]
+          },
+          "fallback_rule": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "files",
+      "kind": "files",
+      "label": "Required files are in the repo"
+    },
+    {
+      "id": "readme",
+      "kind": "readme",
+      "label": "README has every required section"
+    },
+    {
+      "id": "results",
+      "kind": "results",
+      "label": "results.json matches the schema"
+    },
+    {
+      "id": "make-check",
+      "kind": "run",
+      "label": "make check passes on CPU and prints \"fit ok\"",
+      "cmd": "make check",
+      "timeoutSec": 120,
+      "expect": {
+        "exitCode": 0,
+        "stdoutIncludes": ["fit ok"]
+      }
+    }
+  ],
+  "bookSections": ["3.1", "3.5"]
+}

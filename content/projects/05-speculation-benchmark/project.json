@@ -1,0 +1,692 @@
+{
+  "slug": "05-speculation-benchmark",
+  "number": 5,
+  "title": "Speculation benchmark: draft-target against n-gram",
+  "chapter": 5,
+  "unlockAfterSection": "5.5",
+  "estimatedHours": 16,
+  "needsGpu": true,
+  "summary": "Benchmark draft-target and n-gram speculative decoding against a no-speculation baseline on one open model of 8B parameters or fewer, served with vLLM or SGLang, across batch sizes 1, 8, 32 and 128 at temperature 0 and 0.8. The README opens with the decision: which method to turn on, and up to which batch size.",
+  "deliverables": [
+    "One open target model of 8B parameters or fewer, served with vLLM or SGLang, and a smaller draft model from the same family.",
+    "Three configurations on the same engine: baseline, draft-target and n-gram.",
+    "The full grid for each configuration: batch 1, 8, 32 and 128 at temperature 0 and 0.8, 24 runs in all.",
+    "A warm-up before every run, then P50 and P95 for TTFT and inter-token latency, per-user tokens per second, total throughput and the draft acceptance rate.",
+    "Three charts: charts/speedup-vs-batch.png, charts/itl-p50-p95.png and charts/acceptance-rate.png.",
+    "A bench package with a --dry-run path that simulates all three configurations with a tiny stand-in model on CPU, and a Makefile whose check target runs it."
+  ],
+  "constraints": [
+    "One engine, one GPU, one prompt set and one output length across all 24 runs. Only the method, batch size and temperature change.",
+    "Pick a prompt set that fits the use case you name, and report its mean input and output length.",
+    "make check runs only the dry run, finishes in under 8 minutes on 2 CPUs with no network, and writes only under $OUT_DIR.",
+    "Report the draft-to-target size ratio and the number of draft tokens per step for each method."
+  ],
+  "skills": [
+    "Speculative decoding",
+    "vLLM or SGLang",
+    "Benchmark design",
+    "Latency percentiles",
+    "Technical writing"
+  ],
+  "rubric": [
+    {
+      "dimension": "Experimental design",
+      "weight": 25,
+      "criteria": [
+        "All 24 runs are present and share engine, GPU, prompts and output length.",
+        "Every run starts after a warm-up, and the README says how long the warm-up was.",
+        "The baseline makes each speedup a ratio against the same batch size and temperature."
+      ]
+    },
+    {
+      "dimension": "Measurement",
+      "weight": 25,
+      "criteria": [
+        "results.json reports P50 and P95 for TTFT and inter-token latency in every run.",
+        "Acceptance rate is reported for both speculative methods and null for the baseline.",
+        "Each run has at least 50 measured requests."
+      ]
+    },
+    {
+      "dimension": "Analysis",
+      "weight": 25,
+      "criteria": [
+        "The README explains why the gain shrinks as batch size grows, in terms of spare compute (see 5.2).",
+        "The README explains the temperature effect through acceptance rate (see 5.2).",
+        "The README says why n-gram did well or badly on this prompt set (see 5.2.4) and what the draft model cost (see 5.2.1).",
+        "TTFT is discussed separately from inter-token latency."
+      ]
+    },
+    {
+      "dimension": "Decision",
+      "weight": 15,
+      "criteria": [
+        "The README opens with a method and a batch-size cutoff, backed by numbers from results.json.",
+        "The decision says what a team should do at temperature 0.8."
+      ]
+    },
+    {
+      "dimension": "Reproducibility",
+      "weight": 10,
+      "criteria": [
+        "make check runs the same pipeline as the GPU run, with the model swapped for a stand-in.",
+        "Launch commands and versions are in the repo."
+      ]
+    }
+  ],
+  "requiredFiles": [
+    "README.md",
+    "results.json",
+    "Makefile",
+    "charts/speedup-vs-batch.png",
+    "charts/itl-p50-p95.png",
+    "charts/acceptance-rate.png"
+  ],
+  "readmeSections": ["## Decision", "## Setup", "## Method", "## Results", "## Limitations"],
+  "resultsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": ["model", "engine", "gpu", "workload", "warmup", "runs"],
+    "properties": {
+      "model": {
+        "type": "object",
+        "required": ["target", "target_params_b", "draft", "draft_params_b"],
+        "properties": {
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_params_b": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 8
+          },
+          "draft": {
+            "type": "string",
+            "minLength": 1
+          },
+          "draft_params_b": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "engine": {
+        "type": "object",
+        "required": ["name", "version"],
+        "properties": {
+          "name": {
+            "enum": ["vllm", "sglang"]
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "gpu": {
+        "type": "string",
+        "minLength": 1
+      },
+      "workload": {
+        "type": "object",
+        "required": ["dataset", "prompts", "input_tokens_mean", "output_tokens"],
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "minLength": 1
+          },
+          "prompts": {
+            "type": "integer",
+            "minimum": 50
+          },
+          "input_tokens_mean": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "speculation": {
+        "type": "object",
+        "required": ["draft_target_tokens", "ngram_tokens"],
+        "properties": {
+          "draft_target_tokens": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "ngram_tokens": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "warmup": {
+        "type": "object",
+        "required": ["requests"],
+        "properties": {
+          "requests": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "runs": {
+        "type": "array",
+        "minItems": 24,
+        "items": {
+          "type": "object",
+          "required": [
+            "method",
+            "batch_size",
+            "temperature",
+            "requests",
+            "ttft_ms",
+            "itl_ms",
+            "tps_per_user_p50",
+            "output_tps_total",
+            "acceptance_rate"
+          ],
+          "properties": {
+            "method": {
+              "enum": ["baseline", "draft_target", "ngram"]
+            },
+            "batch_size": {
+              "enum": [1, 8, 32, 128]
+            },
+            "temperature": {
+              "enum": [0, 0.8]
+            },
+            "requests": {
+              "type": "integer",
+              "minimum": 50
+            },
+            "ttft_ms": {
+              "type": "object",
+              "required": ["p50", "p95"],
+              "properties": {
+                "p50": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "p95": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "itl_ms": {
+              "type": "object",
+              "required": ["p50", "p95"],
+              "properties": {
+                "p50": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "p95": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "tps_per_user_p50": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "output_tps_total": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "acceptance_rate": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "allOf": [
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 1
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 1
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 8
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 8
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 32
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 32
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 128
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "baseline"
+                },
+                "batch_size": {
+                  "const": 128
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 1
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 1
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 8
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 8
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 32
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 32
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 128
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "draft_target"
+                },
+                "batch_size": {
+                  "const": 128
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 1
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 1
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 8
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 8
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 32
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 32
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 128
+                },
+                "temperature": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "contains": {
+              "type": "object",
+              "required": ["method", "batch_size", "temperature"],
+              "properties": {
+                "method": {
+                  "const": "ngram"
+                },
+                "batch_size": {
+                  "const": 128
+                },
+                "temperature": {
+                  "const": 0.8
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "files",
+      "kind": "files",
+      "label": "Required files are in the repo"
+    },
+    {
+      "id": "readme",
+      "kind": "readme",
+      "label": "README has every required section"
+    },
+    {
+      "id": "results",
+      "kind": "results",
+      "label": "results.json matches the schema"
+    },
+    {
+      "id": "make-check",
+      "kind": "run",
+      "label": "make check passes on CPU and prints \"dry-run ok\"",
+      "cmd": "make check",
+      "timeoutSec": 480,
+      "expect": {
+        "exitCode": 0,
+        "stdoutIncludes": ["dry-run ok"]
+      }
+    }
+  ],
+  "bookSections": ["5.2", "4.5", "1.4"]
+}

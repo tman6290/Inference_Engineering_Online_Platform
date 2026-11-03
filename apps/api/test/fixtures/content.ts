@@ -175,14 +175,57 @@ export const exercise11 = {
   estimatedMinutes: 5,
 };
 
+/** A toy project for chapter 1 that opens after the 1.1 checkpoint. */
+export const project01 = {
+  slug: '01-toy-batching',
+  number: 1,
+  title: 'Batch a toy server',
+  chapter: 1,
+  unlockAfterSection: '1.1',
+  estimatedHours: 4,
+  needsGpu: false,
+  summary: 'Measure what batching buys a toy server.',
+  deliverables: ['A README that opens with the decision', 'results.json'],
+  constraints: ['CPU only'],
+  skills: ['batching', 'benchmarking'],
+  rubric: [
+    { dimension: 'Correctness', weight: 60, criteria: ['Numbers come from runs'] },
+    { dimension: 'Writing', weight: 40, criteria: ['The decision comes first'] },
+  ],
+  requiredFiles: ['README.md', 'results.json', 'bench/*.py'],
+  readmeSections: ['Decision', 'Results'],
+  resultsSchema: {
+    type: 'object',
+    required: ['runs'],
+    properties: {
+      runs: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          required: ['batch', 'tps'],
+          properties: { batch: { type: 'integer' }, tps: { type: 'number' } },
+        },
+      },
+    },
+  },
+  checks: [
+    { id: 'files', kind: 'files', label: 'Required files exist' },
+    { id: 'readme', kind: 'readme', label: 'README has its sections' },
+    { id: 'results', kind: 'results', label: 'results.json matches the schema' },
+    { id: 'dry-run', kind: 'run', label: 'make check passes', cmd: 'make check', timeoutSec: 60 },
+  ],
+  bookSections: ['1.1'],
+};
+
 /**
- * Writes a content folder with the 1.1 digest, and optionally its checkpoint bank and an
- * exercise with starter, test and solution files; returns its path.
+ * Writes a content folder with the 1.1 digest, and optionally its checkpoint bank, an exercise
+ * with starter, test and solution files, and a project; returns its path.
  */
 export function writeContent(
   root: string,
   digest: unknown = digest11,
-  { bank, exercise }: { bank?: unknown; exercise?: unknown } = {},
+  { bank, exercise, project }: { bank?: unknown; exercise?: unknown; project?: unknown } = {},
 ): string {
   const dir = path.join(root, 'content');
   const chapter = path.join(dir, 'chapters', '01-serving');
@@ -209,6 +252,13 @@ export function writeContent(
       'def tokens_per_second():\n    return 200\n',
     );
     exercises.push(id);
+  }
+  if (project) {
+    const slug = (project as { slug: string }).slug;
+    const folder = path.join(dir, 'projects', slug);
+    mkdirSync(folder, { recursive: true });
+    writeFileSync(path.join(folder, 'project.json'), JSON.stringify(project));
+    writeFileSync(path.join(folder, 'README.md'), '# Batch a toy server\n\nMeasure it.\n');
   }
   writeFileSync(
     path.join(chapter, 'chapter.json'),

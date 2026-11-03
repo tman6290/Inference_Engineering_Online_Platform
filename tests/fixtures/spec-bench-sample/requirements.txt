@@ -1,0 +1,2 @@
+# The bench package and its dry run use the Python standard library only.
+# GPU run dependencies live in requirements-gpu.txt.

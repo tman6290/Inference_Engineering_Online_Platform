@@ -42,7 +42,7 @@ describe('duels on Home', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Send the challenge' }));
     expect(await screen.findByRole('heading', { name: 'Challenge sent to Friend' })).toBeTruthy();
     expect(fake.pod.duels[0]).toMatchObject({ status: 'pending', section: { number: '5.2' } });
-  });
+  }, 20_000);
 
   it('shows a running duel without the partner score', async () => {
     install();

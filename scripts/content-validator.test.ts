@@ -60,6 +60,7 @@ describe('validateContent on the fixture', () => {
       banks: 2,
       questions: 52,
       exercises: 2,
+      projects: 0,
     });
   });
 

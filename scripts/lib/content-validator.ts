@@ -16,10 +16,13 @@ import {
   gradeExercise,
   normaliseText,
   outlineSchema,
+  projectSpecSchema,
 } from '@forward-pass/shared';
+import { schemaProblem } from '@forward-pass/shared/results';
 import type { z } from 'zod';
 
-// Checks authored content under <content>/chapters/ against the shared schemas and the outline.
+// Checks authored content under <content>/chapters/ and <content>/projects/ against the shared
+// schemas and the outline.
 // With the ingested book on disk (an authoring machine) it also checks figures, glossary terms,
 // source quotes and verbatim copying. Without it (CI, a fresh clone) those checks are skipped.
 
@@ -40,6 +43,7 @@ export interface ValidationReport {
     banks: number;
     questions: number;
     exercises: number;
+    projects: number;
   };
 }
 
@@ -245,7 +249,7 @@ export function validateContent(options: ValidateOptions): ValidationReport {
     errors: [],
     warnings: [],
     notes: [],
-    counts: { chapters: 0, digests: 0, banks: 0, questions: 0, exercises: 0 },
+    counts: { chapters: 0, digests: 0, banks: 0, questions: 0, exercises: 0, projects: 0 },
   };
   const rel = (file: string) => path.relative(contentDir, file).split(path.sep).join('/');
   const error = (file: string, message: string) => report.errors.push({ file: rel(file), message });
@@ -567,6 +571,61 @@ export function validateContent(options: ValidateOptions): ValidationReport {
     }
   }
 
+  // Projects ----------------------------------------------------------------------------------
+  // One per chapter: project.json is the spec, README.md the brief the learner reads.
+  const projectsDir = path.join(contentDir, 'projects');
+  const numbers = new Map<number, string>();
+  for (const folder of listDir(projectsDir, 'dir')) {
+    const dir = path.join(projectsDir, folder);
+    const file = path.join(dir, 'project.json');
+    if (!existsSync(file)) {
+      error(dir, 'has no project.json');
+      continue;
+    }
+    const spec = load(file, projectSpecSchema);
+    if (!spec) continue;
+    report.counts.projects++;
+    if (spec.slug !== folder) error(file, `slug "${spec.slug}" must match its folder "${folder}"`);
+    const other = numbers.get(spec.number);
+    if (other) error(file, `project number ${spec.number} is also used by ${other}`);
+    numbers.set(spec.number, folder);
+
+    const chapter = outline.chapters.find((entry) => entry.number === spec.chapter);
+    if (!chapter) error(file, `chapter ${spec.chapter} is not in the outline`);
+    else if (!chapter.sections.some((section) => section.number === spec.unlockAfterSection)) {
+      error(
+        file,
+        `unlockAfterSection ${spec.unlockAfterSection} is not a section of chapter ${spec.chapter}`,
+      );
+    }
+    for (const number of spec.bookSections) {
+      if (!lessons.get(number)?.numbered)
+        error(file, `bookSections: ${number} is not a numbered section`);
+    }
+    if (spec.resultsSchema) {
+      const problem = schemaProblem(spec.resultsSchema);
+      if (problem) error(file, `resultsSchema is not a valid JSON Schema: ${problem}`);
+    }
+
+    const readme = path.join(dir, 'README.md');
+    if (!existsSync(readme) || !readFileSync(readme, 'utf8').trim()) {
+      error(dir, 'needs a README.md with the brief');
+      continue;
+    }
+    // The brief is original writing; no run of words lifted from the sections it draws on.
+    const brief = readFileSync(readme, 'utf8');
+    for (const number of spec.bookSections) {
+      const lesson = lessons.get(number);
+      const book = lesson ? bookLesson(lesson, readme) : null;
+      const copied = book ? copiedRun(brief, book) : null;
+      if (copied) error(readme, `copies ${number} word for word: "${copied}"`);
+    }
+  }
+  if (report.counts.projects && numbers.size < 7) {
+    const missing = [1, 2, 3, 4, 5, 6, 7].filter((n) => !numbers.has(n));
+    warn(projectsDir, `no project yet for chapter(s) ${missing.join(', ')}`);
+  }
+
   return report;
 }
 
@@ -585,10 +644,10 @@ export function formatReport(report: ValidationReport): string {
   group('error', report.errors);
   group('warning', report.warnings);
   for (const note of report.notes) lines.push(`note: ${note}`);
-  const { chapters, digests, banks, questions, exercises } = report.counts;
+  const { chapters, digests, banks, questions, exercises, projects } = report.counts;
   lines.push(
     `content:validate: ${chapters} chapter(s), ${digests} digest(s), ${banks} bank(s), ` +
-      `${questions} question(s), ${exercises} exercise(s); ` +
+      `${questions} question(s), ${exercises} exercise(s), ${projects} project(s); ` +
       `${report.errors.length} error(s), ${report.warnings.length} warning(s).`,
   );
   return lines.join('\n');
