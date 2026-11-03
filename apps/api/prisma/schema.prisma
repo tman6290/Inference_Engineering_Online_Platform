@@ -18,15 +18,17 @@ enum PodColour {
 
 /// One of the pod's two seats.
 model User {
-  id           String      @id @default(uuid())
-  email        String      @unique
-  displayName  String
-  initial      String
-  colour       PodColour
-  passwordHash String
-  createdAt    DateTime    @default(now())
-  sessions     Session[]
-  inviteCode   InviteCode?
+  id                 String      @id @default(uuid())
+  email              String      @unique
+  displayName        String
+  initial            String
+  colour             PodColour
+  passwordHash       String
+  /// Set when an admin creates the account or resets its password; cleared once the user picks their own.
+  mustChangePassword Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+  sessions           Session[]
+  inviteCode         InviteCode?
 }
 
 /// The id is an HMAC of the cookie token, so a leaked table can't be replayed as cookies.

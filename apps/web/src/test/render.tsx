@@ -9,7 +9,14 @@ import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
 
 export const TOFA: MeResponse = {
-  user: { id: 'u1', email: 'tofa@example.com', displayName: 'Tofa', initial: 'T', colour: 'lime' },
+  user: {
+    id: 'u1',
+    email: 'tofa@example.com',
+    displayName: 'Tofa',
+    initial: 'T',
+    colour: 'lime',
+    mustChangePassword: false,
+  },
   pod: [
     { id: 'u1', displayName: 'Tofa', initial: 'T', colour: 'lime' },
     { id: 'u2', displayName: 'Friend', initial: 'F', colour: 'butter' },
@@ -29,8 +36,15 @@ const json = (status: number, body?: unknown) =>
  * A stand-in for the API with one session. Covers the routes the shell and auth pages call.
  * Install with vi.stubGlobal('fetch', fakeApi.fetch).
  */
-export function createFakeApi({ signedIn = true }: { signedIn?: boolean } = {}) {
-  const state = { signedIn };
+export function createFakeApi({
+  signedIn = true,
+  mustChangePassword = false,
+}: { signedIn?: boolean; mustChangePassword?: boolean } = {}) {
+  const state = { signedIn, mustChangePassword, password: PASSWORD };
+  const me = (): MeResponse => ({
+    ...TOFA,
+    user: { ...TOFA.user, mustChangePassword: state.mustChangePassword },
+  });
   const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = typeof input === 'string' ? input : input.toString();
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
@@ -39,22 +53,33 @@ export function createFakeApi({ signedIn = true }: { signedIn?: boolean } = {}) 
       case '/api/health':
         return json(200, { ok: true });
       case '/api/me':
-        return state.signedIn ? json(200, TOFA) : json(401, { error: 'unauthenticated' });
+        return state.signedIn ? json(200, me()) : json(401, { error: 'unauthenticated' });
       case '/api/auth/login':
-        if (body?.password !== PASSWORD) {
+        if (body?.password !== state.password) {
           return json(401, {
             error: 'invalid_credentials',
             message: 'That email and password do not match.',
           });
         }
         state.signedIn = true;
-        return json(200, TOFA);
+        return json(200, me());
       case '/api/auth/register':
         if (body?.inviteCode !== INVITE) {
           return json(400, { error: 'invalid_invite', message: 'That invite code is not valid.' });
         }
         state.signedIn = true;
         return json(201, { ...TOFA, pod: TOFA.pod.slice(0, 1) });
+      case '/api/auth/password':
+        if (!state.signedIn) return json(401, { error: 'unauthenticated' });
+        if (body?.currentPassword !== state.password) {
+          return json(400, {
+            error: 'wrong_password',
+            message: 'Your current password is not right.',
+          });
+        }
+        state.password = body.newPassword;
+        state.mustChangePassword = false;
+        return json(200, me());
       case '/api/auth/logout':
         state.signedIn = false;
         return new Response(null, { status: 204 });

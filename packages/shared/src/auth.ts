@@ -39,8 +39,23 @@ export const publicUserSchema = z.object({
 });
 export type PublicUser = z.infer<typeof publicUserSchema>;
 
+export const changePasswordRequestSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Enter your current password.').max(200),
+    newPassword: password,
+  })
+  .refine((input) => input.newPassword !== input.currentPassword, {
+    path: ['newPassword'],
+    message: 'Choose a password different from your current one.',
+  });
+export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
+
 export const meResponseSchema = z.object({
-  user: publicUserSchema.extend({ email: z.string() }),
+  user: publicUserSchema.extend({
+    email: z.string(),
+    /** True after an admin set a temporary password; the app asks for a new one first. */
+    mustChangePassword: z.boolean(),
+  }),
   /** Both seats, the signed-in user first. Has one entry until the partner registers. */
   pod: z.array(publicUserSchema),
 });
@@ -53,6 +68,7 @@ export const authErrorCodes = [
   'pod_full',
   'email_taken',
   'invalid_credentials',
+  'wrong_password',
   'unauthenticated',
   'rate_limited',
 ] as const;

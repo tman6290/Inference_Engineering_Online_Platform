@@ -28,8 +28,12 @@ time into gitignored folders.
 8. Each of us claims a seat once, at `http://localhost:5173/register?code=<INVITE_CODE_1>` and
    `…?code=<INVITE_CODE_2>`. After that, sign in at `/login`.
 
-Forgot a password? `pnpm admin reset-password <email>` prints a new one and signs that account out
-everywhere. `pnpm admin list-users` and `pnpm admin revoke-sessions <email>` cover the rest.
+Forgot a password? `pnpm admin reset-password <email>` sets a temporary one (add
+`--password <temporary>` to choose it), signs that account out everywhere, and asks for a new
+password at the next sign-in. `pnpm admin create-user <email> --name <name>` creates an account in
+a free seat without an invite link, the same way. `pnpm admin list-users` and
+`pnpm admin revoke-sessions <email>` cover the rest. Changing your own password keeps you signed in
+on that device and signs out any others.
 
 Check the API with `curl http://localhost:5173/api/health`. It should return `{"ok":true}`.
 

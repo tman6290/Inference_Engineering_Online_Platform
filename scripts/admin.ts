@@ -1,12 +1,23 @@
-import { listUsers, resetPassword, revokeSessions } from '@forward-pass/api/admin';
+import { createUser, listUsers, resetPassword, revokeSessions } from '@forward-pass/api/admin';
 import { loadConfig } from '@forward-pass/api/config';
 import { createDb } from '@forward-pass/api/db';
 
 const usage = `Usage: pnpm admin <command>
 
   list-users                 Show both seats and their active sessions
-  reset-password <email>     Set a new random password and sign the user out everywhere
+  create-user <email> --name <name> [--password <temporary>]
+                             Create an account in the next free seat, no invite needed.
+                             The password is temporary: the user must change it at sign-in.
+                             Omit --password to generate one.
+  reset-password <email> [--password <temporary>]
+                             Set a temporary password (generated if omitted), sign the
+                             user out everywhere, and require a new one at sign-in
   revoke-sessions <email>    Sign the user out everywhere`;
+
+function option(name: string): string | undefined {
+  const index = process.argv.indexOf(`--${name}`);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
 
 async function main(): Promise<number> {
   const [command, email] = process.argv.slice(2);
@@ -27,11 +38,23 @@ async function main(): Promise<number> {
         );
         return 0;
       }
+      case 'create-user': {
+        const name = option('name');
+        if (!email || !name) break;
+        const given = option('password');
+        const password = await createUser(db, { email, displayName: name, password: given });
+        console.info(`Created ${email}. They must choose a new password after signing in.`);
+        if (!given) console.info(`Temporary password: ${password}`);
+        return 0;
+      }
       case 'reset-password': {
         if (!email) break;
-        const password = await resetPassword(db, email);
-        console.info(`New password for ${email}: ${password}`);
-        console.info('Every session for this user was signed out. Pass the password on privately.');
+        const given = option('password');
+        const password = await resetPassword(db, email, given);
+        if (!given) console.info(`Temporary password for ${email}: ${password}`);
+        console.info(
+          `Reset ${email}: every session was signed out, and they must choose a new password after signing in.`,
+        );
         return 0;
       }
       case 'revoke-sessions': {

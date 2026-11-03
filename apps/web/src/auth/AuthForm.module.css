@@ -19,3 +19,21 @@
   font-size: 15px;
   color: var(--text-mute);
 }
+
+/* A button that reads as an inline link, for actions inside running text. */
+.linkButton {
+  display: inline;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  color: var(--link-hover);
+}

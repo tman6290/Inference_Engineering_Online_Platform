@@ -121,6 +121,73 @@ describe('auth flow', () => {
   );
 });
 
+describe('temporary passwords', () => {
+  function mustChange() {
+    const api = createFakeApi({ mustChangePassword: true });
+    vi.stubGlobal('fetch', api.fetch);
+    return api;
+  }
+
+  it('sends a user with a temporary password to choose their own first', async () => {
+    mustChange();
+    const { router } = renderRoute('/book/5.2');
+    await screen.findByRole('heading', { level: 1, name: 'Choose your own password' });
+    expect(router.state.location.pathname).toBe('/change-password');
+    expect(router.state.location.search).toBe('?next=%2Fbook%2F5.2');
+  });
+
+  it('keeps them signed in after the change and continues to where they were going', async () => {
+    const api = mustChange();
+    const { router } = renderRoute('/book/5.2');
+    await screen.findByRole('heading', { level: 1, name: 'Choose your own password' });
+
+    fill('Temporary password', PASSWORD);
+    fill('New password', 'my own long passphrase');
+    fill('Confirm new password', 'my own long passphrase');
+    fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+
+    await screen.findByRole('heading', { level: 1, name: 'Lesson' });
+    expect(router.state.location.pathname).toBe('/book/5.2');
+    expect(api.state.signedIn).toBe(true);
+    expect(api.state.mustChangePassword).toBe(false);
+    expect(api.fetch.mock.calls.some(([path]) => path === '/api/auth/logout')).toBe(false);
+  });
+
+  it('catches mismatched confirmation before calling the server', async () => {
+    const api = mustChange();
+    renderRoute('/change-password');
+    await screen.findByRole('heading', { level: 1, name: 'Choose your own password' });
+
+    fill('Temporary password', PASSWORD);
+    fill('New password', 'my own long passphrase');
+    fill('Confirm new password', 'something else entirely');
+    fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+
+    expect(await screen.findByText('The two new passwords do not match.')).toBeTruthy();
+    expect(api.fetch.mock.calls.some(([path]) => path === '/api/auth/password')).toBe(false);
+  });
+
+  it('shows a wrong temporary password under its field', async () => {
+    mustChange();
+    renderRoute('/change-password');
+    await screen.findByRole('heading', { level: 1, name: 'Choose your own password' });
+
+    fill('Temporary password', 'not it');
+    fill('New password', 'my own long passphrase');
+    fill('Confirm new password', 'my own long passphrase');
+    fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+
+    expect(await screen.findByText('Your current password is not right.')).toBeTruthy();
+  });
+
+  it('has no axe violations on the change-password page', async () => {
+    mustChange();
+    renderRoute('/change-password');
+    await screen.findByRole('heading', { level: 1 });
+    expect(await axeViolations()).toEqual([]);
+  });
+});
+
 describe('safeNext', () => {
   it.each([
     [null, '/'],

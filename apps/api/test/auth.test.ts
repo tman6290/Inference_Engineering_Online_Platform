@@ -195,6 +195,88 @@ describe.skipIf(noTestDatabase)('auth', () => {
     });
   });
 
+  describe('POST /api/auth/password', () => {
+    const change = (agent: ReturnType<typeof request.agent>, body: Record<string, string>) =>
+      agent.post('/api/auth/password').send(body);
+
+    it('changes the password, keeps this session and signs out the others', async () => {
+      const app = testApp();
+      const here = await registeredAgent(app);
+      const elsewhere = request.agent(app);
+      await elsewhere
+        .post('/api/auth/login')
+        .send({ email: 'tofa@example.com', password: 'correct horse battery' });
+      expect(await testDb().session.count()).toBe(2);
+
+      const res = await change(here, {
+        currentPassword: 'correct horse battery',
+        newPassword: 'a much better passphrase',
+      });
+      expect(res.status).toBe(200);
+      expect(meResponseSchema.parse(res.body).user.mustChangePassword).toBe(false);
+
+      expect((await here.get('/api/me')).status).toBe(200);
+      expect((await elsewhere.get('/api/me')).status).toBe(401);
+      expect(await testDb().session.count()).toBe(1);
+
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'tofa@example.com', password: 'a much better passphrase' });
+      expect(login.status).toBe(200);
+    });
+
+    it('clears the must-change flag', async () => {
+      const app = testApp();
+      const agent = await registeredAgent(app);
+      await testDb().user.updateMany({ data: { mustChangePassword: true } });
+      expect((await agent.get('/api/me')).body.user.mustChangePassword).toBe(true);
+
+      await change(agent, {
+        currentPassword: 'correct horse battery',
+        newPassword: 'brand new phrase here',
+      });
+      expect((await agent.get('/api/me')).body.user.mustChangePassword).toBe(false);
+    });
+
+    it('rejects a wrong current password and leaves the old one working', async () => {
+      const app = testApp();
+      const agent = await registeredAgent(app);
+      const res = await change(agent, {
+        currentPassword: 'not my password',
+        newPassword: 'brand new phrase here',
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('wrong_password');
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'tofa@example.com', password: 'correct horse battery' });
+      expect(login.status).toBe(200);
+    });
+
+    it('enforces the length rule and a different password', async () => {
+      const agent = await registeredAgent(testApp());
+      const short = await change(agent, {
+        currentPassword: 'correct horse battery',
+        newPassword: 'short',
+      });
+      expect(short.status).toBe(400);
+      expect(short.body.fields.newPassword).toMatch(/at least 10/);
+      const same = await change(agent, {
+        currentPassword: 'correct horse battery',
+        newPassword: 'correct horse battery',
+      });
+      expect(same.status).toBe(400);
+      expect(same.body.fields.newPassword).toMatch(/different/);
+    });
+
+    it('requires a session', async () => {
+      const res = await request(testApp())
+        .post('/api/auth/password')
+        .send({ currentPassword: 'x', newPassword: 'brand new phrase here' });
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('GET /api/me', () => {
     it('returns 401 without a session', async () => {
       const res = await request(testApp()).get('/api/me');

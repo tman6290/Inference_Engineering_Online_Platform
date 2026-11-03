@@ -1,5 +1,6 @@
 import {
   meResponseSchema,
+  type ChangePasswordRequest,
   type LoginRequest,
   type MeResponse,
   type RegisterRequest,
@@ -26,6 +27,8 @@ interface AuthContextValue {
   login: (input: LoginRequest) => Promise<void>;
   register: (input: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  /** Keeps this session signed in; the server signs out any others. */
+  changePassword: (input: ChangePasswordRequest) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -53,6 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       queryClient.setQueryData(ME_KEY, me);
     },
+    async changePassword(input) {
+      const me = await api('/api/auth/password', {
+        method: 'POST',
+        body: input,
+        schema: meResponseSchema,
+      });
+      queryClient.setQueryData(ME_KEY, me);
+    },
     async logout() {
       await api('/api/auth/logout', { method: 'POST' });
       // Mark the session as gone (RequireAuth then redirects), and drop this user's other data.
@@ -73,6 +84,6 @@ export function useAuth(): AuthContextValue {
 /** Only same-site paths, never back to the auth pages, never protocol-relative URLs. */
 export function safeNext(next: string | null): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
-  if (next.startsWith('/login') || next.startsWith('/register')) return '/';
+  if (['/login', '/register', '/change-password'].some((page) => next.startsWith(page))) return '/';
   return next;
 }

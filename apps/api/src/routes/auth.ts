@@ -1,4 +1,5 @@
 import {
+  changePasswordRequestSchema,
   loginRequestSchema,
   POD_SIZE,
   registerRequestSchema,
@@ -12,6 +13,7 @@ import { hashPassword, verifyPassword } from '../auth/password';
 import {
   clearSessionCookie,
   endSession,
+  sessionId,
   startSession,
   type SessionSettings,
 } from '../auth/sessions';
@@ -32,6 +34,7 @@ type UserRow = {
   displayName: string;
   initial: string;
   colour: 'lime' | 'butter';
+  mustChangePassword: boolean;
 };
 
 function toPublic(user: UserRow): PublicUser {
@@ -44,7 +47,7 @@ async function meResponse(db: Db, userId: string): Promise<MeResponse | null> {
   if (!me) return null;
   const others = users.filter((user) => user.id !== userId);
   return {
-    user: { ...toPublic(me), email: me.email },
+    user: { ...toPublic(me), email: me.email, mustChangePassword: me.mustChangePassword },
     pod: [toPublic(me), ...others.map(toPublic)],
   };
 }
@@ -125,6 +128,30 @@ export function authRouter({ db, sessions, inviteCodes, limiter }: AuthRouterDep
     if (sessionToken) await endSession(db, sessions, sessionToken);
     clearSessionCookie(sessions, res);
     res.status(204).end();
+  });
+
+  // Changing the password keeps this session signed in and signs out every other one.
+  router.post('/auth/password', requireAuth, limiter, async (req, res) => {
+    const parsed = changePasswordRequestSchema.safeParse(req.body);
+    if (!parsed.success) return sendValidationError(res, parsed.error);
+    const { userId, sessionToken } = authLocals(res);
+
+    const user = await db.user.findUnique({ where: { id: userId! } });
+    if (!user || !(await verifyPassword(parsed.data.currentPassword, user.passwordHash))) {
+      return sendError(res, 400, 'wrong_password', 'Your current password is not right.');
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: await hashPassword(parsed.data.newPassword),
+        mustChangePassword: false,
+      },
+    });
+    await db.session.deleteMany({
+      where: { userId: user.id, id: { not: sessionId(sessionToken!, sessions.secret) } },
+    });
+    res.json(await meResponse(db, user.id));
   });
 
   router.get('/me', requireAuth, async (_req, res) => {

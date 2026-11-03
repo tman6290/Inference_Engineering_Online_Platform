@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router';
-import { RequireAuth } from './auth/RequireAuth';
+import { CHANGE_PASSWORD_PATH, RequireAuth } from './auth/RequireAuth';
+import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import {
   BookPage,
@@ -45,6 +46,14 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
   return [
     { path: '/login', element: <LoginPage /> },
     { path: '/register', element: <RegisterPage /> },
+    {
+      path: CHANGE_PASSWORD_PATH,
+      element: (
+        <RequireAuth>
+          <ChangePasswordPage />
+        </RequireAuth>
+      ),
+    },
     {
       path: '/',
       element: (
