@@ -26,6 +26,14 @@ services:
     environment:
       RUNNER_PORT: 4100
       TZ: Africa/Lagos
+      RUNNER_TOKEN: ${RUNNER_TOKEN:-}
+      RUNNER_API_URL: ${RUNNER_COMPOSE_API_URL:-http://host.docker.internal:4000}
+      RUNNER_JOBS_DIR: /runner-jobs
+      # Sandbox containers are siblings started through the host's Docker, so their mounts need
+      # the host path of ./runner-jobs. Set it in .env when the runner runs here.
+      RUNNER_HOST_JOBS_DIR: ${RUNNER_HOST_JOBS_DIR:-}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     ports:
       - '4100:4100'
     volumes:

@@ -4,12 +4,16 @@ RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/runner/package.json apps/runner/
+COPY packages/shared/package.json packages/shared/
 RUN pnpm install --frozen-lockfile --filter @forward-pass/runner...
+COPY packages/shared packages/shared
 COPY apps/runner apps/runner
 RUN pnpm --filter @forward-pass/runner build \
   && pnpm --filter @forward-pass/runner deploy --prod --legacy /out
 
 FROM node:22-alpine
+# git clones submissions; the Docker CLI starts sandbox containers through the mounted socket.
+RUN apk add --no-cache git docker-cli
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /out/package.json ./
