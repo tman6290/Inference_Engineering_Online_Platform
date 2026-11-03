@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { sectionNumberSchema } from './book';
-import { CONFIDENCE_LEVELS } from './constants';
 import { answerInputSchema, lessonIdSchema, questionIdSchema, rereadSchema } from './content';
 import { publicExerciseSchema, publicQuestionSchema } from './grade';
+import { recallItemSchema } from './progress';
 
 // What the Checkpoint and exercise pages receive and send. Keys stay on the server until a
 // question is closed: accepted, or missed three times.
@@ -35,8 +35,12 @@ export const attemptQuestionSchema = z.object({
 });
 export type AttemptQuestion = z.infer<typeof attemptQuestionSchema>;
 
+/** solo: a section checkpoint. recall: spaced review across due sections. duel: prompt 10. */
+export const attemptKindSchema = z.enum(['solo', 'recall', 'duel']);
+
 export const attemptSummarySchema = z.object({
   id: z.string(),
+  kind: attemptKindSchema,
   sectionNumber: sectionNumberSchema,
   startedAt: z.string(),
   completedAt: z.string().nullable(),
@@ -113,14 +117,7 @@ export const checkpointsResponseSchema = z.object({
     }),
   ),
   /** Sections rated solid 21 or more days ago, or okay 10 or more days ago. Oldest first. */
-  recall: z.array(
-    z.object({
-      lessonId: lessonIdSchema,
-      title: z.string(),
-      confidence: z.enum(CONFIDENCE_LEVELS),
-      ratedAt: z.string(),
-    }),
-  ),
+  recall: z.array(recallItemSchema),
 });
 export type CheckpointsResponse = z.infer<typeof checkpointsResponseSchema>;
 

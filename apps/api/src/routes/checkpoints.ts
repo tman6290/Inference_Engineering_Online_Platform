@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import {
   attemptAnswerRequestSchema,
+  CONFIDENCE_LEVELS,
   grade,
   MAX_TRIES,
+  RECALL_QUESTIONS_PER_SECTION,
+  RECALL_SECTIONS,
   sectionNumberSchema,
   type AttemptAnswerResponse,
   type AttemptResponse,
@@ -12,12 +15,13 @@ import {
 } from '@forward-pass/shared';
 import { Router, type Response } from 'express';
 import { authLocals, requireAuth } from '../auth/middleware';
-import { sampleQuestions } from '../checkpoints/sample';
+import { sampleQuestions, seededRandom } from '../checkpoints/sample';
 import { answersByQuestion, questionState, summarize, tally } from '../checkpoints/state';
 import type { LoadedContent } from '../content/load';
-import type { AttemptRow, Db } from '../db';
+import type { AnswerRow, AttemptRow, Db } from '../db';
 import { sendError, sendValidationError } from '../http';
 import { readingOrder } from '../lessons/progress';
+import { latestRatings, recallQueue } from '../progress/store';
 
 interface CheckpointRouterDeps {
   db: Db;
@@ -27,12 +31,21 @@ interface CheckpointRouterDeps {
 /** A question answered right first try is left out of new attempts for this long. */
 const RECENT_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Recall queue thresholds, in days since the rating. */
-const RECALL_AFTER_DAYS = { solid: 21, okay: 10 } as const;
 
 export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router {
   const router = Router();
-  router.use(['/checkpoints', '/attempts'], requireAuth);
+  router.use(['/checkpoints', '/attempts', '/recall'], requireAuth);
+
+  /** A solo attempt's bank, or for a recall attempt every covered section's questions together. */
+  function bankFor(attempt: AttemptRow): CheckpointBank | undefined {
+    if (attempt.kind !== 'recall') return content.banks.get(attempt.sectionNumber);
+    const banks = attempt.sectionNumbers.map((number) => content.banks.get(number));
+    if (banks.some((bank) => !bank)) return undefined;
+    return {
+      sectionNumber: attempt.sectionNumber,
+      questions: banks.flatMap((bank) => bank!.questions),
+    };
+  }
 
   async function sectionOf(number: string) {
     const section = await db.section.findUnique({
@@ -51,7 +64,7 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
     const found = await sectionOf(number);
     if (!found?.isLastInChapter) return null;
     const passed = await db.attempt.findFirst({
-      where: { userId, sectionNumber: number, passed: true },
+      where: { userId, sectionNumber: number, kind: 'solo', passed: true },
     });
     return {
       chapterNumber: found.section.chapterNumber,
@@ -69,10 +82,33 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
   async function finish(attempt: AttemptRow): Promise<void> {
     const answers = await db.answer.findMany({ where: { attemptId: attempt.id } });
     const counts = tally(attempt, answers, await hintedIds(attempt.id));
-    await db.attempt.updateMany({
+    const stamped = await db.attempt.updateMany({
       where: { id: attempt.id, completedAt: null },
       data: { completedAt: new Date(), ...counts },
     });
+    if (stamped.count === 1 && attempt.kind === 'recall') await settleRecall(attempt, answers);
+  }
+
+  /**
+   * After a recall attempt each section gets a fresh rating, which takes it off the queue. Two
+   * misses in a row on a section (first tries, in the order asked) drop it one level.
+   */
+  async function settleRecall(attempt: AttemptRow, answers: AnswerRow[]) {
+    const grouped = answersByQuestion(answers);
+    const ratings = await latestRatings(db, attempt.userId);
+    for (const number of attempt.sectionNumbers) {
+      const asked = attempt.questionIds.filter((id) =>
+        content.banks.get(number)?.questions.some((question) => question.id === id),
+      );
+      const missed = asked.map((id) => !grouped.get(id)?.[0]?.accepted);
+      const twoInARow = missed.some((miss, index) => miss && missed[index + 1]);
+      const current = ratings.get(number)?.level ?? 'okay';
+      const index = CONFIDENCE_LEVELS.indexOf(current);
+      const level = twoInARow ? CONFIDENCE_LEVELS[Math.max(0, index - 1)]! : current;
+      await db.confidenceRating.create({
+        data: { userId: attempt.userId, lessonId: number, level },
+      });
+    }
   }
 
   async function attemptState(attempt: AttemptRow, bank: CheckpointBank): Promise<AttemptResponse> {
@@ -89,23 +125,26 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
       return question ? [questionState(question, grouped.get(id) ?? [], hinted.has(id), done)] : [];
     });
     const position = order.findIndex((lesson) => lesson.id === attempt.sectionNumber);
+    const recall = attempt.kind === 'recall';
     return {
       attempt: summarize(attempt, tally(attempt, answers, hinted)),
       section: {
         number: attempt.sectionNumber,
-        title: found?.section.title ?? attempt.sectionNumber,
+        title: recall
+          ? `Recall: ${attempt.sectionNumbers.join(', ')}`
+          : (found?.section.title ?? attempt.sectionNumber),
         chapterNumber: found?.section.chapterNumber ?? 0,
       },
       questions,
-      project: await projectFor(attempt.sectionNumber, attempt.userId),
-      next: position >= 0 ? (order[position + 1] ?? null) : null,
+      project: recall ? null : await projectFor(attempt.sectionNumber, attempt.userId),
+      next: !recall && position >= 0 ? (order[position + 1] ?? null) : null,
     };
   }
 
   /** The signed-in learner's attempt with its bank, or null after sending a 404. */
   async function ownAttempt(res: Response, id: string) {
     const attempt = await db.attempt.findUnique({ where: { id } });
-    const bank = attempt ? content.banks.get(attempt.sectionNumber) : undefined;
+    const bank = attempt ? bankFor(attempt) : undefined;
     if (!attempt || attempt.userId !== authLocals(res).userId || !bank) {
       sendError(res, 404, 'not_found', 'No such attempt.');
       return null;
@@ -139,33 +178,15 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
 
   router.get('/checkpoints', async (_req, res) => {
     const userId = authLocals(res).userId!;
-    const [sections, all, ratings, order] = await Promise.all([
+    const [sections, all, recall] = await Promise.all([
       db.section.findMany({
         where: { number: { in: [...content.banks.keys()] } },
         include: { chapter: true },
         orderBy: { orderIndex: 'asc' },
       }),
       summaries(userId),
-      db.confidenceRating.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
-      readingOrder(db),
+      recallQueue(db, userId),
     ]);
-
-    const latestRating = new Map<string, (typeof ratings)[number]>();
-    for (const rating of ratings)
-      if (!latestRating.has(rating.lessonId)) latestRating.set(rating.lessonId, rating);
-    const now = Date.now();
-    const recall = [...latestRating.values()]
-      .filter((rating) => {
-        if (rating.level === 'shaky') return false;
-        return now - rating.createdAt.getTime() >= RECALL_AFTER_DAYS[rating.level] * DAY_MS;
-      })
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map((rating) => ({
-        lessonId: rating.lessonId,
-        title: order.find((lesson) => lesson.id === rating.lessonId)?.title ?? rating.lessonId,
-        confidence: rating.level,
-        ratedAt: rating.createdAt.toISOString(),
-      }));
 
     const body: CheckpointsResponse = {
       sections: sections.map((section) => {
@@ -260,6 +281,42 @@ export function checkpointRouter({ db, content }: CheckpointRouterDeps): Router 
       },
     });
     res.status(201).json(await attemptState(attempt, bank));
+  });
+
+  // Spaced review: three questions from each due section, at most four sections. Resumes an open one.
+  router.post('/recall/attempts', async (_req, res) => {
+    const userId = authLocals(res).userId!;
+    const open = await db.attempt.findFirst({
+      where: { userId, kind: 'recall', completedAt: null },
+    });
+    const openBank = open ? bankFor(open) : undefined;
+    if (open && openBank) return res.json(await attemptState(open, openBank));
+
+    const due = (await recallQueue(db, userId))
+      .filter((item) => content.banks.has(item.lessonId))
+      .slice(0, RECALL_SECTIONS);
+    if (!due.length) return sendError(res, 409, 'nothing_due', 'Nothing is due for recall yet.');
+    const seed = randomUUID();
+    const random = seededRandom(seed);
+    const questionIds = due.flatMap((item) =>
+      content.banks
+        .get(item.lessonId)!
+        .questions.map((question) => ({ id: question.id, order: random() }))
+        .sort((a, b) => a.order - b.order)
+        .slice(0, RECALL_QUESTIONS_PER_SECTION)
+        .map((question) => question.id),
+    );
+    const attempt = await db.attempt.create({
+      data: {
+        userId,
+        kind: 'recall',
+        sectionNumber: due[0]!.lessonId,
+        sectionNumbers: due.map((item) => item.lessonId),
+        seed,
+        questionIds,
+      },
+    });
+    res.status(201).json(await attemptState(attempt, bankFor(attempt)!));
   });
 
   router.get('/attempts/:id', async (req, res) => {

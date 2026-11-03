@@ -26,6 +26,8 @@ model User {
   passwordHash       String
   /// Set when an admin creates the account or resets its password; cleared once the user picks their own.
   mustChangePassword Boolean     @default(false)
+  /// The longest uptime streak so far, in days. Kept even after the study days that made it change.
+  longestUptime      Int         @default(0)
   createdAt          DateTime    @default(now())
   sessions           Session[]
   inviteCode         InviteCode?
@@ -221,8 +223,10 @@ model Attempt {
   /// Seeds the question draw, so the same seed and exclusions give the same questions.
   seed             String
   questionIds      String[]
-  /// "solo", or "duel" once duels exist.
+  /// "solo" (one section), "recall" (spaced review) or "duel" once duels exist.
   kind             String    @default("solo")
+  /// Every section a recall attempt covers; empty for a solo attempt, which uses sectionNumber.
+  sectionNumbers   String[]  @default([])
   startedAt        DateTime  @default(now())
   // Filled when the attempt finishes.
   completedAt      DateTime?
@@ -249,4 +253,20 @@ model ExerciseReveal {
   createdAt  DateTime @default(now())
 
   @@id([userId, exerciseId])
+}
+
+/// One learner's study on one day in Africa/Lagos. Rebuilt from the raw activity above, so it can
+/// always be thrown away and recomputed.
+model StudyDay {
+  userId         String
+  /// YYYY-MM-DD in the pod's timezone.
+  date           String
+  readingMinutes Int
+  sectionsRead   Int
+  answersGraded  Int
+  projectEvents  Int
+  /// 0 is no study; 1 to 3 are the heatmap's steps.
+  intensity      Int
+
+  @@id([userId, date])
 }

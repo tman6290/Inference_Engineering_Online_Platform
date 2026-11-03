@@ -1,0 +1,245 @@
+.page {
+  display: grid;
+  gap: 48px;
+}
+
+/* The board's first row: the continue card, then a 2 × 2 block of tiles. */
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.continue {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  border-radius: var(--radius-24);
+}
+
+.where {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-mute);
+}
+
+.continueTitle {
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: anywhere;
+}
+
+.continueText {
+  max-width: 52ch;
+  font-size: 18px;
+}
+
+.bar {
+  margin-top: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 520px) {
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.weekBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 28px;
+}
+
+.weekBar {
+  width: 12px;
+  border-radius: 3px;
+  background: var(--forest);
+}
+
+[data-theme='dark'] .weekBar {
+  background: var(--lime);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin-bottom: 18px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.tocLink {
+  margin-left: auto;
+  color: var(--link);
+  font-weight: 600;
+}
+
+.bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sideColumn {
+  display: grid;
+  gap: 20px;
+}
+
+.standings,
+.side {
+  display: grid;
+  gap: 16px;
+}
+
+.cardTitle {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lock {
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.table th,
+.table td {
+  padding: 14px 12px 14px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table thead th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.table td {
+  font-family: var(--font-mono);
+}
+
+.table .lastActive {
+  font-family: inherit;
+  white-space: normal;
+  color: var(--text-mute);
+}
+
+.learner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.lime {
+  background: var(--lime);
+}
+
+.butter {
+  background: var(--butter);
+}
+
+.you {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-mute);
+}
+
+.duel p {
+  font-size: 15px;
+}
+
+.muted {
+  color: var(--text-mute);
+}
+
+.shakyList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shakyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-12);
+  background: var(--warn-bg);
+}
+
+.shakyTitle {
+  font-weight: 700;
+}
+
+.review {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--link);
+  font-weight: 600;
+}

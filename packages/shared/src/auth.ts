@@ -66,6 +66,8 @@ export const meResponseSchema = z.object({
     answered: z.number().int(),
     acceptedFirstTry: z.number().int(),
     acceptanceRate: z.number().nullable(),
+    /** Consecutive study days ending today or yesterday. */
+    uptime: z.number().int(),
   }),
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;

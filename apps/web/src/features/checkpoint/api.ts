@@ -50,7 +50,7 @@ function useAttemptUpdate() {
   return (state: AttemptResponse) => {
     queryClient.setQueryData(attemptKey(state.attempt.id), state);
     if (state.attempt.completedAt) {
-      for (const key of [CHECKPOINTS_KEY, BOOK_KEY, ME_KEY]) {
+      for (const key of [CHECKPOINTS_KEY, BOOK_KEY, ME_KEY, ['home'], ['progress']]) {
         void queryClient.invalidateQueries({ queryKey: key });
       }
     } else {

@@ -153,7 +153,7 @@ describe.skipIf(noTestDatabase)('checkpoints', () => {
     expect((await answer(agent, state.attempt.id, first!, rightAnswer(first!))).status).toBe(409);
 
     const me = meResponseSchema.parse((await agent.get('/api/me')).body);
-    expect(me.stats).toEqual({ answered: 10, acceptedFirstTry: 9, acceptanceRate: 0.9 });
+    expect(me.stats).toEqual({ answered: 10, acceptedFirstTry: 9, acceptanceRate: 0.9, uptime: 1 });
 
     const book = bookResponseSchema.parse((await agent.get('/api/book')).body);
     const section = book.chapters.flatMap((c) => c.sections).find((s) => s.number === '1.1');

@@ -3,6 +3,7 @@ import { createApp } from './app';
 import { loadConfig, repoRoot } from './config';
 import { loadContent } from './content/load';
 import { createDb } from './db';
+import { scheduleNightlyRebuild } from './progress/store';
 
 const config = loadConfig();
 const db = createDb(config.databaseUrl);
@@ -18,6 +19,10 @@ createApp({
   inviteCodes: config.inviteCodes,
   trustProxy: config.trustProxy,
   content,
+  devRoutes: config.nodeEnv !== 'production',
 }).listen(config.port, () => {
   console.info(`api listening on http://localhost:${config.port}`);
 });
+
+// Study days refresh on every read of progress; the nightly pass recomputes them in full.
+scheduleNightlyRebuild(db);

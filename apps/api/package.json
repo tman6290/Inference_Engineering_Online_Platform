@@ -39,6 +39,8 @@
     "./book": "./src/book/index.ts",
     "./book/parse": "./src/book/parse.ts",
     "./config": "./src/config.ts",
+    "./content": "./src/content/load.ts",
+    "./dev/seed": "./src/dev/seed.ts",
     "./db": "./src/db.ts"
   }
 }

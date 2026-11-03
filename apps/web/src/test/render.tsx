@@ -8,6 +8,7 @@ import { AuthProvider } from '../auth/auth';
 import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
 import { createFakeCheckpoint } from './fake-checkpoint';
+import { home, progress } from './fake-progress';
 import { book, lesson21, lesson52 } from './lesson-fixtures';
 
 export const TOFA: MeResponse = {
@@ -23,7 +24,7 @@ export const TOFA: MeResponse = {
     { id: 'u1', displayName: 'Tofa', initial: 'T', colour: 'lime' },
     { id: 'u2', displayName: 'Friend', initial: 'F', colour: 'butter' },
   ],
-  stats: { answered: 0, acceptedFirstTry: 0, acceptanceRate: null },
+  stats: { answered: 0, acceptedFirstTry: 0, acceptanceRate: null, uptime: 4 },
 };
 
 export const PASSWORD = 'correct horse battery';
@@ -98,6 +99,10 @@ export function createFakeApi({
         return new Response(null, { status: 204 });
       case '/api/book':
         return json(200, book);
+      case '/api/home':
+        return json(200, home);
+      case '/api/progress':
+        return json(200, progress);
     }
 
     const handled = checkpoint.handle(path, init?.method ?? 'GET', body);

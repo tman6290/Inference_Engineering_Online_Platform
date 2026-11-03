@@ -32,6 +32,13 @@ import {
 import styles from './CheckpointPage.module.css';
 
 const pct = (value: number) => `${Math.round(value * 100)}%`;
+
+/** Ten questions and 7 to pass for a checkpoint; a recall attempt passes at 70% of its questions. */
+function barOf(state: AttemptResponse) {
+  const total = state.questions.length || CHECKPOINT_SIZE;
+  const recall = state.attempt.kind === 'recall';
+  return { total, recall, pass: recall ? Math.ceil(0.7 * total) : CHECKPOINT_PASS };
+}
 const errorText = (error: unknown) =>
   error instanceof ApiRequestError ? error.message : 'Could not reach the server. Try again.';
 
@@ -94,15 +101,14 @@ function StartScreen({ data }: { data: CheckpointSectionResponse }) {
           <Eyebrow>How it works</Eyebrow>
           <ul className={styles.rules}>
             <li>
-              Ten questions drawn from a bank of {data.bankSize}: four scenarios, three
-              calculations, three short answers.
+              Ten questions from a bank of {data.bankSize}: four scenarios, three calculations and
+              three short answers.
             </li>
             <li>
-              Pass with {CHECKPOINT_PASS} accepted on the first try. You get three tries per
-              question; retries are logged.
+              You pass with {CHECKPOINT_PASS} right on the first try. Each question gives you three
+              tries, and your record keeps the retries.
             </li>
-            <li>Each question shows its answer format before you answer.</li>
-            <li>Hints are there when you need them, and they count.</li>
+            <li>Opening a hint goes on your record too.</li>
           </ul>
           {error ? (
             <p role="alert" className={styles.error}>
@@ -180,16 +186,19 @@ function Result({ state }: { state: AttemptResponse }) {
   const start = useStartAttempt(state.section.number);
   const navigate = useNavigate();
   const { attempt } = state;
+  const { total, recall, pass } = barOf(state);
   return (
     <Card variant="dark" padding="lg" className={styles.result} aria-labelledby="result-title">
       <Eyebrow tone="accent">{attempt.passed ? 'Passed' : 'Not passed yet'}</Eyebrow>
       <h2 id="result-title" className={styles.resultTitle}>
-        {attempt.firstTryAccepted} of {CHECKPOINT_SIZE} accepted on the first try
+        {attempt.firstTryAccepted} of {total} accepted on the first try
       </h2>
       <p className={styles.resultText}>
-        {attempt.passed
-          ? `That clears the bar of ${CHECKPOINT_PASS}.`
-          : `The bar is ${CHECKPOINT_PASS}. Re-read the subsections linked under each miss, then try a fresh draw.`}
+        {recall
+          ? 'Every section here has left the queue. A section with two misses in a row also dropped a confidence level.'
+          : attempt.passed
+            ? `That clears the bar of ${pass}.`
+            : `The bar is ${pass}. Re-read the subsections linked under each miss, then try a fresh draw.`}
         {attempt.hints ? ` ${attempt.hints} hint${attempt.hints > 1 ? 's' : ''} used.` : ''}
       </p>
       <div className={styles.resultActions}>
@@ -198,24 +207,31 @@ function Result({ state }: { state: AttemptResponse }) {
             Continue to {state.next.title}
           </ButtonLink>
         ) : null}
-        <Button
-          variant="ghost"
-          disabled={start.isPending}
-          onClick={() =>
-            start.mutate(undefined, {
-              onSuccess: (fresh) => void navigate(`?attempt=${fresh.attempt.id}`),
-            })
-          }
-        >
-          New attempt
-        </Button>
+        {recall ? (
+          <ButtonLink to="/progress" variant="ghost">
+            Back to Progress
+          </ButtonLink>
+        ) : (
+          <Button
+            variant="ghost"
+            disabled={start.isPending}
+            onClick={() =>
+              start.mutate(undefined, {
+                onSuccess: (fresh) => void navigate(`?attempt=${fresh.attempt.id}`),
+              })
+            }
+          >
+            New attempt
+          </Button>
+        )}
       </div>
     </Card>
   );
 }
 
-function AttemptView({ state }: { state: AttemptResponse }) {
+export function AttemptView({ state }: { state: AttemptResponse }) {
   const { attempt, questions } = state;
+  const { total, recall, pass } = barOf(state);
   const done = attempt.completedAt !== null;
   const firstOpen = questions.findIndex((entry) => entry.status === 'open');
   const [selected, setSelected] = useState(firstOpen >= 0 ? firstOpen : 0);
@@ -354,21 +370,25 @@ function AttemptView({ state }: { state: AttemptResponse }) {
           <Eyebrow tone="accent">Acceptance</Eyebrow>
           <p className={styles.meterValue}>
             {attempt.firstTryAccepted}
-            <span className={styles.meterUnit}>/{CHECKPOINT_SIZE}</span>
+            <span className={styles.meterUnit}>/{total}</span>
           </p>
           <ProgressBar
             value={attempt.acceptance * 100}
             label="First-try acceptance"
-            valueText={`${attempt.firstTryAccepted} of ${CHECKPOINT_SIZE} accepted on the first try`}
+            valueText={`${attempt.firstTryAccepted} of ${total} accepted on the first try`}
             hideLabel
           />
           <p className={styles.railNote}>
-            Pass at {CHECKPOINT_PASS}. First tries only; retries and hints are logged.
+            Pass at {pass}. Only first tries count; retries and hints go on your record.
           </p>
         </Card>
 
-        <ProjectCard project={state.project} />
-        <DuelCard section={state.section.number} />
+        {recall ? null : (
+          <>
+            <ProjectCard project={state.project} />
+            <DuelCard section={state.section.number} />
+          </>
+        )}
 
         {done ? null : confirmEnd ? (
           <Card className={styles.railCard}>

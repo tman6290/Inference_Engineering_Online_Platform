@@ -162,6 +162,7 @@ export function createFakeCheckpoint() {
       attempt = {
         attempt: {
           id: `attempt-${finished.length + 1}`,
+          kind: 'solo',
           sectionNumber: '5.2',
           startedAt: new Date().toISOString(),
           completedAt: null,

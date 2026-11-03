@@ -117,11 +117,10 @@ function PodCard() {
   );
 }
 
-// The real streak arrives with progress tracking (build prompt 08); nothing is recorded yet.
-const UPTIME_DAYS: number = 0;
-
+/** Consecutive study days, from /api/me. */
 function UptimeCard() {
-  const days = UPTIME_DAYS;
+  const { me } = useAuth();
+  const days = me?.stats.uptime ?? 0;
   return (
     <p className={styles.uptimeCard}>
       <BoltIcon size={24} className={styles.uptimeIcon} />

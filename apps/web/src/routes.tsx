@@ -7,15 +7,11 @@ import { BookPage } from './pages/BookPage';
 import { CheckpointPage } from './pages/CheckpointPage';
 import { CheckpointsPage } from './pages/CheckpointsPage';
 import { ExercisePage } from './pages/ExercisePage';
+import { HomePage } from './pages/HomePage';
 import { LessonPage } from './pages/LessonPage';
-import {
-  GlossaryPage,
-  HomePage,
-  NotFoundPage,
-  ProgressPage,
-  ProjectPage,
-  ProjectsPage,
-} from './pages/pages';
+import { ProgressPage } from './pages/ProgressPage';
+import { RecallPage } from './pages/RecallPage';
+import { GlossaryPage, NotFoundPage, ProjectPage, ProjectsPage } from './pages/pages';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
 
@@ -72,6 +68,7 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
         { path: 'projects', element: <ProjectsPage /> },
         { path: 'projects/:slug', element: <ProjectPage /> },
         { path: 'progress', element: <ProgressPage /> },
+        { path: 'recall', element: <RecallPage /> },
         { path: 'glossary', element: <GlossaryPage /> },
         ...devUi,
         { path: '*', element: <NotFoundPage /> },

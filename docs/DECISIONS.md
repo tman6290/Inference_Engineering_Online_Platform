@@ -189,3 +189,36 @@ honest. Logging hints and reveals is what makes acceptance rate worth comparing 
 chapter) instead of stored, because project specs arrive in a later prompt. Mastery isn't stored
 either; prompt 08 computes it from the latest attempt. The Checkpoint board is lost, so the page
 follows this prompt's description and the Lesson board's language, not a design.
+
+## 2026-11-03: Study days, uptime and recall
+
+**Decision.** A `StudyDay` row per learner per Lagos day holds reading minutes, lessons read and
+answers graded, plus an intensity from 0 to 3. A day counts as study with one graded answer or
+ten minutes of reading. Each reading event counts for at most two hours. The rows rebuild from
+the raw tables: in full every night shortly after Lagos midnight, for today and yesterday on every
+read of `/api/me`, Home or Progress, and on demand through `POST /api/progress/rebuild` outside
+production. Uptime counts consecutive study days ending today or yesterday, and I keep the longest
+run on the user, because a rebuild must never shrink a record. Mastery is 0.7 × the latest
+checkpoint's acceptance plus 0.3 × the confidence weight; a section without a checkpoint counts
+as zero. Recall attempts take three questions from each of the four oldest due sections that have
+a bank. When one finishes, every covered section gets a fresh rating, which takes it off the
+queue, and two misses in a row drop that rating one level. The recall queue holds numbered
+sections only. `pnpm db:seed` writes 60 days of made-up study for two demo accounts and refuses
+to run on a database with real accounts.
+
+**Why.** Rebuilding from raw rows means a bug in the rollup can be fixed and replayed. Refreshing
+only the last two days on reads keeps Home current without a full rebuild per request. A recall
+attempt that settled nothing would leave a section on the queue forever.
+
+**Trade-offs.** Reading minutes count time a lesson page was open and visible, so an idle tab
+still counts up to the cap. Projects shipped reads 0 until projects exist (build prompt 11), and
+the next-project card names the chapter, not a project title.
+
+## 2026-11-03: Copy without the AI tells
+
+**Decision.** UI labels and authored notes follow the stop-slop rules: no headings that count
+what's already visible ("The mechanism, in four moves" is now "How it works"; "Read the book:
+3 subsections" is now "From the book"), no "not X, but Y" lines, no em dashes and no adverb
+padding. Digests and exercise write-ups were rewritten to match; banks are next.
+
+**Why.** Copy that announces itself reads as generated and wastes the reader's attention.

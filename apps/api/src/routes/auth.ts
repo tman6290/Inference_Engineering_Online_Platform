@@ -18,6 +18,7 @@ import {
   type SessionSettings,
 } from '../auth/sessions';
 import { isUniqueViolation, type Db } from '../db';
+import { currentUptime, firstTryCounts } from '../progress/store';
 import { sendError, sendValidationError } from '../http';
 
 interface AuthRouterDeps {
@@ -47,9 +48,9 @@ async function meResponse(db: Db, userId: string): Promise<MeResponse | null> {
   if (!me) return null;
   const others = users.filter((user) => user.id !== userId);
   // Acceptance rate counts first submissions only: retries are logged but never improve it.
-  const [answered, acceptedFirstTry] = await Promise.all([
-    db.answer.count({ where: { userId, firstTry: true } }),
-    db.answer.count({ where: { userId, firstTry: true, accepted: true } }),
+  const [[acceptedFirstTry, answered], streak] = await Promise.all([
+    firstTryCounts(db, userId),
+    currentUptime(db, userId),
   ]);
   return {
     user: { ...toPublic(me), email: me.email, mustChangePassword: me.mustChangePassword },
@@ -58,6 +59,7 @@ async function meResponse(db: Db, userId: string): Promise<MeResponse | null> {
       answered,
       acceptedFirstTry,
       acceptanceRate: answered ? acceptedFirstTry / answered : null,
+      uptime: streak,
     },
   };
 }

@@ -1,0 +1,88 @@
+.figure {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.grid {
+  display: grid;
+  grid-auto-rows: 22px;
+  gap: 4px;
+  width: max-content;
+}
+
+.month,
+.rowLabel,
+.legend {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-mute);
+}
+
+.month {
+  align-self: end;
+  white-space: nowrap;
+}
+
+.rowLabel {
+  align-self: center;
+  padding-right: 8px;
+}
+
+.cell {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+/* Four steps of one hue, so the scale reads in order without relying on colour names. */
+.step0 {
+  background: var(--track);
+}
+
+.step1 {
+  background: color-mix(in srgb, var(--forest) 35%, var(--card));
+}
+
+.step2 {
+  background: color-mix(in srgb, var(--forest) 68%, var(--card));
+}
+
+.step3 {
+  background: var(--forest);
+}
+
+[data-theme='dark'] .step1 {
+  background: color-mix(in srgb, var(--lime) 30%, var(--deep));
+}
+
+[data-theme='dark'] .step2 {
+  background: color-mix(in srgb, var(--lime) 62%, var(--deep));
+}
+
+[data-theme='dark'] .step3 {
+  background: var(--lime);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend .cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.legend span:first-child {
+  margin-right: 4px;
+}
+
+.legend span:last-child {
+  margin-left: 4px;
+}

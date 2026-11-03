@@ -37,7 +37,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | pilot done (`content:` commit, 2026-11-03); reused by 13 |
 | 06 | The Lesson page | done (`lessons:` commit, 2026-11-03) |
 | 07 | Checkpoints and exercises | done (`checkpoints:` commit, 2026-11-03) |
-| 08 | Progress, uptime, recall queue, Home | |
+| 08 | Progress, uptime, recall queue, Home | done (`progress:` commit, 2026-11-03) |
 | 09 | Glossary and search | |
 | 10 | Pod: standings, duels, shared notes | |
 | 11 | Projects: specs, submission, checks, critique | |
@@ -206,7 +206,7 @@ Done when: a full 10-question attempt on 5.2 can be completed end to end; gradin
 
 ---
 
-## Prompt 08 · Progress, uptime, recall queue, Home
+## Prompt 08 · Progress, uptime, recall queue, Home (done)
 
 ```
 Read CLAUDE.md (Uptime, Recall queue). The Progress board is lost; build it from this description and the Foundations language.

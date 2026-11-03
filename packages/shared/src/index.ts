@@ -6,3 +6,4 @@ export * from './content';
 export * from './grade';
 export * from './lesson';
 export * from './checkpoint';
+export * from './progress';

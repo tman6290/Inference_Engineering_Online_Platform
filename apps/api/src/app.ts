@@ -12,6 +12,7 @@ import { bookRouter } from './routes/book';
 import { checkpointRouter } from './routes/checkpoints';
 import { exerciseRouter } from './routes/exercises';
 import { lessonRouter } from './routes/lessons';
+import { progressRouter } from './routes/progress';
 import { emptyContent, type LoadedContent } from './content/load';
 import { healthRouter } from './routes/health';
 
@@ -26,6 +27,8 @@ export interface AppDeps {
   figuresDir?: string;
   /** Authored digests, banks and exercises, loaded at start-up. Defaults to none. */
   content?: LoadedContent;
+  /** Mounts development-only routes such as POST /api/progress/rebuild. */
+  devRoutes?: boolean;
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -62,6 +65,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', lessonRouter({ db: deps.db, content }));
   app.use('/api', checkpointRouter({ db: deps.db, content }));
   app.use('/api', exerciseRouter({ db: deps.db, content }));
+  app.use('/api', progressRouter({ db: deps.db, content, devRoutes: deps.devRoutes ?? false }));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'not_found' });

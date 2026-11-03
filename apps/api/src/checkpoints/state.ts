@@ -73,9 +73,14 @@ export function answersByQuestion(answers: AnswerRow[]): Map<string, AnswerRow[]
   return grouped;
 }
 
+/** A solo checkpoint passes at CHECKPOINT_PASS of 10; a recall attempt at 70% of its questions. */
+export function passMark(attempt: Pick<AttemptRow, 'kind' | 'questionIds'>): number {
+  return attempt.kind === 'recall' ? Math.ceil(0.7 * attempt.questionIds.length) : CHECKPOINT_PASS;
+}
+
 /** First-try acceptances and hinted questions, counted from the answers and hint log. */
 export function tally(
-  attempt: Pick<AttemptRow, 'questionIds'>,
+  attempt: Pick<AttemptRow, 'questionIds' | 'kind'>,
   answers: AnswerRow[],
   hintedIds: ReadonlySet<string>,
 ) {
@@ -87,7 +92,7 @@ export function tally(
     if (rows[0]?.accepted) firstTryAccepted++;
     if (hintedIds.has(id) || rows.some((row) => row.usedHint)) hints++;
   }
-  return { firstTryAccepted, hints, passed: firstTryAccepted >= CHECKPOINT_PASS };
+  return { firstTryAccepted, hints, passed: firstTryAccepted >= passMark(attempt) };
 }
 
 export function summarize(
@@ -98,6 +103,7 @@ export function summarize(
   const firstTryAccepted = done ? (attempt.firstTryAccepted ?? 0) : counts.firstTryAccepted;
   return {
     id: attempt.id,
+    kind: attempt.kind === 'recall' || attempt.kind === 'duel' ? attempt.kind : 'solo',
     sectionNumber: attempt.sectionNumber,
     startedAt: attempt.startedAt.toISOString(),
     completedAt: attempt.completedAt?.toISOString() ?? null,

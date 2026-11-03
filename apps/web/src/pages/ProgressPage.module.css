@@ -1,0 +1,186 @@
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.column {
+  display: grid;
+  gap: 20px;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--text-mute);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-mute);
+  white-space: nowrap;
+}
+
+.error {
+  font-weight: 600;
+  color: var(--warn-text);
+}
+
+.patterns {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.pattern {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pattern:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pattern dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.pattern dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.chapters,
+.sections,
+.recall {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chapters {
+  gap: 4px;
+}
+
+.chapter summary {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  list-style: none;
+}
+
+.chapter summary::-webkit-details-marker {
+  display: none;
+}
+
+.chapterName {
+  font-weight: 700;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.barWho,
+.barValue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barValue {
+  text-align: right;
+}
+
+.track {
+  display: block;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--track);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.mine {
+  background: var(--forest);
+}
+
+[data-theme='dark'] .mine {
+  background: var(--lime);
+}
+
+.partner {
+  background: var(--butter);
+}
+
+.sections {
+  gap: 2px;
+  padding: 8px 0 12px;
+}
+
+.section {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 15px;
+}
+
+.recall {
+  gap: 8px;
+}
+
+.recallTitle {
+  font-weight: 600;
+}
