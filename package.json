@@ -17,7 +17,8 @@
     "db:seed": "tsx scripts/seed.ts",
     "content:ingest": "tsx scripts/ingest-book.ts",
     "content:validate": "tsx scripts/validate-content.ts",
-    "admin": "tsx scripts/admin.ts"
+    "admin": "tsx scripts/admin.ts",
+    "content:balance": "tsx scripts/balance-options.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

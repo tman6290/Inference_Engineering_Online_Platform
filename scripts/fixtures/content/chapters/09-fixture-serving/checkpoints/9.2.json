@@ -13,12 +13,12 @@
       "prompt": "Fixture scenario 1: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Serve requests together",
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -38,7 +38,7 @@
         "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
       "correctIndex": 0,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
@@ -60,7 +60,7 @@
         "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
       "correctIndex": 0,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
@@ -82,7 +82,7 @@
         "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
       "correctIndex": 0,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
@@ -101,12 +101,12 @@
       "prompt": "Fixture scenario 5: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
+        "Serve requests together",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 1,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -126,7 +126,7 @@
         "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
       "correctIndex": 0,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
@@ -145,12 +145,12 @@
       "prompt": "Fixture scenario 7: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send",
+        "Serve requests together"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -170,7 +170,7 @@
         "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
       "correctIndex": 0,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
@@ -189,12 +189,12 @@
       "prompt": "Fixture scenario 9: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Serve requests together",
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -211,12 +211,12 @@
       "prompt": "Fixture scenario 10: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Serve requests together",
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -233,12 +233,12 @@
       "prompt": "Fixture scenario 11: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
+        "Serve requests together",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 1,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -255,12 +255,12 @@
       "prompt": "Fixture scenario 12: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
+        "Serve requests together",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 1,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -277,12 +277,12 @@
       "prompt": "Fixture scenario 13: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
+        "Serve requests together",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 1,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -299,12 +299,12 @@
       "prompt": "Fixture scenario 14: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send",
+        "Serve requests together"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -321,12 +321,12 @@
       "prompt": "Fixture scenario 15: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Serve requests together",
+        "Lengthen each prompt you send"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -343,12 +343,12 @@
       "prompt": "Fixture scenario 16: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send",
+        "Serve requests together"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"
@@ -365,12 +365,12 @@
       "prompt": "Fixture scenario 17: which change helps a memory-limited server most?",
       "answerFormat": "one option",
       "options": [
-        "Serve requests together",
         "Buy a faster CPU",
         "Add more disk",
-        "Lengthen the prompts"
+        "Lengthen each prompt you send",
+        "Serve requests together"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "acceptedCopy": "Right: one shared read serves the whole group (see 9.2).",
       "rejectedCopy": "Think about what the server waits on at a batch of one.",
       "hint": "What is read once per step, however many requests there are?"

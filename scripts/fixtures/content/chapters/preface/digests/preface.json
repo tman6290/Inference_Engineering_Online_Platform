@@ -46,12 +46,12 @@
     "prompt": "Fixture scenario 0: which change helps a memory-limited server most?",
     "answerFormat": "one option",
     "options": [
-      "Serve requests together",
       "Buy a faster CPU",
       "Add more disk",
+      "Serve requests together",
       "Lengthen the prompts"
     ],
-    "correctIndex": 0,
+    "correctIndex": 2,
     "acceptedCopy": "Right: one shared read serves the whole group (see preface).",
     "rejectedCopy": "Think about what the server waits on at a batch of one.",
     "hint": "What is read once per step, however many requests there are?"

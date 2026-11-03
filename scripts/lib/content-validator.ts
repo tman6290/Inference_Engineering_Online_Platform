@@ -129,6 +129,62 @@ function copiedRun(text: string, book: BookLesson): string | null {
   return null;
 }
 
+/** Below this many scenario_mc questions a bank is too small to judge for answer cues. */
+export const CUE_MIN_QUESTIONS = 8;
+
+/** By chance the correct option is the longest (or shortest) about a quarter of the time. */
+export const LENGTH_CUE_SHARE = 0.4;
+
+/**
+ * Test-wiseness cues: ways to pass a bank's multiple choice without knowing the material.
+ * Fails when more than half of the correct answers sit in one position, or when the correct
+ * option is the strictly longest, or the strictly shortest, in more than 40% of the questions.
+ */
+export function answerCues(questions: Question[]): string[] {
+  const choice = questions.filter(
+    (question): question is Extract<Question, { kind: 'scenario_mc' }> =>
+      question.kind === 'scenario_mc',
+  );
+  if (choice.length < CUE_MIN_QUESTIONS) return [];
+  const problems: string[] = [];
+  const half = choice.length / 2;
+
+  const positions = [0, 0, 0, 0];
+  for (const question of choice) positions[question.correctIndex]!++;
+  const busiest = Math.max(...positions);
+  if (busiest > half) {
+    const letter = 'ABCD'[positions.indexOf(busiest)];
+    problems.push(
+      `${busiest} of ${choice.length} correct answers are option ${letter}; ` +
+        'spread them across A–D (`pnpm content:balance` does this)',
+    );
+  }
+
+  const strictly = (beats: (option: number, correct: number) => boolean) =>
+    choice.filter((question) => {
+      const correct = question.options[question.correctIndex]!.length;
+      return question.options.every(
+        (option, index) => index === question.correctIndex || beats(option.length, correct),
+      );
+    }).length;
+  const limit = choice.length * LENGTH_CUE_SHARE;
+  const longest = strictly((option, correct) => option < correct);
+  const shortest = strictly((option, correct) => option > correct);
+  if (longest > limit) {
+    problems.push(
+      `the correct option is the longest in ${longest} of ${choice.length} questions; ` +
+        'make the wrong options as specific and as long as the right one',
+    );
+  }
+  if (shortest > limit) {
+    problems.push(
+      `the correct option is the shortest in ${shortest} of ${choice.length} questions; ` +
+        'balance option lengths so neither extreme points to the answer',
+    );
+  }
+  return problems;
+}
+
 /** Mask of an answer's shape: letters and digits become "*", separators stay. */
 function maskOf(answer: string): string {
   return answer.replace(/[\p{L}\p{N}]/gu, '*');
@@ -396,6 +452,7 @@ export function validateContent(options: ValidateOptions): ValidationReport {
     for (const sub of lesson.subsections) {
       if (!covered.has(sub.number)) error(file, `no question covers subsection ${sub.number}`);
     }
+    for (const problem of answerCues(bank.questions)) error(file, problem);
   }
 
   function checkExercise(

@@ -130,3 +130,19 @@ outline catches broken rereads, uncovered subsections and duplicate ids before a
 **Trade-offs.** The schemas are strict, so authoring a section means satisfying word limits and
 mix rules up front. The copy check works on word runs, not meaning, so close paraphrase still
 needs a reviewer's eye.
+
+## 2026-11-03: Multiple choice that can't be passed by guessing
+
+**Decision.** The content validator fails a checkpoint bank when more than half of its correct
+answers sit in one position, or when the correct option is strictly the longest (or the
+shortest) in more than 40% of its multiple-choice questions. `pnpm content:balance` spreads
+correct answers evenly over A–D with a shuffle seeded by the question ids, so it is
+deterministic and a second run changes nothing.
+
+**Why.** The first authored banks had every 1.1 answer at A and the correct option longest in
+53 of 61 questions. A learner could have scored well by picking the longest answer, which would
+make acceptance rates and duels meaningless. Checking it in CI keeps later chapters honest.
+
+**Trade-offs.** Writing distractors as detailed as the right answer takes more effort, and the
+length rule is a heuristic: a bank can pass it and still have weak distractors. The authoring
+prompt keeps the human-quality bar; the validator only stops the mechanical tells.

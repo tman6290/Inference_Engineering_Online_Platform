@@ -293,6 +293,34 @@ describe('validateContent on broken copies', () => {
     );
   });
 
+  it('rejects a bank whose answers bunch in one position', () => {
+    const fixture = copyFixture();
+    fixture.edit(`${chapter}/checkpoints/9.2.json`, (bank) => {
+      for (const question of bank.questions) {
+        if (question.kind !== 'scenario_mc') continue;
+        const [correct] = question.options.splice(question.correctIndex, 1);
+        question.options.unshift(correct);
+        question.correctIndex = 0;
+      }
+    });
+    expect(errorsOf(fixture.validate())).toEqual([
+      expect.stringMatching(/9\.2\.json: 17 of 17 correct answers are option A/),
+    ]);
+  });
+
+  it('rejects a bank where the longest option is usually right', () => {
+    const fixture = copyFixture();
+    fixture.edit(`${chapter}/checkpoints/9.1.json`, (bank) => {
+      for (const question of bank.questions) {
+        if (question.kind !== 'scenario_mc') continue;
+        question.options[question.correctIndex] += ', which is the full and careful answer';
+      }
+    });
+    expect(errorsOf(fixture.validate())).toEqual([
+      expect.stringMatching(/9\.1\.json: the correct option is the longest in 10 of 10/),
+    ]);
+  });
+
   it('reports a missing outline', () => {
     const fixture = copyFixture();
     rmSync(fixture.file('outline.json'));
