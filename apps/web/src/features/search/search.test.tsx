@@ -70,6 +70,12 @@ describe('search', () => {
     await openAndType('toy speedup');
     expect(screen.getByRole('option', { name: /Work out a toy speedup/ })).toBeTruthy();
 
+    // A misspelling still offers something to click, labelled as a close match.
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'specualtive' } });
+    expect(await screen.findByText(/Closest matches:/)).toBeTruthy();
+    expect(screen.getByText(/No exact match\. 2 close matches/)).toBeTruthy();
+    expect(screen.getByRole('option', { name: /5\.2 Speculative Decoding/ })).toBeTruthy();
+
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'zzz' } });
     expect(await screen.findByText('Nothing matches “zzz”.')).toBeTruthy();
     expect(screen.getByRole('combobox').getAttribute('aria-expanded')).toBe('false');

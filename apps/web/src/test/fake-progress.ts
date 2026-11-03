@@ -185,14 +185,19 @@ const searchable: SearchResult[] = [
 export function fakeSearch(q: string): SearchResponse {
   const needle = q.trim().toLowerCase();
   const labels = { section: 'Sections', term: 'Glossary', exercise: 'Exercises' } as const;
-  const groups = (['section', 'term', 'exercise'] as const)
-    .map((type) => ({
-      type,
-      label: labels[type],
-      results: needle
-        ? searchable.filter((r) => r.type === type && r.title.toLowerCase().includes(needle))
-        : [],
-    }))
-    .filter((group) => group.results.length);
-  return { query: q, groups };
+  const find = (match: (title: string) => boolean) =>
+    (['section', 'term', 'exercise'] as const)
+      .map((type) => ({
+        type,
+        label: labels[type],
+        results: needle
+          ? searchable.filter((r) => r.type === type && match(r.title.toLowerCase()))
+          : [],
+      }))
+      .filter((group) => group.results.length);
+  const exact = find((title) => title.includes(needle));
+  if (exact.length || needle.length < 5) return { query: q, groups: exact, fuzzy: false };
+  // A stand-in for the real near-miss matching: the first four letters.
+  const close = find((title) => title.includes(needle.slice(0, 4)));
+  return { query: q, groups: close, fuzzy: close.length > 0 };
 }

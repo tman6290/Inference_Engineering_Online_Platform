@@ -38,6 +38,7 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
   const results = useSearch(query);
 
   const groups = query.trim() ? (results.data?.groups ?? []) : [];
+  const fuzzy = Boolean(query.trim() && results.data?.fuzzy);
   const flat: SearchResult[] = groups.flatMap((group) => group.results);
   const optionId = (index: number) => `${ids.option}-${index}`;
   const current = Math.min(active, Math.max(0, flat.length - 1));
@@ -86,7 +87,9 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
     : results.isFetching && !results.data
       ? 'Searching…'
       : count
-        ? `${count} ${count === 1 ? 'result' : 'results'}. Use the arrow keys to pick one.`
+        ? fuzzy
+          ? `No exact match. ${count} close ${count === 1 ? 'match' : 'matches'}. Use the arrow keys to pick one.`
+          : `${count} ${count === 1 ? 'result' : 'results'}. Use the arrow keys to pick one.`
         : `Nothing matches “${query.trim()}”.`;
 
   // Each group's first option index, so options number straight through every group.
@@ -134,6 +137,9 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {fuzzy ? (
+          <p className={styles.fuzzy}>Nothing matches “{query.trim()}” exactly. Closest matches:</p>
+        ) : null}
         <div id={ids.listbox} role="listbox" aria-label="Search results" className={styles.results}>
           {groups.map((group, at) => (
             <div key={group.type} role="group" aria-labelledby={`${ids.listbox}-${group.type}`}>

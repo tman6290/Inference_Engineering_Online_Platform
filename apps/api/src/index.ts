@@ -2,6 +2,7 @@ import path from 'node:path';
 import { createApp } from './app';
 import { loadConfig, repoRoot } from './config';
 import { loadContent } from './content/load';
+import { watchContent } from './content/watch';
 import { createDb } from './db';
 import { scheduleNightlyRebuild } from './progress/store';
 
@@ -23,6 +24,9 @@ createApp({
 }).listen(config.port, () => {
   console.info(`api listening on http://localhost:${config.port}`);
 });
+
+// In development, edits under content/ (and a re-ingest) show up without a restart.
+if (config.nodeEnv !== 'production') watchContent(path.join(repoRoot, 'content'), content);
 
 // Study days refresh on every read of progress; the nightly pass recomputes them in full.
 scheduleNightlyRebuild(db);

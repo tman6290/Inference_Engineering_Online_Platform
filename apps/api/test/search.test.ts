@@ -6,7 +6,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ingestBook } from '../src/book/ingest';
 import { loadContent, type LoadedContent } from '../src/content/load';
-import { buildIndex, normalise, search, type SearchDoc } from '../src/search/index';
+import { buildIndex, editDistance, normalise, search, type SearchDoc } from '../src/search/index';
 import { fixtureFetcher, INDEX_URL } from './fixtures/book';
 import { bank11, digest11, exercise11, writeContent } from './fixtures/content';
 import { noTestDatabase, registeredAgent, resetDatabase, testApp, testDb } from './helpers';
@@ -54,6 +54,27 @@ describe('search index', () => {
     expect(titles('kv nonsense')).toEqual([]);
     expect(titles('decode')).toEqual(['5.3 Disaggregation']);
     expect(search(index, '   ').groups).toEqual([]);
+  });
+
+  it('offers the closest matches for a misspelling, and says so', () => {
+    const typo = search(index, 'specultive');
+    expect(typo.fuzzy).toBe(true);
+    expect(titles('specultive')).toEqual(['5.2 Speculative Decoding', 'Speculative decoding']);
+    // A swapped pair, and a word still being typed.
+    expect(titles('speculatvie dec')).toContain('5.2 Speculative Decoding');
+    expect(titles('disagregation')).toEqual(['5.3 Disaggregation']);
+    expect(search(index, 'speculative').fuzzy).toBe(false);
+  });
+
+  it('keeps short words exact, so two-letter typos match nothing', () => {
+    expect(titles('kc')).toEqual([]);
+    expect(search(index, 'kc').fuzzy).toBe(false);
+  });
+
+  it('measures edits, counting a swap of neighbours as one', () => {
+    expect(editDistance('speculative', 'specultive', 2)).toBe(1);
+    expect(editDistance('cache', 'cahce', 1)).toBe(1);
+    expect(editDistance('prefill', 'decode', 2)).toBe(3);
   });
 });
 

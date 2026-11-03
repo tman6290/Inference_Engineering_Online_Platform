@@ -238,5 +238,13 @@ combobox with a grouped listbox, driven by `aria-activedescendant`.
 service would add moving parts for nothing. Building from the database and committed content
 keeps search in step with what the pages show.
 
-**Trade-offs.** A re-ingest or new content needs an API restart before search sees it, which a
-content change needs anyway. There's no typo tolerance: "specultive" finds nothing.
+When nothing matches exactly, search retries with near misses: one edit allowed for words of five
+to eight letters and two from nine, counting a swap of neighbouring letters as one edit, against
+whole words and word starts. The dropdown labels those as closest matches. In development the API
+watches `content/` and reloads digests, banks and exercises in place when a file changes. A
+broken file keeps the previous version and logs why. Search rebuilds after each reload, and every
+ingest stamps `content/book/.last-ingest`, so a re-ingest triggers one too.
+
+**Trade-offs.** Production still loads content once at start, so a deploy restarts the API.
+Near-miss matching only runs when there are no exact results, so a typo next to a correct word
+can still miss.

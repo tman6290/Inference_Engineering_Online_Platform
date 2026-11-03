@@ -13,14 +13,20 @@ interface SearchRouterDeps {
 
 /**
  * GET /api/search?q= across lessons, glossary terms and exercises. The index builds when the app
- * starts; content only changes with a restart, and a re-ingest needs one anyway.
+ * starts and again after the content watcher reloads content/ (development), which also covers a
+ * re-ingest, since that rewrites content/book.
  */
 export function searchRouter({ db, content }: SearchRouterDeps): Router {
   const router = Router();
   router.use('/search', requireAuth);
 
   let index: Promise<SearchIndex> | null = null;
+  let builtFor = content.revision;
   const load = () => {
+    if (builtFor !== content.revision) {
+      builtFor = content.revision;
+      index = null;
+    }
     index ??= searchDocs(db, content)
       .then(buildIndex)
       .catch((error: unknown) => {

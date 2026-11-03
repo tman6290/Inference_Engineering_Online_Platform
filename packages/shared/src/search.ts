@@ -29,6 +29,8 @@ export const searchResponseSchema = z.object({
       results: z.array(searchResultSchema),
     }),
   ),
+  /** True when nothing matched exactly and these are the closest matches to a misspelling. */
+  fuzzy: z.boolean(),
 });
 export type SearchResponse = z.infer<typeof searchResponseSchema>;
 

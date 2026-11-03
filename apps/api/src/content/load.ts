@@ -26,12 +26,15 @@ export interface LoadedContent {
   banks: Map<string, CheckpointBank>;
   /** By id, in chapter.json order. */
   exercises: Map<string, LoadedExercise>;
+  /** Goes up each time the files are reloaded, so caches built from them know to rebuild. */
+  revision: number;
 }
 
 export const emptyContent = (): LoadedContent => ({
   digests: new Map(),
   banks: new Map(),
   exercises: new Map(),
+  revision: 0,
 });
 
 export class ContentError extends Error {

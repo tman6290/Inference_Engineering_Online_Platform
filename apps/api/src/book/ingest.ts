@@ -253,6 +253,9 @@ export async function ingestBook(options: IngestOptions): Promise<IngestReport> 
     manifestPath,
     `${JSON.stringify(sortedManifest, null, 2)}\n`,
   );
+  // Always written, so a running API's content watcher rebuilds search after every ingest, even
+  // one that only refilled the database from files already on disk.
+  await writeFile(path.join(bookDir, '.last-ingest'), `${new Date().toISOString()}\n`);
 
   return {
     files,
