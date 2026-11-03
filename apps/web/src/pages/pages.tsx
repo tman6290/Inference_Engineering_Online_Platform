@@ -39,17 +39,6 @@ export function ProjectPage() {
   );
 }
 
-export function GlossaryPage() {
-  return (
-    <Placeholder
-      eyebrow="Glossary"
-      title="Glossary"
-      description="Every term the book defines, linked to the section that introduces it."
-      plan={['Search across terms', 'Definitions with section links']}
-    />
-  );
-}
-
 export function NotFoundPage() {
   return (
     <Placeholder

@@ -38,7 +38,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 06 | The Lesson page | done (`lessons:` commit, 2026-11-03) |
 | 07 | Checkpoints and exercises | done (`checkpoints:` commit, 2026-11-03) |
 | 08 | Progress, uptime, recall queue, Home | done (`progress:` commit, 2026-11-03) |
-| 09 | Glossary and search | |
+| 09 | Glossary and search | done (`search:` commit, 2026-11-03) |
 | 10 | Pod: standings, duels, shared notes | |
 | 11 | Projects: specs, submission, checks, critique | |
 | 12 | Portfolio and sharing | |
@@ -224,7 +224,7 @@ Done when: the heatmap, uptime, mastery and recall queue reflect seeded fixture 
 
 ---
 
-## Prompt 09 · Glossary and search
+## Prompt 09 · Glossary and search (done)
 
 ```
 Read CLAUDE.md. Build the glossary page and search from the ingested glossary and the authored digests.

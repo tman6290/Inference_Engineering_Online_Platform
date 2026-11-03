@@ -1,4 +1,10 @@
-import type { HomeResponse, ProgressPage } from '@forward-pass/shared';
+import type {
+  GlossaryPage,
+  HomeResponse,
+  ProgressPage,
+  SearchResponse,
+  SearchResult,
+} from '@forward-pass/shared';
 
 // Fixed Home and Progress data for page tests. Monday 26 October 2026 to Tuesday 3 November 2026
 // closes out twelve weeks of heatmap cells.
@@ -114,3 +120,79 @@ export const progress: ProgressPage = {
     { lessonId: '1.1', title: 'Cost', confidence: 'solid', ratedAt: '2026-10-01T09:00:00.000Z' },
   ],
 };
+
+export const glossary: GlossaryPage = {
+  terms: [
+    {
+      term: '4-bit quantization',
+      slug: '4-bit-quantization',
+      definition: 'Storing weights in four bits.',
+      sectionNumber: null,
+      introducedIn: null,
+      usedIn: [],
+    },
+    {
+      term: 'KV cache',
+      slug: 'kv-cache',
+      definition: 'Stored **keys** and values from earlier tokens.',
+      sectionNumber: '2.2',
+      introducedIn: { id: '2.2', title: 'LLM Inference Mechanics' },
+      usedIn: [{ id: '0', title: 'Inference' }],
+    },
+    {
+      term: 'Speculative decoding',
+      slug: 'speculative-decoding',
+      definition: 'Guess several tokens with a drafter, then verify them in one pass.',
+      sectionNumber: '5.2',
+      introducedIn: { id: '5.2', title: 'Speculative Decoding' },
+      usedIn: [{ id: '5.2', title: 'Speculative Decoding' }],
+    },
+  ],
+};
+
+const searchable: SearchResult[] = [
+  {
+    type: 'section',
+    id: '5.2',
+    title: '5.2 Speculative Decoding',
+    subtitle: 'Guess ahead, check in bulk.',
+    href: '/book/5.2',
+  },
+  {
+    type: 'section',
+    id: '5.3',
+    title: '5.3 Disaggregation',
+    subtitle: 'Prefill and decode apart.',
+    href: '/book/5.3',
+  },
+  {
+    type: 'term',
+    id: 'speculative-decoding',
+    title: 'Speculative decoding',
+    subtitle: 'Guess, then verify.',
+    href: '/glossary#speculative-decoding',
+  },
+  {
+    type: 'exercise',
+    id: '5.2-toy-speedup',
+    title: 'Work out a toy speedup',
+    subtitle: '5.2 Speculative Decoding · 10 min',
+    href: '/book/5.2/exercises/5.2-toy-speedup',
+  },
+];
+
+/** A stand-in for GET /api/search: case-insensitive substring match on titles. */
+export function fakeSearch(q: string): SearchResponse {
+  const needle = q.trim().toLowerCase();
+  const labels = { section: 'Sections', term: 'Glossary', exercise: 'Exercises' } as const;
+  const groups = (['section', 'term', 'exercise'] as const)
+    .map((type) => ({
+      type,
+      label: labels[type],
+      results: needle
+        ? searchable.filter((r) => r.type === type && r.title.toLowerCase().includes(needle))
+        : [],
+    }))
+    .filter((group) => group.results.length);
+  return { query: q, groups };
+}

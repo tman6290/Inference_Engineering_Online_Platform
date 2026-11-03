@@ -1,6 +1,6 @@
 import type { LessonResponse, MeResponse } from '@forward-pass/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react';
+import { configure, render } from '@testing-library/react';
 import axe from 'axe-core';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { vi } from 'vitest';
@@ -8,7 +8,7 @@ import { AuthProvider } from '../auth/auth';
 import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
 import { createFakeCheckpoint } from './fake-checkpoint';
-import { home, progress } from './fake-progress';
+import { fakeSearch, glossary, home, progress } from './fake-progress';
 import { book, lesson21, lesson52 } from './lesson-fixtures';
 
 export const TOFA: MeResponse = {
@@ -26,6 +26,10 @@ export const TOFA: MeResponse = {
   ],
   stats: { answered: 0, acceptedFirstTry: 0, acceptanceRate: null, uptime: 4 },
 };
+
+// The whole monorepo tests in parallel, so a page can take longer than testing-library's default
+// 1 s to settle. Waiting longer only matters when a test would otherwise fail.
+configure({ asyncUtilTimeout: 4000 });
 
 export const PASSWORD = 'correct horse battery';
 export const INVITE = 'invite-one';
@@ -103,8 +107,13 @@ export function createFakeApi({
         return json(200, home);
       case '/api/progress':
         return json(200, progress);
+      case '/api/glossary':
+        return json(200, glossary);
     }
 
+    if (path.startsWith('/api/search?')) {
+      return json(200, fakeSearch(new URLSearchParams(path.split('?')[1]).get('q') ?? ''));
+    }
     const handled = checkpoint.handle(path, init?.method ?? 'GET', body);
     if (handled) return handled;
 

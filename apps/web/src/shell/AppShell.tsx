@@ -2,6 +2,7 @@ import type { PublicUser } from '@forward-pass/shared';
 import { useEffect, useId, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { useAuth } from '../auth/auth';
+import { SearchButton, SearchProvider } from '../features/search/search';
 import { BoltIcon, CloseIcon, LogoMark, MenuIcon, SignOutIcon } from '../ui';
 import { isNavItemActive, NAV_ITEMS, usesRail } from './nav';
 import { ThemeToggle } from './ThemeToggle';
@@ -12,24 +13,28 @@ export function AppShell() {
   const rail = usesRail(pathname);
 
   return (
-    <div className={styles.shell} data-rail={rail ? 'true' : undefined}>
-      <a href="#main" className={styles.skipLink}>
-        Skip to content
-      </a>
-      <TopBar pathname={pathname} />
-      <aside className={styles.sidebar} data-surface="dark" aria-label="Sidebar">
-        <Logo compact={rail} />
-        <MainNav pathname={pathname} compact={rail} label="Main" />
-        {rail ? null : <PodCard />}
-        <div className={styles.sidebarFoot}>
-          {rail ? <MeAvatar /> : <UptimeCard />}
-          <SignOutButton compact={rail} />
-        </div>
-      </aside>
-      <main id="main" tabIndex={-1} className={styles.main}>
-        <Outlet />
-      </main>
-    </div>
+    <SearchProvider>
+      <div className={styles.shell} data-rail={rail ? 'true' : undefined}>
+        <a href="#main" className={styles.skipLink}>
+          Skip to content
+        </a>
+        <TopBar pathname={pathname} />
+        <aside className={styles.sidebar} data-surface="dark" aria-label="Sidebar">
+          <Logo compact={rail} />
+          {/* Rail pages have no page header, so the search trigger sits here. */}
+          {rail ? <SearchButton className={styles.railSearch} /> : null}
+          <MainNav pathname={pathname} compact={rail} label="Main" />
+          {rail ? null : <PodCard />}
+          <div className={styles.sidebarFoot}>
+            {rail ? <MeAvatar /> : <UptimeCard />}
+            <SignOutButton compact={rail} />
+          </div>
+        </aside>
+        <main id="main" tabIndex={-1} className={styles.main}>
+          <Outlet />
+        </main>
+      </div>
+    </SearchProvider>
   );
 }
 
@@ -193,6 +198,7 @@ function TopBar({ pathname }: { pathname: string }) {
       <div className={styles.topBarRow}>
         <Logo />
         <div className={styles.topBarActions}>
+          <SearchButton />
           <ThemeToggle className={styles.topBarToggle} />
           <button
             type="button"

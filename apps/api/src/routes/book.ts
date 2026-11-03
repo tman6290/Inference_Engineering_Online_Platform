@@ -3,25 +3,29 @@ import {
   sectionNumberSchema,
   type BookResponse,
   type ChapterStatus,
-  type GlossaryResponse,
+  type GlossaryPage,
   type SectionResponse,
 } from '@forward-pass/shared';
 import { Router } from 'express';
 import { authLocals, requireAuth } from '../auth/middleware';
 import { confidenceByLesson, progressByLesson, readStateOf } from '../lessons/progress';
+import { emptyContent, type LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { sendError } from '../http';
+import { glossaryEntries } from '../search/docs';
 
 interface BookRouterDeps {
   db: Db;
   /** content/figures */
   figuresDir: string;
+  /** Authored digests, for which lessons list each glossary term. */
+  content?: LoadedContent;
 }
 
 const figureUrl = (number: string) => `/api/figures/${number}`;
 
 /** Book text is for the two signed-in learners only; every route here requires a session. */
-export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
+export function bookRouter({ db, figuresDir, content = emptyContent() }: BookRouterDeps): Router {
   const router = Router();
   router.use(['/book', '/glossary', '/figures'], requireAuth);
 
@@ -179,17 +183,7 @@ export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
 
   router.get('/glossary', async (req, res) => {
     const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 80) : '';
-    const terms = await db.glossaryTerm.findMany({
-      where: q
-        ? {
-            OR: [
-              { term: { contains: q, mode: 'insensitive' } },
-              { definition: { contains: q, mode: 'insensitive' } },
-            ],
-          }
-        : undefined,
-      orderBy: { term: 'asc' },
-    });
+    const terms = await glossaryEntries(db, content, { q });
     // Matches on the term itself first, then matches in the definition.
     const needle = q.toLowerCase();
     const ranked = q
@@ -199,14 +193,7 @@ export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
             Number(!b.term.toLowerCase().includes(needle)),
         )
       : terms;
-    const body: GlossaryResponse = {
-      terms: ranked.map(({ term, slug, definition, sectionNumber }) => ({
-        term,
-        slug,
-        definition,
-        sectionNumber,
-      })),
-    };
+    const body: GlossaryPage = { terms: ranked };
     res.json(body);
   });
 

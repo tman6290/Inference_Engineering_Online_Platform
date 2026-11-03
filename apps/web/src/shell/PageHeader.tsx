@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SearchField } from '../features/search/search';
 import { Eyebrow } from '../ui';
 import { ThemeToggle } from './ThemeToggle';
 import styles from './PageHeader.module.css';
@@ -20,6 +21,7 @@ export function PageHeader({ eyebrow, title, description, actions }: PageHeaderP
       </div>
       <div className={styles.actions}>
         {actions}
+        <SearchField />
         <ThemeToggle className={styles.themeToggle} />
       </div>
     </header>

@@ -1,0 +1,65 @@
+.field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(420px, 100%);
+  min-height: 52px;
+  padding: 0 10px 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--text-mute);
+  font: inherit;
+  text-align: left;
+  cursor: text;
+}
+
+.field:hover {
+  border-color: var(--text-mute);
+}
+
+.icon {
+  flex: none;
+}
+
+.placeholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kbd {
+  flex: none;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--neutral-bg);
+  color: var(--text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  border: 0;
+  border-radius: var(--radius-12);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* On narrow screens the wide field gives way to the top bar's icon. */
+@media (max-width: 899px) {
+  .field {
+    display: none;
+  }
+}

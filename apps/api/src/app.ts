@@ -13,6 +13,7 @@ import { checkpointRouter } from './routes/checkpoints';
 import { exerciseRouter } from './routes/exercises';
 import { lessonRouter } from './routes/lessons';
 import { progressRouter } from './routes/progress';
+import { searchRouter } from './routes/search';
 import { emptyContent, type LoadedContent } from './content/load';
 import { healthRouter } from './routes/health';
 
@@ -59,12 +60,14 @@ export function createApp(deps: AppDeps): Express {
     bookRouter({
       db: deps.db,
       figuresDir: deps.figuresDir ?? path.join(repoRoot, 'content', 'figures'),
+      content: deps.content,
     }),
   );
   const content = deps.content ?? emptyContent();
   app.use('/api', lessonRouter({ db: deps.db, content }));
   app.use('/api', checkpointRouter({ db: deps.db, content }));
   app.use('/api', exerciseRouter({ db: deps.db, content }));
+  app.use('/api', searchRouter({ db: deps.db, content }));
   app.use('/api', progressRouter({ db: deps.db, content, devRoutes: deps.devRoutes ?? false }));
 
   app.use('/api', (_req, res) => {

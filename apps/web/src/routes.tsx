@@ -7,11 +7,12 @@ import { BookPage } from './pages/BookPage';
 import { CheckpointPage } from './pages/CheckpointPage';
 import { CheckpointsPage } from './pages/CheckpointsPage';
 import { ExercisePage } from './pages/ExercisePage';
+import { GlossaryPage } from './pages/GlossaryPage';
 import { HomePage } from './pages/HomePage';
 import { LessonPage } from './pages/LessonPage';
 import { ProgressPage } from './pages/ProgressPage';
 import { RecallPage } from './pages/RecallPage';
-import { GlossaryPage, NotFoundPage, ProjectPage, ProjectsPage } from './pages/pages';
+import { NotFoundPage, ProjectPage, ProjectsPage } from './pages/pages';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
 

@@ -222,3 +222,21 @@ what's already visible ("The mechanism, in four moves" is now "How it works"; "R
 padding. Digests and exercise write-ups were rewritten to match; banks are next.
 
 **Why.** Copy that announces itself reads as generated and wastes the reader's attention.
+
+## 2026-11-03: Search without a search service
+
+**Decision.** The API builds an in-memory index when it starts: every lesson (title, the notes'
+one-liner, the section summary and its listed terms), every glossary term with its definition,
+and every exercise title. `GET /api/search?q=` scores each document by a scan: an exact or prefix
+title match ranks highest, then whole-word and word-prefix title matches, then words found in the
+body. Every query word must match somewhere. Results come back grouped as sections, glossary and
+exercises, six per group. The web opens search with Ctrl+K or ⌘K from any page, from the search
+field in each page header, or from an icon in the lesson rail and on phones. It's an ARIA 1.2
+combobox with a grouped listbox, driven by `aria-activedescendant`.
+
+**Why.** A few hundred documents scan in well under a millisecond, so a real index or an external
+service would add moving parts for nothing. Building from the database and committed content
+keeps search in step with what the pages show.
+
+**Trade-offs.** A re-ingest or new content needs an API restart before search sees it, which a
+content change needs anyway. There's no typo tolerance: "specultive" finds nothing.
