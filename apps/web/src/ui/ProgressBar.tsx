@@ -49,11 +49,12 @@ export function ProgressBar({
   );
 }
 
-export type SegmentState = 'accepted' | 'retry' | 'current' | 'empty';
+export type SegmentState = 'accepted' | 'retry' | 'missed' | 'current' | 'empty';
 
 const segmentWords: Record<SegmentState, string> = {
   accepted: 'accepted',
   retry: 'accepted on retry',
+  missed: 'missed',
   current: 'current',
   empty: 'not yet answered',
 };
@@ -67,7 +68,7 @@ interface SegmentedProgressProps {
 /** Segmented bar for finite sets, such as the 10 questions of a checkpoint. */
 export function SegmentedProgress({ segments, label, className }: SegmentedProgressProps) {
   const id = useId();
-  const done = segments.filter((s) => s === 'accepted' || s === 'retry').length;
+  const done = segments.filter((s) => s === 'accepted' || s === 'retry' || s === 'missed').length;
 
   return (
     <div className={[styles.root, className].filter(Boolean).join(' ')}>

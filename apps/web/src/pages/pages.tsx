@@ -54,33 +54,6 @@ export function HomePage() {
   );
 }
 
-export function CheckpointsPage() {
-  return (
-    <Placeholder
-      eyebrow="Checkpoints"
-      title="Checkpoints"
-      description="Ten questions per section, drawn from a bank of at least twenty."
-      plan={['Checkpoint history by section', 'Recall queue for spaced repetition', 'Open duels']}
-    />
-  );
-}
-
-export function CheckpointPage() {
-  const { sectionId = '' } = useParams();
-  return (
-    <Placeholder
-      eyebrow={`Checkpoint ${sectionId}`}
-      title="Checkpoint"
-      description="Scenario, calculation and short-answer questions on this section."
-      plan={[
-        'Segmented progress across ten questions',
-        'Answer options with accepted and retry states',
-        'Feedback that cites the section to re-read',
-      ]}
-    />
-  );
-}
-
 export function ProjectsPage() {
   return (
     <Placeholder

@@ -166,3 +166,26 @@ the digest.
 **Trade-offs.** The lesson response is large and changes whenever any part of it does, so the web
 patches its cache after each write instead of refetching. Digests need an API restart to show up
 after an edit. Wide tables scroll inside their own focusable box on a phone rather than reflowing.
+
+## 2026-11-03: Checkpoint attempts, hints and exercise reveals
+
+**Decision.** An attempt fixes its ten question ids when it starts, drawn by a seeded shuffle:
+4 scenario_mc, 3 calculation and 3 text, made up with scenario_mc when a kind runs short.
+Questions I answered right on the first try in the last 30 days are left out until the bank runs
+dry. I keep one open attempt per section; starting again resumes it. A question closes when
+accepted or after three misses, and only then does the API send its explanation, worked solution,
+answer key and reread link. The attempt finishes itself once all ten are closed, or early on
+request with open questions counted as missed. Hints come from their own endpoint and are logged
+in `AttemptHint`, so the page can't hide them. Exercise solutions unlock on acceptance or on a
+logged reveal; the API serves an exercise's listed starter, test and solution files and nothing
+else. Acceptance rate on `/api/me` is first-try accepted over first tries, across check
+questions, checkpoints and exercises.
+
+**Why.** A fixed draw makes an attempt resumable and lets a duel give both of us the same
+questions from a shared seed. Holding the key back until a question closes keeps the third try
+honest. Logging hints and reveals is what makes acceptance rate worth comparing in the pod.
+
+**Trade-offs.** Project unlocks are worked out from passed attempts (the last section of a
+chapter) instead of stored, because project specs arrive in a later prompt. Mastery isn't stored
+either; prompt 08 computes it from the latest attempt. The Checkpoint board is lost, so the page
+follows this prompt's description and the Lesson board's language, not a design.

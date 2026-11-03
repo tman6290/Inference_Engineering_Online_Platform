@@ -1,0 +1,73 @@
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.format,
+.key {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.formatLabel {
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.options {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 16px;
+}
+
+.number {
+  max-width: 220px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+.unit {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.unit select {
+  min-height: var(--touch);
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-12);
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-mono);
+}
+
+.unitFixed {
+  align-self: center;
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-mute);
+}
+
+.error {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--warn-text);
+}

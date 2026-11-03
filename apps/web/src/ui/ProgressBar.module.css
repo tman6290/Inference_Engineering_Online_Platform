@@ -56,6 +56,11 @@
   background: var(--text);
 }
 
+/* Closed without an accepted answer: a hatched track, so it reads without colour too. */
+.missed {
+  background: repeating-linear-gradient(135deg, var(--amber) 0 3px, var(--track) 3px 6px);
+}
+
 .empty {
   background: var(--track);
 }

@@ -3,6 +3,7 @@ import { figureSchema, readStateSchema, subsectionNumberSchema } from './book';
 import { CONFIDENCE_LEVELS } from './constants';
 import { answerInputSchema, digestSchema, lessonIdSchema, type Digest } from './content';
 import { publicQuestionSchema, toPublic } from './grade';
+import { exerciseSummarySchema } from './checkpoint';
 
 // What the Lesson page receives and sends. The authored digest is public except its check
 // question, whose answer key stays on the server.
@@ -74,6 +75,8 @@ export const lessonResponseSchema = z.object({
   figures: z.array(figureSchema),
   digest: publicDigestSchema.nullable(),
   terms: z.array(z.object({ term: z.string(), slug: z.string(), definition: z.string() })),
+  /** Hands-on tasks for this lesson, in chapter.json order. */
+  exercises: z.array(exerciseSummarySchema),
   progress: z.object({
     readState: readStateSchema,
     maxScrollPct: z.number().int(),

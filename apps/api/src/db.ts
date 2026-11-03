@@ -3,6 +3,10 @@ import { Prisma, PrismaClient } from '../node_modules/.prisma-client/client';
 
 export type Db = PrismaClient;
 export { Prisma };
+export type {
+  Answer as AnswerRow,
+  Attempt as AttemptRow,
+} from '../node_modules/.prisma-client/client';
 
 export function createDb(connectionString: string): Db {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });

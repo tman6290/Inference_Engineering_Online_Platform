@@ -43,6 +43,8 @@ export function BookMarkdown({ markdown, figures = [], className }: BookMarkdown
     h1: ({ children }) => <h2>{children}</h2>,
     h2: ({ children }) => <h3>{children}</h3>,
     h3: ({ children }) => <h4>{children}</h4>,
+    // Focusable so keyboard users can scroll a code block wider than the screen.
+    pre: ({ children }) => <pre tabIndex={0}>{children}</pre>,
     table: ({ children }) => (
       // Focusable so keyboard users can scroll a table wider than the screen.
       <div className={styles.tableWrap} tabIndex={0} role="region" aria-label="Table from the book">

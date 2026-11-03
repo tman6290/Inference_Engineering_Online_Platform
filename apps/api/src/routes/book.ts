@@ -27,7 +27,7 @@ export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
 
   router.get('/book', async (_req, res) => {
     const userId = authLocals(res).userId!;
-    const [pages, chapters, progress, confidence] = await Promise.all([
+    const [pages, chapters, progress, confidence, finished] = await Promise.all([
       db.bookPage.findMany({ where: { placement: 'front' }, orderBy: { orderIndex: 'asc' } }),
       db.chapter.findMany({
         orderBy: { number: 'asc' },
@@ -35,7 +35,18 @@ export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
       }),
       progressByLesson(db, userId),
       confidenceByLesson(db, userId),
+      db.attempt.findMany({
+        where: { userId, kind: 'solo', completedAt: { not: null } },
+        orderBy: { completedAt: 'asc' },
+      }),
     ]);
+    // The latest finished checkpoint per section wins.
+    const score = new Map(
+      finished.map((attempt) => [
+        attempt.sectionNumber,
+        (attempt.firstTryAccepted ?? 0) / Math.max(1, attempt.questionIds.length),
+      ]),
+    );
 
     // Per chapter: how much is read, then a pipeline status. The first chapter that isn't done or
     // in progress, after the furthest one in progress, is "up next"; everything after is queued.
@@ -94,7 +105,7 @@ export function bookRouter({ db, figuresDir }: BookRouterDeps): Router {
           readingMinutes: section.readingMinutes,
           readState: readStateOf(progress.get(section.number)),
           confidence: confidence.get(section.number) ?? null,
-          checkpointScore: null,
+          checkpointScore: score.get(section.number) ?? null,
         })),
       })),
       decoded: chapters

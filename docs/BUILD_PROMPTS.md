@@ -36,7 +36,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 04 | Content schemas, grading and validation | done (`content:` commit, 2026-11-03) |
 | 05 | Author a chapter (template; pilot: Preface, Chapter 0, Chapter 1, section 5.2) | pilot done (`content:` commit, 2026-11-03); reused by 13 |
 | 06 | The Lesson page | done (`lessons:` commit, 2026-11-03) |
-| 07 | Checkpoints and exercises | |
+| 07 | Checkpoints and exercises | done (`checkpoints:` commit, 2026-11-03) |
 | 08 | Progress, uptime, recall queue, Home | |
 | 09 | Glossary and search | |
 | 10 | Pod: standings, duels, shared notes | |
@@ -188,7 +188,7 @@ Done when: /book/5.2 renders the full authored digest with real figures and matc
 
 ---
 
-## Prompt 07 · Checkpoints and exercises
+## Prompt 07 · Checkpoints and exercises (done)
 
 ```
 Read CLAUDE.md (Checkpoint, Exercise, Acceptance rate, Duel). The Checkpoint board is lost; build it from this description and the Foundations language.

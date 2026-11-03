@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import { AuthProvider } from '../auth/auth';
 import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
+import { createFakeCheckpoint } from './fake-checkpoint';
 import { book, lesson21, lesson52 } from './lesson-fixtures';
 
 export const TOFA: MeResponse = {
@@ -22,6 +23,7 @@ export const TOFA: MeResponse = {
     { id: 'u1', displayName: 'Tofa', initial: 'T', colour: 'lime' },
     { id: 'u2', displayName: 'Friend', initial: 'F', colour: 'butter' },
   ],
+  stats: { answered: 0, acceptedFirstTry: 0, acceptanceRate: null },
 };
 
 export const PASSWORD = 'correct horse battery';
@@ -51,6 +53,7 @@ export function createFakeApi({
       LessonResponse
     >,
   };
+  const checkpoint = createFakeCheckpoint();
   const me = (): MeResponse => ({
     ...TOFA,
     user: { ...TOFA.user, mustChangePassword: state.mustChangePassword },
@@ -97,6 +100,9 @@ export function createFakeApi({
         return json(200, book);
     }
 
+    const handled = checkpoint.handle(path, init?.method ?? 'GET', body);
+    if (handled) return handled;
+
     const lesson = /^\/api\/(?:lessons|sections)\/([^/]+)(?:\/(\w+))?$/.exec(path);
     const current = lesson ? state.lessons[decodeURIComponent(lesson[1]!)] : undefined;
     if (!lesson || !current) return json(404, { error: 'not_found' });
@@ -128,7 +134,7 @@ export function createFakeApi({
         return json(404, { error: 'not_found' });
     }
   });
-  return { fetch, state };
+  return { fetch, state, checkpoint };
 }
 
 export function renderRoute(path: string) {

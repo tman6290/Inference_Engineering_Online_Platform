@@ -190,19 +190,63 @@ model Note {
   @@id([userId, lessonId])
 }
 
-/// A graded answer. `context` is "check" (a lesson's check-yourself) or, later, "checkpoint".
+/// A graded answer. `context` is "check" (a lesson's check-yourself), "checkpoint" or "exercise".
+/// For an exercise, `questionId` is the exercise id.
 model Answer {
   id         String   @id @default(uuid())
   userId     String
   lessonId   String
   questionId String
   context    String
+  /// Set for checkpoint answers.
+  attemptId  String?
   answer     Json
   accepted   Boolean
+  /// The first submission for this question: in the attempt for a checkpoint, ever otherwise.
   firstTry   Boolean
   usedHint   Boolean  @default(false)
+  feedback   String?
   createdAt  DateTime @default(now())
 
   @@index([userId, questionId])
   @@index([userId, lessonId])
+  @@index([attemptId])
+}
+
+/// A 10-question checkpoint on one section. Question ids are fixed when it starts.
+model Attempt {
+  id               String    @id @default(uuid())
+  userId           String
+  sectionNumber    String
+  /// Seeds the question draw, so the same seed and exclusions give the same questions.
+  seed             String
+  questionIds      String[]
+  /// "solo", or "duel" once duels exist.
+  kind             String    @default("solo")
+  startedAt        DateTime  @default(now())
+  // Filled when the attempt finishes.
+  completedAt      DateTime?
+  firstTryAccepted Int?
+  hints            Int?
+  passed           Boolean?
+
+  @@index([userId, sectionNumber])
+}
+
+/// A hint asked for during an attempt. Logged, never hidden.
+model AttemptHint {
+  attemptId  String
+  questionId String
+  createdAt  DateTime @default(now())
+
+  @@id([attemptId, questionId])
+}
+
+/// A learner opened an exercise's solution before getting it right.
+model ExerciseReveal {
+  userId     String
+  exerciseId String
+  createdAt  DateTime @default(now())
+
+  @@id([userId, exerciseId])
 }

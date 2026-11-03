@@ -5,6 +5,7 @@ import { ApiRequestError } from '../api/client';
 import { useLesson, useReadingEvent } from '../features/lesson/api';
 import { BookMarkdown } from '../features/lesson/BookMarkdown';
 import { DigestView } from '../features/lesson/DigestView';
+import { ExerciseList } from '../features/lesson/ExerciseList';
 import { LessonFooter } from '../features/lesson/LessonFooter';
 import { LessonOutline } from '../features/lesson/LessonOutline';
 import { LessonRail, type OnThisPageItem } from '../features/lesson/LessonRail';
@@ -48,6 +49,7 @@ function onThisPage(lesson: LessonResponse): OnThisPageItem[] {
     for (const sub of lesson.subsections)
       items.push({ id: `sub-${sub.number}`, label: `${sub.number} ${sub.title}` });
   }
+  if (lesson.exercises.length) items.push({ id: 'exercises', label: 'Exercises' });
   return items;
 }
 
@@ -133,6 +135,7 @@ function Lesson({ lesson }: { lesson: LessonResponse }) {
           </section>
         )}
 
+        <ExerciseList lessonId={lesson.id} exercises={lesson.exercises} />
         <LessonFooter lesson={lesson} />
       </article>
 

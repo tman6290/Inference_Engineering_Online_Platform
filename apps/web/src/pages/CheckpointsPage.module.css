@@ -1,0 +1,99 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 880px) 300px;
+  align-items: start;
+  gap: 40px;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.main {
+  display: grid;
+  gap: 40px;
+  min-width: 0;
+}
+
+.rail {
+  display: grid;
+  gap: 16px;
+}
+
+.chapter {
+  display: grid;
+  gap: 12px;
+}
+
+.chapterTitle {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title chip'
+    'meta chip';
+  align-items: center;
+  gap: 2px 12px;
+  min-height: 60px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.row:hover .title {
+  color: var(--link);
+}
+
+.title {
+  grid-area: title;
+  font-weight: 600;
+}
+
+.meta {
+  grid-area: meta;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-mute);
+}
+
+.row > :last-child {
+  grid-area: chip;
+}
+
+.card {
+  display: grid;
+  gap: 12px;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list a {
+  color: var(--link);
+  font-weight: 600;
+}
+
+.muted {
+  font-size: 14px;
+  color: var(--text-mute);
+}

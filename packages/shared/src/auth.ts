@@ -58,6 +58,15 @@ export const meResponseSchema = z.object({
   }),
   /** Both seats, the signed-in user first. Has one entry until the partner registers. */
   pod: z.array(publicUserSchema),
+  /**
+   * Acceptance rate: questions accepted on the first try / questions answered, across check
+   * questions, checkpoints and exercises. Null before the first answer.
+   */
+  stats: z.object({
+    answered: z.number().int(),
+    acceptedFirstTry: z.number().int(),
+    acceptanceRate: z.number().nullable(),
+  }),
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
 

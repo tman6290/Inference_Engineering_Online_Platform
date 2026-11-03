@@ -121,6 +121,15 @@ export const lesson52: LessonResponse = {
       definition: 'Guess, then verify.',
     },
   ],
+  exercises: [
+    {
+      id: '5.2-toy-speedup',
+      title: 'Work out a toy speedup',
+      estimatedMinutes: 10,
+      hasTests: true,
+      status: 'new',
+    },
+  ],
   progress: { readState: 'reading', maxScrollPct: 20, confidence: null },
   check: null,
   note: null,
@@ -163,6 +172,7 @@ export const lesson21: LessonResponse = {
   figures: [],
   digest: null,
   terms: [],
+  exercises: [],
   progress: { readState: 'unread', maxScrollPct: 0, confidence: null },
   previous: null,
   next: null,

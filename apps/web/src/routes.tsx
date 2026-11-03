@@ -4,10 +4,11 @@ import { CHANGE_PASSWORD_PATH, RequireAuth } from './auth/RequireAuth';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import { BookPage } from './pages/BookPage';
+import { CheckpointPage } from './pages/CheckpointPage';
+import { CheckpointsPage } from './pages/CheckpointsPage';
+import { ExercisePage } from './pages/ExercisePage';
 import { LessonPage } from './pages/LessonPage';
 import {
-  CheckpointPage,
-  CheckpointsPage,
   GlossaryPage,
   HomePage,
   NotFoundPage,
@@ -65,6 +66,7 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
         { index: true, element: <HomePage /> },
         { path: 'book', element: <BookPage /> },
         { path: 'book/:sectionId', element: <LessonPage /> },
+        { path: 'book/:sectionId/exercises/:exerciseId', element: <ExercisePage /> },
         { path: 'checkpoints', element: <CheckpointsPage /> },
         { path: 'checkpoint/:sectionId', element: <CheckpointPage /> },
         { path: 'projects', element: <ProjectsPage /> },

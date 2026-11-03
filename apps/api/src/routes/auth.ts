@@ -46,9 +46,19 @@ async function meResponse(db: Db, userId: string): Promise<MeResponse | null> {
   const me = users.find((user) => user.id === userId);
   if (!me) return null;
   const others = users.filter((user) => user.id !== userId);
+  // Acceptance rate counts first submissions only: retries are logged but never improve it.
+  const [answered, acceptedFirstTry] = await Promise.all([
+    db.answer.count({ where: { userId, firstTry: true } }),
+    db.answer.count({ where: { userId, firstTry: true, accepted: true } }),
+  ]);
   return {
     user: { ...toPublic(me), email: me.email, mustChangePassword: me.mustChangePassword },
     pod: [toPublic(me), ...others.map(toPublic)],
+    stats: {
+      answered,
+      acceptedFirstTry,
+      acceptanceRate: answered ? acceptedFirstTry / answered : null,
+    },
   };
 }
 

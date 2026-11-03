@@ -98,6 +98,8 @@
   --text: #ebeee6;
   --text-mute: var(--mute-dark);
   --focus: var(--lime);
+  --link: var(--lime);
+  --link-hover: var(--lime-hover);
 
   --action-bg: var(--lime);
   --action-bg-hover: var(--lime-hover);

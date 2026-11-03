@@ -18,6 +18,7 @@ import { countWords, readingMinutes, slugify, stripPageHeader } from '../book/pa
 import type { LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { sendError, sendValidationError } from '../http';
+import { exerciseSummaries } from './exercises';
 import {
   confidenceByLesson,
   progressByLesson,
@@ -146,28 +147,30 @@ export function lessonRouter({ db, content }: LessonRouterDeps): Router {
 
     const wordCount =
       countWords(intro) + subsections.reduce((sum, sub) => sum + countWords(sub.markdown), 0);
-    const [order, progress, confidence, users, notes, answers, chapter] = await Promise.all([
-      readingOrder(db),
-      progressByLesson(db, userId),
-      confidenceByLesson(db, userId),
-      db.user.findMany({ orderBy: { createdAt: 'asc' } }),
-      db.note.findMany({ where: { lessonId: id } }),
-      db.answer.findMany({
-        where: { userId, lessonId: id, context: 'check' },
-        orderBy: { createdAt: 'asc' },
-      }),
-      chapterNumber === null
-        ? null
-        : db.chapter.findUnique({
-            where: { number: chapterNumber },
-            include: {
-              sections: {
-                orderBy: { orderIndex: 'asc' },
-                include: { subsections: { orderBy: { orderIndex: 'asc' } } },
+    const [order, progress, confidence, users, notes, answers, chapter, exercises] =
+      await Promise.all([
+        readingOrder(db),
+        progressByLesson(db, userId),
+        confidenceByLesson(db, userId),
+        db.user.findMany({ orderBy: { createdAt: 'asc' } }),
+        db.note.findMany({ where: { lessonId: id } }),
+        db.answer.findMany({
+          where: { userId, lessonId: id, context: 'check' },
+          orderBy: { createdAt: 'asc' },
+        }),
+        chapterNumber === null
+          ? null
+          : db.chapter.findUnique({
+              where: { number: chapterNumber },
+              include: {
+                sections: {
+                  orderBy: { orderIndex: 'asc' },
+                  include: { subsections: { orderBy: { orderIndex: 'asc' } } },
+                },
               },
-            },
-          }),
-    ]);
+            }),
+        exerciseSummaries(db, content, userId, id),
+      ]);
 
     // Glossary terms for the right rail: the digest's list, else bold phrases that are glossary terms.
     const digest = content.digests.get(id) ?? null;
@@ -255,6 +258,7 @@ export function lessonRouter({ db, content }: LessonRouterDeps): Router {
       figures,
       digest: digest ? toPublicDigest(digest) : null,
       terms,
+      exercises,
       progress: {
         readState: readStateOf(own),
         maxScrollPct: own?.maxScrollPct ?? 0,
