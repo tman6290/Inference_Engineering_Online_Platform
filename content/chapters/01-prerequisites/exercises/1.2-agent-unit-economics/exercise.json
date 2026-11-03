@@ -2,7 +2,7 @@
   "id": "1.2-agent-unit-economics",
   "sectionNumber": "1.2",
   "title": "Price an agent per user per month",
-  "brief": "You are pricing a consumer research agent sold at $10 a month. Before the launch, finance wants the monthly inference cost for a typical user. One user action runs **8 model calls**. Each call averages **2,500 input tokens** and **600 output tokens**. A typical user takes **5 actions a day** over a **30-day month**. Illustrative prices: **$0.60 per million input tokens** and **$2.40 per million output tokens**.\n\nWork out the inference cost per user per month, in USD. Section 1.2.1 explains why agents need pricing per action, and 1.2.3 explains why consumer apps watch marginal cost so closely.",
+  "brief": "You are pricing a consumer research agent sold at $10 a month. Before the launch, finance wants the monthly inference cost for a typical user. One user action runs **8 model calls**. Each call averages **2,500 input tokens** and **600 output tokens**. A typical user takes **5 actions a day** over a **30-day month**. Illustrative prices: **$0.60 per million input tokens** and **$2.40 per million output tokens**.\n\nWork out the inference cost per user per month, in USD. Section 1.2.1 explains why agents need pricing per action, and 1.2.3 explains why consumer apps watch marginal cost.",
   "steps": [
     "Price one call: input tokens × input price per million, plus output tokens × output price per million.",
     "Multiply by the calls per action to price one user action.",
@@ -18,7 +18,7 @@
     "acceptedUnits": [{ "unit": "cents", "factor": 0.01 }]
   },
   "solution": {
-    "walkthrough": "**One call.** Input: 2,500 × $0.60 / 1,000,000 = $0.0015. Output: 600 × $2.40 / 1,000,000 = $0.00144. One call costs $0.00294.\n\n**One action.** 8 calls × $0.00294 = $0.02352.\n\n**One month.** 5 actions × 30 days = 150 actions. 150 × $0.02352 = **$3.528 per user per month**.\n\n**What it means.** Inference eats about 35% of the $10 subscription (3.528 / 10). A heavy user taking 15 actions a day would cost about $10.58 and lose money on every month. This is why agent apps price per action and why consumer apps watch marginal cost (see 1.2.1 and 1.2.3). The levers are fewer calls per action, shorter prompts, or cheaper tokens.",
+    "walkthrough": "**One call.** Input: 2,500 × $0.60 / 1,000,000 = $0.0015. Output: 600 × $2.40 / 1,000,000 = $0.00144. One call costs $0.00294.\n\n**One action.** 8 calls × $0.00294 = $0.02352.\n\n**One month.** 5 actions × 30 days = 150 actions. 150 × $0.02352 = **$3.528 per user per month**.\n\n**What it means.** Inference eats about 35% of the $10 subscription (3.528 / 10). A heavy user taking 15 actions a day would cost about $10.58 and lose money on every month. Agent apps price per action for this reason, and consumer apps watch marginal cost for the same one (see 1.2.1 and 1.2.3). The levers are fewer calls per action, shorter prompts, or cheaper tokens.",
     "finalAnswer": { "kind": "calculation", "value": 3.528, "unit": "USD" }
   },
   "starterFiles": [],

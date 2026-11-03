@@ -5,8 +5,6 @@ import { CheckYourself } from './CheckYourself';
 import { Reflect } from './Reflect';
 import styles from './DigestView.module.css';
 
-const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
-
 interface DigestViewProps {
   lesson: LessonResponse;
   digest: PublicDigest;
@@ -23,7 +21,7 @@ export function DigestView({ lesson, digest }: DigestViewProps) {
   return (
     <>
       <Card variant="dark" className={styles.oneLine}>
-        <Eyebrow tone="accent">In one line</Eyebrow>
+        <Eyebrow tone="accent">The gist</Eyebrow>
         <p className={styles.oneLineText}>{digest.oneLine}</p>
       </Card>
 
@@ -36,7 +34,7 @@ export function DigestView({ lesson, digest }: DigestViewProps) {
 
       <section aria-labelledby="mechanism" id="mechanism" className={styles.block}>
         <h2 id="mechanism" className={styles.heading}>
-          The mechanism, in {NUMBER_WORDS[digest.mechanism.length] ?? digest.mechanism.length} moves
+          How it works
         </h2>
         <ol className={styles.steps}>
           {digest.mechanism.map((step, index) => (
@@ -56,7 +54,7 @@ export function DigestView({ lesson, digest }: DigestViewProps) {
       {figures.length ? (
         <section aria-labelledby="figures" id="figures" className={styles.block}>
           <h2 id="figures" className={styles.heading}>
-            {figures.length === 1 ? 'The figure' : 'The figures'}
+            {figures.length === 1 ? 'Figure' : 'Figures'}
           </h2>
           <div className={styles.figures}>
             {figures.map(({ ref, figure }) => (
@@ -91,7 +89,7 @@ export function DigestView({ lesson, digest }: DigestViewProps) {
 
       <section aria-labelledby="key-ideas" id="key-ideas" className={styles.block}>
         <h2 id="key-ideas" className={styles.heading}>
-          What to hold onto
+          Key ideas
         </h2>
         <ul className={styles.cards}>
           {digest.keyCards.map((card) => (

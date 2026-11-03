@@ -157,7 +157,7 @@ function Exercise({ state }: { state: ExerciseResponse }) {
         </Card>
       ) : confirmReveal ? (
         <Card className={styles.block}>
-          <p>The reveal is logged on your record. Show the solution now?</p>
+          <p>Opening the solution before you get it right goes on your record.</p>
           <div className={styles.actions}>
             <Button
               variant="secondary"
@@ -166,7 +166,7 @@ function Exercise({ state }: { state: ExerciseResponse }) {
                 reveal.mutate(undefined, { onError: (caught) => setError(errorText(caught)) })
               }
             >
-              Show the solution
+              Open it
             </Button>
             <Button variant="ghost" onClick={() => setConfirmReveal(false)}>
               Keep working
@@ -176,7 +176,7 @@ function Exercise({ state }: { state: ExerciseResponse }) {
       ) : (
         <div>
           <Button variant="ghost" onClick={() => setConfirmReveal(true)}>
-            Stuck? See the solution
+            Show the solution
           </Button>
         </div>
       )}

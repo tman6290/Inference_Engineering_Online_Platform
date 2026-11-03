@@ -100,7 +100,7 @@ export const QuestionCard = forwardRef<HTMLHeadingElement, QuestionCardProps>(fu
         >
           <summary>
             {question.kind === 'calculation' ? 'Method hint' : 'Hint'}
-            <span className={styles.hintNote}> · logged, not hidden</span>
+            <span className={styles.hintNote}> · counts as a hint</span>
           </summary>
           <p>{entry.hint ?? (hintPending ? 'Loading the hint…' : '')}</p>
         </details>
@@ -121,7 +121,7 @@ export const QuestionCard = forwardRef<HTMLHeadingElement, QuestionCardProps>(fu
               ? entry.firstTry === 'accepted'
                 ? 'Accepted on the first try.'
                 : `Accepted on try ${entry.tries}.`
-              : 'Closed after three misses. Here is the reasoning.'}
+              : 'Missed three times.'}
           </p>
           {entry.feedback && entry.status === 'accepted' ? <p>{entry.feedback}</p> : null}
           {entry.explanation ? <p>{entry.explanation}</p> : null}

@@ -57,7 +57,7 @@ export function CheckYourself({ lessonId, question, initial }: CheckYourselfProp
         <Eyebrow as="h2" tone="accent" id="check-yourself">
           Check yourself
         </Eyebrow>
-        <span className={styles.note}>counts toward acceptance rate</span>
+        <span className={styles.note}>counts toward your acceptance rate</span>
       </div>
       <p className={styles.prompt}>{question.prompt}</p>
       <p className={styles.format}>

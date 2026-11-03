@@ -1,7 +1,7 @@
 {
   "lesson": "preface",
-  "oneLine": "Open models caught up with closed ones, so serving models well stopped being a frontier-lab niche and became a skill every serious AI product team needs.",
-  "summary": "In late 2022 the people doing this work numbered in the hundreds, mostly inside a few labs, and it looked like everyone else would rent intelligence through an API forever. That future didn't arrive. Training stayed hard but not impossibly so, and millions of open models now sit on Hugging Face, with the strongest ones trailing the best closed models by weeks rather than years.\n\nOnce a team can run the weights itself, three things become engineering choices instead of a vendor's defaults: how fast responses arrive, how often the service is up, and what each token costs. The Preface argues that this is why an inference strategy now separates differentiated products from thin wrappers, and why the field rewards newcomers: it is young, the problems run from kernels to clusters, and the experts are still few.",
+  "oneLine": "Open models now trail the best closed models by weeks. You can run strong weights yourself, which makes serving them a core skill for any team shipping AI products.",
+  "summary": "In late 2022 a few hundred people did this work, most of them inside a handful of labs, and everyone else expected to rent intelligence through an API for good. Open models changed the picture. Hugging Face now hosts millions of them, and the strongest trail the best closed models by weeks.\n\nOnce your team runs the weights, three things become engineering choices instead of a vendor's defaults: how fast responses arrive, how often the service stays up, and what each token costs. The Preface argues that an inference strategy now separates differentiated products from thin wrappers. It also argues that you can still get good at this fast, because the field is young and the problems run from kernels to clusters with few experts on any of them.",
   "mechanism": [
     {
       "title": "Labs held the weights",
@@ -9,25 +9,25 @@
     },
     {
       "title": "Open models caught up",
-      "body": "From late 2024, open releases matched closed models within weeks or months on capability."
+      "body": "Open releases from late 2024 matched closed models' capability within weeks or months."
     },
     {
       "title": "Weights mean control",
       "body": "Running your own model turns latency, availability and cost into things you can engineer."
     },
     {
-      "title": "Strategy becomes mandatory",
-      "body": "Competitive AI products now need people who can serve models fast, cheaply and reliably."
+      "title": "Teams need serving skills",
+      "body": "To compete, your team needs people who can serve models at low latency and low cost."
     }
   ],
   "callout": {
     "name": "You are early",
-    "body": "The demand for inference skills is far larger than the number of people who have them. A field this young lets a newcomer reach the frontier quickly, because most of the hard problems are still open."
+    "body": "Companies want far more inference engineers than exist. Most of the hard problems are still open, so a newcomer who does the work can reach the frontier fast."
   },
   "figureRefs": [
     {
       "figure": "P.1",
-      "lookFor": "How steeply the count of public models has climbed in five years."
+      "lookFor": "The steep climb in the count of public models over five years."
     },
     {
       "figure": "P.2",
@@ -42,7 +42,7 @@
     {
       "label": "Latency",
       "title": "Tune for real time",
-      "body": "Shared APIs optimise for throughput across customers; your own deployment can optimise for one fast user."
+      "body": "Shared APIs tune for throughput across all their customers. You can tune your own deployment for fast replies."
     },
     {
       "label": "Availability",
@@ -51,13 +51,13 @@
     },
     {
       "label": "Cost",
-      "title": "Large savings at scale",
+      "title": "Cheaper per token at volume",
       "body": "At high volume an open model can cost a fraction of a closed API per token."
     }
   ],
   "workedExample": {
     "title": "What a nine of availability buys you",
-    "setup": "Availability targets sound close together, but each extra nine cuts allowed downtime by ten. Take a 30-day month: 30 × 24 × 60 = 43,200 minutes. The allowed downtime is that total multiplied by the fraction of time the service may be down.",
+    "setup": "Each extra nine cuts allowed downtime by a factor of ten. A 30-day month has 30 × 24 × 60 = 43,200 minutes. Multiply that by the fraction of time the service may be down to get the allowed downtime.",
     "table": {
       "columns": ["Target", "Uptime", "Down fraction", "Downtime per month"],
       "rows": [
@@ -67,7 +67,7 @@
       ]
     },
     "conclusion": {
-      "text": "Moving from two nines to four nines takes a month's outages from most of a working day to a few minutes. That difference is why some teams move to dedicated deployments.",
+      "text": "Going from two nines to four cuts a month's outages from most of a working day to about four minutes. Teams that need that guarantee move to dedicated deployments.",
       "keyNumber": "432 min → 4.32 min"
     }
   },
@@ -88,18 +88,18 @@
     ],
     "methodHint": "Count the minutes in the month, then multiply by the fraction of time the service may be down.",
     "workedSolution": "30 × 24 × 60 = 43,200 minutes. Down fraction = 1 − 0.9999 = 0.0001. 43,200 × 0.0001 = 4.32 minutes (about 259 seconds).",
-    "explanation": "Four nines leaves 0.01% of the month for outages: about four minutes. The tempting slip is to use 1% (two nines), which gives 432 minutes, a hundred times more.",
+    "explanation": "Four nines leaves 0.01% of the month for outages: about four minutes. If you use 1% (two nines) by mistake, you get 432 minutes, a hundred times too many.",
     "reread": "preface",
     "sourceQuote": "possible to achieve four nines or better with dedicated deployments of open models"
   },
   "reflect": {
     "prompt": "Explain to a product manager why switching from a closed-model API to an open model you deploy yourself changes what your team can promise users. Name the three dimensions the Preface highlights.",
-    "modelAnswer": "With a closed API, latency, uptime and price are whatever the vendor offers, and the vendor tunes them for all of its customers at once. When we run an open model ourselves, those become engineering decisions. We can tune the deployment for low latency on our own traffic instead of the vendor's throughput-first setup. We can run redundant dedicated capacity and aim for four nines rather than living with an API's outages. And at our volume we can pay far less per token, because we choose the hardware, the batching and the model size. The trade is that we now own the serving work, which is exactly what inference engineering is.",
+    "modelAnswer": "With a closed API we get whatever latency, uptime and price the vendor offers, tuned for all its customers at once. If we run an open model ourselves, those three become engineering decisions. We can tune the deployment for low latency on our own traffic, where the vendor tunes for throughput. We can run redundant dedicated capacity and aim for four nines. At our volume we can also pay far less per token, because we pick the hardware, the batching and the model size. In exchange, we own the serving work: deploying the model, scaling it and keeping it up.",
     "points": [
-      "Latency: a dedicated deployment can be tuned for real-time use rather than shared throughput.",
-      "Availability: dedicated deployments can reach four nines instead of an API's two.",
-      "Cost: at scale, open models can be dramatically cheaper per token.",
-      "The price of control is owning the serving work yourself."
+      "Latency: you can tune a dedicated deployment for your users' real-time traffic.",
+      "Availability: dedicated deployments can reach four nines where an API offers two.",
+      "Cost: at scale, an open model can cost a fraction as much per token.",
+      "Control has a price: your team owns the serving work."
     ]
   },
   "terms": ["Open model", "Closed model", "Fine-tuning", "AI-native application"],

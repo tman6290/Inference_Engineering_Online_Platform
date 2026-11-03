@@ -20,7 +20,7 @@ export function Reflect({ reflect }: { reflect: ReflectBlock }) {
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         rows={5}
-        hint="Not graded. Write your own answer first, then compare."
+        hint="Ungraded. Write yours before you compare."
       />
       {revealed ? (
         <div className={styles.model} data-surface="dark">

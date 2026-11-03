@@ -1,6 +1,6 @@
 {
   "lesson": "1.2",
-  "oneLine": "Start from the app, not the hardware: what users do, whether anyone waits on the answer, and who pays all decide how you serve the model.",
+  "oneLine": "Start from the app: what users do, whether anyone waits on the answer, and who pays decide how you serve the model.",
   "summary": "Only model labs selling a public API and teams building an inference platform must serve every possible workload. Everyone else builds a vertical app, where each constraint you pin down is an optimisation you can make.\n\nThe app category tells you which number matters (see 1.2.1). An agent fans one click into many model calls, chat lives on time to first token, voice needs the whole pipeline fast, completion must keep pace with typing, and moderation wants cheap volume.\n\nThe biggest fork is whether a person is waiting (see 1.2.2). Online traffic gets tuned for latency. Offline batch work gets tuned for throughput: each request is slow, but each GPU-hour finishes more work. One model can justify two deployments, one per mode.\n\nThe customer shapes the rest (see 1.2.3). Consumer apps have thin margins and viral spikes, so marginal cost and elastic capacity come first. B2B apps sit in a customer's revenue path, so latency and uptime lead. Compliance can rule out regions and providers before any benchmark does.",
   "mechanism": [
     {
@@ -17,17 +17,17 @@
     },
     {
       "title": "Check compliance early",
-      "body": "Data region, privacy and regulation can veto a provider or region before performance even enters the discussion."
+      "body": "Data region, privacy and regulation can veto a provider or region before you benchmark anything."
     }
   ],
   "callout": {
     "name": "The recruiting coach",
-    "body": "A basketball coach and a gymnastics coach visiting the same school want opposite students. Inference works the same way: there is no best deployment in the abstract, only the best one for a stated use case. Pin the use case down first."
+    "body": "A basketball coach and a gymnastics coach visiting the same school want opposite students. Deployments work the same way: you can only call one best for a stated use case, so pin the use case down first."
   },
   "keyCards": [
     {
       "label": "Category",
-      "title": "Each app has its number",
+      "title": "Each category has its metric",
       "body": "Agents: calls per action. Chat: TTFT. Voice: end-to-end latency. Moderation: cost per check (see 1.2.1)."
     },
     {
@@ -38,7 +38,7 @@
     {
       "label": "Customer",
       "title": "Consumer cost, business uptime",
-      "body": "Viral consumer traffic rewards cheap elastic capacity; B2B revenue paths reward reliability (see 1.2.3)."
+      "body": "Consumer apps need cheap elastic capacity for viral spikes; B2B apps in a revenue path need reliability (see 1.2.3)."
     },
     {
       "label": "Compliance",
@@ -91,7 +91,7 @@
   },
   "reflect": {
     "prompt": "Pick an AI feature you use or want to build. Describe its category, whether it is online or offline, and whether its users are consumers or businesses. Then say which one inference metric you would optimise first, and why.",
-    "modelAnswer": "Take an IDE tab-completion feature sold to engineering teams. It is a completion app, so the suggestion has to land between keystrokes: the budget is a couple of hundred milliseconds for the whole chunk, not just the first token. It is online, because a developer is waiting on every request. It is B2B, sold per seat to companies, so consistent low latency and uptime outrank shaving cost per request, and the vendor must check where code is processed because customers may restrict which regions see it. The first metric to optimise is end-to-end latency for a full completion chunk at the percentiles developers feel, such as p95. Throughput and cost matter after that, as secondary targets.",
+    "modelAnswer": "Take an IDE tab-completion feature sold to engineering teams. It is a completion app, so the suggestion has to land between keystrokes: the budget is a couple of hundred milliseconds for the whole chunk, first token to last. It is online, because a developer is waiting on every request. It is B2B, sold per seat to companies, so consistent low latency and uptime outrank shaving cost per request, and the vendor must check where code is processed because customers may restrict which regions see it. The first metric to optimise is end-to-end latency for a full completion chunk at the percentiles developers feel, such as p95. Throughput and cost matter after that, as secondary targets.",
     "points": [
       "Names the app category and the metric that category cares about (see 1.2.1)",
       "Says whether a person waits on each request, so online or offline (see 1.2.2)",
@@ -111,19 +111,19 @@
     {
       "number": "1.2.1",
       "title": "AI-Native Applications",
-      "hook": "Eight app categories, eight different numbers to optimise.",
+      "hook": "Eight app categories, each with a different number to optimise.",
       "readingMinutes": 1
     },
     {
       "number": "1.2.2",
       "title": "Online versus Offline",
-      "hook": "Is someone waiting? Latency if yes, throughput if no.",
+      "hook": "A person waiting means latency first; a deadline means throughput first.",
       "readingMinutes": 1
     },
     {
       "number": "1.2.3",
       "title": "Consumer versus B2B",
-      "hook": "Consumers punish cost, businesses punish downtime, regulators punish both.",
+      "hook": "Consumer margins favour low cost; B2B contracts favour uptime and compliance.",
       "readingMinutes": 1
     }
   ]

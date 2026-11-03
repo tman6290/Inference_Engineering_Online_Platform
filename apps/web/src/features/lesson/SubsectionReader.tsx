@@ -29,8 +29,7 @@ export function SubsectionReader({ subsections, cards = [], figures }: Subsectio
   return (
     <section className={styles.reader} aria-labelledby="read-the-book" id="read-the-book">
       <h2 id="read-the-book" className={styles.heading}>
-        Read the book: {subsections.length}{' '}
-        {subsections.length === 1 ? 'subsection' : 'subsections'}
+        From the book
       </h2>
       <ul className={styles.cards}>
         {subsections.map((sub) => {

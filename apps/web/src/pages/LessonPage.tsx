@@ -36,14 +36,14 @@ function onThisPage(lesson: LessonResponse): OnThisPageItem[] {
   const digest = lesson.digest;
   const items: OnThisPageItem[] = [];
   if (digest) {
-    items.push({ id: 'mechanism', label: 'The mechanism' });
+    items.push({ id: 'mechanism', label: 'How it works' });
     if (lesson.figures.length && digest.figureRefs.length)
       items.push({ id: 'figures', label: 'Figures' });
-    items.push({ id: 'key-ideas', label: 'What to hold onto' });
+    items.push({ id: 'key-ideas', label: 'Key ideas' });
     if (digest.workedExample) items.push({ id: 'worked-example', label: 'Worked example' });
     items.push({ id: 'check-yourself', label: 'Check yourself' });
     if (digest.reflect) items.push({ id: 'reflect', label: 'Explain it' });
-    if (lesson.subsections.length) items.push({ id: 'read-the-book', label: 'Read the book' });
+    if (lesson.subsections.length) items.push({ id: 'read-the-book', label: 'From the book' });
   } else {
     items.push({ id: 'book-text', label: 'The book' });
     for (const sub of lesson.subsections)
@@ -111,7 +111,7 @@ function Lesson({ lesson }: { lesson: LessonResponse }) {
           // No authored digest yet: the ingested book text, with its figures inline.
           <section id="book-text" aria-label="The book" className={styles.bookText}>
             <p className={styles.fallbackNote}>
-              Notes for this lesson aren&apos;t written yet, so here is the book text.
+              No notes for this lesson yet. You&apos;re reading the book text.
             </p>
             <BookMarkdown markdown={lesson.intro} figures={introFigures} />
             {lesson.subsections.map((sub) => (

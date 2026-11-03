@@ -26,7 +26,7 @@ describe('lesson page', () => {
     await screen.findByRole('heading', { level: 1, name: 'Speculative Decoding' });
 
     expect(screen.getByText(/A cheap drafter guesses several tokens/)).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'What to hold onto' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Key ideas' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Tokens per pass at draft length 4' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Check yourself' })).toBeTruthy();
     expect(screen.getByText('Why does a very long draft usually backfire?')).toBeTruthy();

@@ -162,8 +162,8 @@ describe('exercise page', () => {
 
   it('reveals the solution on request and marks it revealed', async () => {
     renderRoute(path);
-    fireEvent.click(await screen.findByRole('button', { name: 'Stuck? See the solution' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Show the solution' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Show the solution' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open it' }));
     expect(await screen.findByRole('heading', { name: 'Solution walkthrough' })).toBeTruthy();
     expect(screen.getByText('Revealed')).toBeTruthy();
     expect(fakeApi.checkpoint.exercise().revealed).toBe(true);

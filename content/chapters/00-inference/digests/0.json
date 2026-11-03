@@ -1,7 +1,7 @@
 {
   "lesson": "0",
-  "oneLine": "Serving generative models well takes three layers working together: a fast runtime on each GPU instance, infrastructure that scales and survives failures, and tooling that gives engineers the right amount of control.",
-  "summary": "Classic ML inference was easy: small models, cheap CPUs, a thin software stack. Generative models break that. Copying weights onto a GPU gets you a demo, not a production service.\n\nThe chapter splits the work into three layers. The **runtime** makes one model on one instance as fast and efficient as possible, using inference engines, low-level kernels and a toolbox of techniques: batching, KV cache reuse, quantization, speculation, parallelism and disaggregation. The **infrastructure** takes over when one instance isn't enough: first autoscaling replicas, then, past a few hundred GPUs, finding capacity across regions and clouds, and finally pooling all of it as one fleet. The **tooling** decides how much of this engineers see, somewhere between a black-box API and raw compute.\n\nThe rest of the book follows that map: prerequisites, models, hardware, software, techniques, modalities and production.",
+  "oneLine": "To serve generative models in production you need three layers: a fast runtime on each GPU instance, infrastructure that scales and survives failures, and tooling that gives engineers the control they need.",
+  "summary": "Classic ML inference ran small models on cheap CPUs behind a thin software stack. Generative models need GPUs and far more engineering: copy the weights onto a GPU and you have a demo, with a long way to go before production.\n\nThe chapter splits the work into three layers. The **runtime** makes one model on one instance as fast and efficient as possible, using inference engines, low-level kernels and a set of techniques: batching, KV cache reuse, quantization, speculation, parallelism and disaggregation. The **infrastructure** takes over when one instance can't keep up: first autoscaling replicas, then, past a few hundred GPUs, finding capacity across regions and clouds, and finally pooling it all as one fleet. With the **tooling**, you choose how much of this engineers see, somewhere between a black-box API and raw compute.\n\nChapters 1 to 7 follow that map: prerequisites, models, hardware, software, techniques, modalities and production.",
   "mechanism": [
     {
       "title": "Optimise one instance",
@@ -12,17 +12,17 @@
       "body": "Infrastructure adds replicas, then capacity across regions and clouds, then one shared pool."
     },
     {
-      "title": "Expose the right controls",
-      "body": "Tooling sits between a black box and raw machines, balancing control against productivity."
+      "title": "Choose what engineers see",
+      "body": "Tooling lands between a black-box API and raw machines, trading control against productivity."
     },
     {
-      "title": "Make them cooperate",
-      "body": "Only the three layers together handle mission-critical traffic at scale."
+      "title": "Run all three",
+      "body": "Mission-critical traffic at scale needs the runtime, infrastructure and tooling working together."
     }
   ],
   "callout": {
-    "name": "A systems problem, not a kernel problem",
-    "body": "However fast one model server becomes, traffic eventually outgrows it. Past that point the fix is more replicas, more capacity and better placement, which no CUDA kernel can provide."
+    "name": "Traffic outgrows one server",
+    "body": "Tune one model server as far as you like and peak traffic will still outgrow it. Then you need more replicas and better placement across clusters, and no CUDA kernel gives you those."
   },
   "figureRefs": [
     {
@@ -51,13 +51,13 @@
     },
     {
       "label": "Tooling",
-      "title": "Neither black box nor bare metal",
-      "body": "Good tooling gives enough control for confidence and enough abstraction for speed."
+      "title": "Between black box and bare metal",
+      "body": "Engineers get enough control to trust a critical workload and enough abstraction to ship fast."
     }
   ],
   "workedExample": {
-    "title": "When the runtime stops being enough",
-    "setup": "An illustrative service peaks at 2,400 requests per minute. A tuned model server handles 180 requests per minute at the latency target, and the team keeps 20% headroom for spikes. Replicas needed = peak ÷ per-replica capacity, then scaled up for headroom and rounded up to whole replicas.",
+    "title": "Sizing replicas for a 2,400 rpm peak",
+    "setup": "An illustrative service peaks at 2,400 requests per minute. A tuned model server handles 180 requests per minute at the latency target, and the team keeps 20% headroom for spikes. Divide the peak by per-replica capacity, add the headroom, and round up to whole replicas.",
     "table": {
       "columns": ["Step", "Calculation", "Result"],
       "rows": [
@@ -67,7 +67,7 @@
       ]
     },
     "conclusion": {
-      "text": "No runtime tuning makes one server absorb this peak. Sixteen replicas, scaled up and down with traffic, is an infrastructure job: the second layer.",
+      "text": "You can't tune one server into absorbing this peak. Running sixteen replicas and scaling them with traffic is infrastructure work, the second layer.",
       "keyNumber": "16 replicas"
     }
   },
@@ -82,17 +82,17 @@
     "acceptedAnswers": ["infrastructure", "the infrastructure layer", "infrastructure layer"],
     "normalisation": {},
     "hint": "The runtime optimises one instance. Which layer deals with many instances across clusters?",
-    "explanation": "Infrastructure scales across replicas, clusters, regions and clouds. The runtime is the tempting answer, but it only makes a single instance faster, and that instance is already maxed out.",
+    "explanation": "Infrastructure scales across replicas, clusters, regions and clouds. The runtime is tempting, but it makes one instance faster, and yours is already maxed out.",
     "reread": "0",
     "sourceQuote": "Scaling across clusters, regions, and clouds without creating silos while maintaining excellent uptime"
   },
   "reflect": {
     "prompt": "A teammate says inference is just picking a fast engine like vLLM and buying GPUs. Using the three layers from Chapter 0, explain what that plan leaves out.",
-    "modelAnswer": "Picking a good engine only covers part of the runtime layer, and even the runtime needs more than an engine: kernels and techniques such as batching, KV cache reuse, quantization and speculation decide how much work each GPU does. Then there is infrastructure. One server will be overwhelmed at peak, so we need autoscaling replicas, and at larger scale we need capacity across regions and cloud providers, pooled so that one cluster isn't starved while another sits idle. That also gives us resilience when a region fails. Finally, tooling: engineers need enough control to run critical workloads and enough abstraction to ship quickly. Buying GPUs and installing vLLM addresses none of the last two layers.",
+    "modelAnswer": "A good engine covers part of the runtime layer. The runtime also needs kernels and techniques such as batching, KV cache reuse, quantization and speculation, and those set how much work each GPU does. Then comes infrastructure. Peak traffic will overwhelm one server, so we need autoscaling replicas, and at larger scale we need capacity across regions and cloud providers, pooled so one cluster isn't starved while another sits idle. The pool also keeps us up when a region fails. Last is tooling: engineers need enough control to run critical workloads and enough abstraction to ship fast. Buying GPUs and installing vLLM does nothing for infrastructure or tooling.",
     "points": [
-      "An engine is only one piece of the runtime layer; techniques and kernels matter too.",
+      "An engine is one piece of the runtime layer, next to kernels and techniques.",
       "Infrastructure handles traffic beyond one instance: autoscaling, then multi-region and multi-cloud capacity.",
-      "A unified pool avoids silos and improves reliability.",
+      "A unified pool avoids silos and keeps the service up when a region fails.",
       "Tooling balances control with productivity for the engineers running it."
     ]
   },
