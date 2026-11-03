@@ -1,0 +1,164 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0 16px;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tab:hover {
+  color: var(--link);
+}
+
+.layout {
+  display: grid;
+  gap: 24px;
+  max-width: 980px;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  scroll-margin-top: 24px;
+}
+
+.cardTitle {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.subTitle {
+  margin-top: 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-mute);
+}
+
+.muted {
+  font-size: 14px;
+  color: var(--text-mute);
+}
+
+.muted a {
+  color: var(--link);
+}
+
+.rubric {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubricHead {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+}
+
+.rubric ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.checks {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.drop {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-16);
+}
+
+.drop input {
+  min-height: var(--touch);
+  font: inherit;
+}
+
+.dropTitle {
+  font-weight: 600;
+}
+
+.submitRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.error {
+  font-weight: 600;
+  color: var(--warn-text);
+}
+
+.lock {
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
+.versions {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.version {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: var(--touch);
+  padding: 0 8px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.version[aria-pressed='true'] {
+  background: var(--neutral-bg);
+  font-weight: 700;
+}

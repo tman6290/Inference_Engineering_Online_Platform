@@ -168,3 +168,23 @@ design/             board screenshots
 
 `pnpm lint && pnpm typecheck && pnpm test` pass, `docker compose up` works from a clean clone with only `.env` filled,
 and the README explains setup in under ten steps.
+
+## Build status (updated 3 November 2026)
+
+Prompts 00 to 10 are done (see the status table in docs/BUILD_PROMPTS.md). Prompt 11 is in progress:
+
+- Done and committed: A (ProjectSpecSchema, seven specs in content/projects, fixture repo
+  tests/fixtures/spec-bench-sample, project rows synced at API start and by `pnpm db:seed`;
+  demo study history now needs `pnpm db:seed --demo`), B (submissions API, uploads, internal
+  runner routes), C (apps/runner: clone, checks, Docker sandbox; `pnpm runner:image` builds
+  docker/sandbox), D (critique in apps/api/src/projects/critique.ts and claims.ts).
+- Next, step E (web), started but not wired: apps/web/src/features/projects/ (api.ts,
+  CritiquePanel) and apps/web/src/pages/ProjectPage.tsx exist. Still to do: ProjectsPage index
+  (seven cards with lock state, score, status), route both pages in routes.tsx in place of the
+  placeholders in pages/pages.tsx, fake API routes for projects in apps/web/src/test/render.tsx,
+  a web test that renders a mocked critique fully, axe and width checks, then mark 11 done.
+- The one real critique run (prompt 11 "Done when") needs LLM_API_KEY, LLM_MODEL and the
+  LLM_PRICE_* values in .env, plus RUNNER_TOKEN for the runner (see .env.example). Ask before
+  spending the key.
+- Browser checks use a throwaway `forwardpass_e2e` database on API 4001 and web
+  127.0.0.1:5180 (a different host keeps the real session cookie on localhost untouched).
