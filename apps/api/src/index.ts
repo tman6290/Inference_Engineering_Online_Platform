@@ -6,11 +6,20 @@ import { watchContent } from './content/watch';
 import { createDb } from './db';
 import { scheduleNightlyRebuild } from './progress/store';
 import { syncProjects } from './projects/sync';
+import { createLlm } from '@forward-pass/llm';
+import { createCritiqueRunner } from './projects/critique';
 
 const config = loadConfig();
 const db = createDb(config.databaseUrl);
 // Refuses to start on invalid authored content, naming the file.
 const content = loadContent(path.join(repoRoot, 'content'));
+// Critiques need LLM_* in .env; without them, checked submissions fail with that reason.
+let critique: ReturnType<typeof createCritiqueRunner> | undefined;
+try {
+  critique = createCritiqueRunner(db, content, createLlm(process.env));
+} catch (error) {
+  console.info(`critiques off: ${(error as Error).message}`);
+}
 console.info(
   `content: ${content.digests.size} digest(s), ${content.banks.size} checkpoint bank(s), ${content.projects.size} project(s)`,
 );
@@ -23,6 +32,7 @@ createApp({
   content,
   devRoutes: config.nodeEnv !== 'production',
   runnerToken: config.runnerToken,
+  critique,
 }).listen(config.port, () => {
   console.info(`api listening on http://localhost:${config.port}`);
 });
