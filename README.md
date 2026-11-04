@@ -44,8 +44,11 @@ The database is a Neon Postgres project (London). The API runs on Render from `r
 (a Blueprint: it builds, applies migrations and starts the API; secrets are entered in the Render
 dashboard). The web app runs on Netlify from `netlify.toml`, which proxies `/api/*` to Render so the
 session cookie stays on one site. Accounts on the hosted app are made with
-`pnpm admin create-user` while `DATABASE_URL` points at Neon. Project checks need the runner,
-which isn't hosted, so they stay off there for now.
+`pnpm admin create-user` while `DATABASE_URL` points at Neon. Project checks need Docker, so the
+runner stays on a laptop: it polls the hosted API for queued submissions, runs them and reports
+back. Give Render the same `RUNNER_TOKEN` as the laptop's `.env`, set `RUNNER_API_URL` there to the
+Render URL, then `pnpm runner:image` once and `pnpm runner` with Docker running. Submissions made
+while the runner is off wait in the queue.
 
 ## Scripts
 

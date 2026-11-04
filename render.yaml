@@ -49,3 +49,7 @@ services:
       # Optional: without it, project critiques are off.
       - key: LLM_API_KEY
         sync: false
+      # Shared with the runner, which runs on a laptop with Docker and polls this API for jobs.
+      # Use the same value as RUNNER_TOKEN in that laptop's .env. Without it, project checks are off.
+      - key: RUNNER_TOKEN
+        sync: false
