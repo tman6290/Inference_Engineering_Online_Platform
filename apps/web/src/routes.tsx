@@ -13,7 +13,9 @@ import { LessonPage } from './pages/LessonPage';
 import { ProgressPage } from './pages/ProgressPage';
 import { RecallPage } from './pages/RecallPage';
 import { TeachBackPage } from './pages/TeachBackPage';
-import { NotFoundPage, ProjectPage, ProjectsPage } from './pages/pages';
+import { NotFoundPage } from './pages/pages';
+import { ProjectPage } from './pages/ProjectPage';
+import { ProjectsPage } from './pages/ProjectsPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
 

@@ -1,5 +1,4 @@
 import { STUDY_TIMEZONE } from '@forward-pass/shared';
-import { useParams } from 'react-router';
 import { Placeholder } from './Placeholder';
 
 /** Morning, afternoon or evening in the pod's timezone. */
@@ -14,29 +13,6 @@ export function greeting(now: Date = new Date()): string {
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
-}
-
-export function ProjectsPage() {
-  return (
-    <Placeholder
-      eyebrow="Projects"
-      title="Projects"
-      description="Seven solo deliverables, one per chapter. Graded by checks and a critique."
-      plan={['Project list with lock state and scores', 'Portfolio flags']}
-    />
-  );
-}
-
-export function ProjectPage() {
-  const { slug = '' } = useParams();
-  return (
-    <Placeholder
-      eyebrow={`Project ${slug}`}
-      title="Project brief"
-      description="The brief, your submission and the critique."
-      plan={['Brief and rubric', 'Repo URL and file upload', 'Check results and critique']}
-    />
-  );
 }
 
 export function NotFoundPage() {

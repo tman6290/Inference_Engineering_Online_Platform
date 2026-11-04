@@ -40,7 +40,7 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 08 | Progress, uptime, recall queue, Home | done (`progress:` commit, 2026-11-03) |
 | 09 | Glossary and search | done (`search:` commit, 2026-11-03) |
 | 10 | Pod: standings, duels, shared notes | done (`pod:` commit, 2026-11-03) |
-| 11 | Projects: specs, submission, checks, critique | |
+| 11 | Projects: specs, submission, checks, critique | code complete (A to E, 2026-11-04); browser width checks and one real critique run pending |
 | 12 | Portfolio and sharing | |
 | 13 | Author the remaining chapters | |
 | 14 | Hardening and deployment | |

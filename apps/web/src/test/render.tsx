@@ -9,6 +9,7 @@ import { buildRoutes } from '../routes';
 import { ThemeProvider } from '../theme/theme';
 import { createFakeCheckpoint } from './fake-checkpoint';
 import { createFakePod } from './fake-pod';
+import { createFakeProjects } from './fake-projects';
 import { fakeSearch, glossary, home, progress } from './fake-progress';
 import { book, lesson21, lesson52 } from './lesson-fixtures';
 
@@ -43,7 +44,7 @@ const json = (status: number, body?: unknown) =>
 
 /**
  * A stand-in for the API with one session. Covers the routes the shell, auth, book and lesson
- * pages call; lessons 5.2 (with a digest) and 2.1 (without) exist.
+ * pages call; lessons 5.2 (with a digest) and 2.1 (without) exist, and the seven projects.
  * Install with vi.stubGlobal('fetch', fakeApi.fetch).
  */
 export function createFakeApi({
@@ -62,6 +63,7 @@ export function createFakeApi({
   };
   const checkpoint = createFakeCheckpoint();
   const pod = createFakePod({ owesTeachBack });
+  const projects = createFakeProjects();
   const me = (): MeResponse => ({
     ...TOFA,
     user: { ...TOFA.user, mustChangePassword: state.mustChangePassword },
@@ -117,6 +119,8 @@ export function createFakeApi({
     if (path.startsWith('/api/search?')) {
       return json(200, fakeSearch(new URLSearchParams(path.split('?')[1]).get('q') ?? ''));
     }
+    const project = projects.handle(path, init?.method ?? 'GET', body);
+    if (project) return project;
     const duelled = pod.handle(path, init?.method ?? 'GET', body);
     if (duelled) return duelled;
     const handled = checkpoint.handle(path, init?.method ?? 'GET', body);
@@ -153,7 +157,7 @@ export function createFakeApi({
         return json(404, { error: 'not_found' });
     }
   });
-  return { fetch, state, checkpoint, pod };
+  return { fetch, state, checkpoint, pod, projects };
 }
 
 export function renderRoute(path: string) {
