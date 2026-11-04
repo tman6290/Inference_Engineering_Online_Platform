@@ -1,0 +1,51 @@
+# Render Blueprint for the API. The web app is on Netlify (netlify.toml), which forwards /api/*
+# here, so the browser sees one site and the session cookie stays first-party.
+# Values marked sync: false are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: forward-pass-api
+    runtime: node
+    plan: free
+    region: frankfurt # nearest Render region to the Neon database in London
+    buildCommand: >-
+      corepack pnpm install --frozen-lockfile &&
+      corepack pnpm --filter @forward-pass/api build &&
+      corepack pnpm --filter @forward-pass/api exec prisma migrate deploy &&
+      (corepack pnpm --filter @forward-pass/api exec playwright install chromium ||
+      echo "chromium not installed: case-study PDFs are off")
+    startCommand: node apps/api/dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: '10000'
+      # Netlify's proxy, then Render's load balancer, sit in front of the API.
+      - key: TRUST_PROXY
+        value: '2'
+      - key: TZ
+        value: Africa/Lagos
+      # Keeps Chromium inside node_modules so it survives from build to runtime.
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: '0'
+      # Neon's direct (non -pooler) connection string, so migrations run on deploy.
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      # The Netlify site's URL, e.g. https://forward-pass.netlify.app
+      - key: APP_URL
+        sync: false
+      - key: LLM_PROVIDER
+        value: anthropic
+      - key: LLM_MODEL
+        value: claude-opus-5-5
+      - key: LLM_PRICE_INPUT_PER_MTOK
+        value: '4'
+      - key: LLM_PRICE_OUTPUT_PER_MTOK
+        value: '20'
+      # Optional: without it, project critiques are off.
+      - key: LLM_API_KEY
+        sync: false

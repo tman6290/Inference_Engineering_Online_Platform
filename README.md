@@ -38,6 +38,15 @@ on that device and signs out any others.
 
 Check the API with `curl http://localhost:5173/api/health`. It should return `{"ok":true}`.
 
+## Hosting
+
+The database is a Neon Postgres project (London). The API runs on Render from `render.yaml`
+(a Blueprint: it builds, applies migrations and starts the API; secrets are entered in the Render
+dashboard). The web app runs on Netlify from `netlify.toml`, which proxies `/api/*` to Render so the
+session cookie stays on one site. Accounts on the hosted app are made with
+`pnpm admin create-user` while `DATABASE_URL` points at Neon. Project checks need the runner,
+which isn't hosted, so they stay off there for now.
+
 ## Scripts
 
 | Script                     | What it does                                       |
