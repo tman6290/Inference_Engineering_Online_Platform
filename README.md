@@ -20,7 +20,8 @@ time into gitignored folders.
 
 1. `git clone <repo-url> forward-pass && cd forward-pass`
 2. `cp .env.example .env`, then fill in `SESSION_SECRET`, the `LLM_*` values and both invite codes.
-3. `pnpm i`
+3. `pnpm i`, then `pnpm --filter @forward-pass/api exec playwright install chromium` (Chromium
+   renders the case-study PDFs).
 4. `docker compose up -d` starts Postgres 16 and the runner.
 5. `pnpm db:migrate`
 6. `pnpm content:ingest` fetches the book (about two minutes the first time; later runs reuse what is on disk).

@@ -13,6 +13,7 @@ import { checkpointRouter } from './routes/checkpoints';
 import { exerciseRouter } from './routes/exercises';
 import { lessonRouter } from './routes/lessons';
 import { podRouter } from './routes/pod';
+import { portfolioRouter } from './routes/portfolio';
 import { progressRouter } from './routes/progress';
 import { projectRouter, type CritiqueRunner } from './routes/projects';
 import { searchRouter } from './routes/search';
@@ -38,6 +39,8 @@ export interface AppDeps {
   runnerToken?: string;
   /** Critiques a checked submission. Without one, checked submissions fail with a clear reason. */
   critique?: CritiqueRunner;
+  /** Turns the case-study HTML into PDF bytes. Defaults to headless Chromium. */
+  pdf?: (html: string) => Promise<Buffer>;
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -92,6 +95,7 @@ export function createApp(deps: AppDeps): Express {
       critique: deps.critique,
     }),
   );
+  app.use('/api', portfolioRouter({ db: deps.db, content, uploadsDir, pdf: deps.pdf }));
   app.use('/api', progressRouter({ db: deps.db, content, devRoutes: deps.devRoutes ?? false }));
 
   app.use('/api', (_req, res) => {

@@ -40,8 +40,8 @@ Prompts assume the repo root as the working directory, Docker running, and `.env
 | 08 | Progress, uptime, recall queue, Home | done (`progress:` commit, 2026-11-03) |
 | 09 | Glossary and search | done (`search:` commit, 2026-11-03) |
 | 10 | Pod: standings, duels, shared notes | done (`pod:` commit, 2026-11-03) |
-| 11 | Projects: specs, submission, checks, critique | code complete (A to E, 2026-11-04); browser width checks and one real critique run pending |
-| 12 | Portfolio and sharing | |
+| 11 | Projects: specs, submission, checks, critique | code complete (A to E); width checks passed 2026-11-04; one real critique run pending |
+| 12 | Portfolio and sharing | done (`portfolio:` commit, 2026-11-04) |
 | 13 | Author the remaining chapters | |
 | 14 | Hardening and deployment | |
 
@@ -319,7 +319,7 @@ Read CLAUDE.md. Finish the first release.
 2. Rate limits on the LLM-backed route (critiques) per user per hour, with clear UI messages.
 3. Cost dashboard at /dev/costs (dev only): critique tokens and spend per day and per project.
 4. Backups: a `pnpm db:backup` script (pg_dump to backups/, gitignored) and a restore script; document both.
-5. Deployment: a single docker-compose.prod.yml (web built static and served by Caddy with HTTPS, api, runner, postgres), environment docs, and a one-page docs/DEPLOY.md for a single VPS. The runner must run on the same host with the Docker socket; document the risk and the mitigation (job containers are unprivileged, no network, resource-limited).
+5. Deployment: a single docker-compose.prod.yml (web built static and served by Caddy with HTTPS, api, runner, postgres), environment docs, and a one-page docs/DEPLOY.md for a single VPS. The runner must run on the same host with the Docker socket; document the risk and the mitigation (job containers are unprivileged, no network, resource-limited). The api image installs Chromium for case-study PDFs (`playwright install --with-deps chromium`).
 6. README: screenshots of the five main screens, the vocabulary table, and the "what this is not" section (not public, not a course, book content is fetched, not redistributed).
 
 Done when: the e2e flow passes in CI, `docker compose -f docker-compose.prod.yml up` serves the app over HTTPS on a fresh VPS following docs/DEPLOY.md, and `pnpm db:backup` + restore round-trips a database.

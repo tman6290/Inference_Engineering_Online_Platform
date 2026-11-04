@@ -53,9 +53,9 @@ describe('project page', () => {
 
     expect(screen.getByText('Solo')).toBeTruthy();
     expect(screen.getByText('v2 · graded')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Portfolio at 80+' }).hasAttribute('disabled')).toBe(
-      false,
-    );
+    expect(
+      (await screen.findByRole('button', { name: 'Add v2 to portfolio' })).hasAttribute('disabled'),
+    ).toBe(false);
     const tabs = within(screen.getByRole('navigation', { name: 'Project sections' }));
     expect(tabs.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
       '#brief',

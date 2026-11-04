@@ -270,3 +270,30 @@ for an easier set. Reusing the attempt machinery means one grader and one set of
 
 **Trade-offs.** There's no decline button; an unwanted challenge just expires. Audio is uploaded
 as a file rather than recorded in the browser.
+
+## 2026-11-04: An opt-in public portfolio
+
+**Decision.** Each of us can choose a username and turn on a public page at `/p/<username>`. It is
+off by default, and while it is off every public route answers 404, including case studies and
+their charts. Only a graded, portfolio-ready version (80 or more, every dimension at 60%) can be
+made public, at most one version per project. The case study shows the decision from the README's
+first section, up to three uploaded PNG charts, the total and dimension scores, the skills and the
+critique's "what is right" list. The owner can download the same case study as an A4 PDF.
+
+**Why.**
+
+- A finished project is worth showing, but the critique's criticism is written for me, not for a
+  stranger. Splitting the two keeps feedback blunt.
+- Public views are strict schemas built field by field. "What is wrong", inline comments, the
+  dimension reasoning, the note to the grader and the model cost can't ride along, and tests fail
+  if one ever does.
+- One switch for the whole page makes going private instant, without hunting down links.
+
+**Trade-offs.**
+
+- The PDF is rendered by headless Chromium from a self-contained HTML page, so the API needs
+  Playwright's Chromium (about 150 MB). CI installs it, and the production image will too.
+- The PDF uses the Foundations palette but not the web fonts. Loading them from Google Fonts would
+  make every render depend on the network, so it falls back to system fonts.
+- "Projects shipped" now means a project with a portfolio-ready version, public or not. Home, the
+  pod standings and the Progress portfolio card all count the same way.

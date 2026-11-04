@@ -104,6 +104,8 @@ export const submissionSummarySchema = z.object({
   gradedAt: z.string().nullable(),
   total: z.number().nullable(),
   portfolioReady: z.boolean().nullable(),
+  /** Shown as a public case study (only while the owner's page is live). */
+  public: z.boolean(),
 });
 export type SubmissionSummary = z.infer<typeof submissionSummarySchema>;
 

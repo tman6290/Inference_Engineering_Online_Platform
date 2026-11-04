@@ -28,6 +28,10 @@ model User {
   mustChangePassword Boolean     @default(false)
   /// The longest uptime streak so far, in days. Kept even after the study days that made it change.
   longestUptime      Int         @default(0)
+  /// The address of the public portfolio, /p/<username>. Chosen by the learner; null until then.
+  username           String?     @unique
+  /// Whether the public profile and case studies are served at all. Off by default.
+  pageLive           Boolean     @default(false)
   createdAt          DateTime    @default(now())
   sessions           Session[]
   inviteCode         InviteCode?
@@ -345,6 +349,8 @@ model Submission {
   status       String           @default("queued")
   /// Why a failed submission failed, in a sentence.
   failure      String?
+  /// Shown as a public case study. Only a graded, portfolio-ready version; at most one per project.
+  public       Boolean          @default(false)
   /// What the runner read from the repo for the critique: file tree, README, results, sources.
   artifacts    Json?
   createdAt    DateTime         @default(now())

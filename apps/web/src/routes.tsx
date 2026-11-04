@@ -16,6 +16,7 @@ import { TeachBackPage } from './pages/TeachBackPage';
 import { NotFoundPage } from './pages/pages';
 import { ProjectPage } from './pages/ProjectPage';
 import { ProjectsPage } from './pages/ProjectsPage';
+import { CaseStudyPage, PublicProfilePage } from './pages/PublicPages';
 import { RegisterPage } from './pages/RegisterPage';
 import { AppShell } from './shell/AppShell';
 
@@ -47,6 +48,9 @@ export function buildRoutes({ devRoutes = false }: RouteOptions = {}): RouteObje
   return [
     { path: '/login', element: <LoginPage /> },
     { path: '/register', element: <RegisterPage /> },
+    // The opt-in public layer: no sign-in, no shell.
+    { path: '/p/:username', element: <PublicProfilePage /> },
+    { path: '/p/:username/:slug', element: <CaseStudyPage /> },
     {
       path: CHANGE_PASSWORD_PATH,
       element: (

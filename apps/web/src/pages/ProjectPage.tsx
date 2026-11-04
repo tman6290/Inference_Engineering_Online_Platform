@@ -4,9 +4,10 @@ import { Link, useParams } from 'react-router';
 import { ApiRequestError } from '../api/client';
 import { BookMarkdown } from '../features/lesson/BookMarkdown';
 import { useProject, useSubmission, useSubmit } from '../features/projects/api';
+import { caseStudyPath, usePortfolio, useSetVisibility } from '../features/portfolio/api';
 import { CritiquePanel } from '../features/projects/CritiquePanel';
 import { PageHeader } from '../shell/PageHeader';
-import { Button, Card, Chip, Input, LockIcon, Textarea } from '../ui';
+import { Button, ButtonLink, Card, Chip, Input, LockIcon, Textarea } from '../ui';
 import styles from './ProjectPage.module.css';
 
 const errorText = (error: unknown) =>
@@ -89,12 +90,68 @@ function SubmissionForm({ project }: { project: ProjectDetail }) {
   );
 }
 
+/** Share link and the portfolio switch: both act on the newest portfolio-ready version. */
+function PortfolioActions({ project }: { project: ProjectDetail }) {
+  const portfolio = usePortfolio();
+  const visibility = useSetVisibility();
+  const [error, setError] = useState<string | null>(null);
+  const ready = project.submissions.find(
+    (submission) => submission.status === 'graded' && submission.portfolioReady,
+  );
+  const shown = project.submissions.find((submission) => submission.public);
+  const username = portfolio.data?.username;
+  const live = Boolean(portfolio.data?.pageLive && username);
+
+  return (
+    <>
+      {shown && live ? (
+        <ButtonLink to={caseStudyPath(username!, project.slug)} variant="ghost">
+          Share link
+        </ButtonLink>
+      ) : (
+        <Button
+          variant="ghost"
+          disabled
+          title="Make a version public and put your page live on the Progress page to share it"
+        >
+          Share link
+        </Button>
+      )}
+      {ready ? (
+        <Button
+          variant="secondary"
+          disabled={visibility.isPending}
+          onClick={() => {
+            setError(null);
+            visibility.mutate(
+              { submissionId: ready.id, isPublic: !ready.public },
+              { onError: (caught) => setError(errorText(caught)) },
+            );
+          }}
+        >
+          {ready.public
+            ? `Remove v${ready.version} from portfolio`
+            : `Add v${ready.version} to portfolio`}
+        </Button>
+      ) : (
+        <Button variant="secondary" disabled title="Opens at a critique of 80 or more">
+          Portfolio at 80+
+        </Button>
+      )}
+      {error ? (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
 function Project({ project }: { project: ProjectDetail }) {
   const [picked, setPicked] = useState<string | null>(null);
   const shownId = picked ?? project.submissions[0]?.id ?? null;
   const shown = useSubmission(shownId);
   const latest = project.submissions[0];
-  const ready = Boolean(latest?.portfolioReady);
 
   return (
     <>
@@ -107,16 +164,7 @@ function Project({ project }: { project: ProjectDetail }) {
         ) : (
           <Chip status="queued">Locked</Chip>
         )}
-        <Button variant="ghost" disabled title="Sharing arrives with the portfolio">
-          Share link
-        </Button>
-        <Button
-          variant="secondary"
-          disabled={!ready}
-          title={ready ? undefined : 'Opens at a critique of 80 or more'}
-        >
-          Portfolio at 80+
-        </Button>
+        <PortfolioActions project={project} />
       </div>
 
       <nav aria-label="Project sections" className={styles.tabs}>

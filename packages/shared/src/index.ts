@@ -11,3 +11,4 @@ export * from './search';
 export * from './pod';
 export * from './project';
 export * from './submission';
+export * from './portfolio';

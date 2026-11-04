@@ -171,21 +171,22 @@ and the README explains setup in under ten steps.
 
 ## Build status (updated 4 November 2026)
 
-Prompts 00 to 10 are done (see the status table in docs/BUILD_PROMPTS.md). Prompt 11 is code-complete:
+Prompts 00 to 10 and 12 are done (see the status table in docs/BUILD_PROMPTS.md). Prompt 11 is
+code-complete, and its browser width checks passed; one item is left:
 
-- Done and committed: A (ProjectSpecSchema, seven specs in content/projects, fixture repo
-  tests/fixtures/spec-bench-sample, project rows synced at API start and by `pnpm db:seed`;
-  demo study history now needs `pnpm db:seed --demo`), B (submissions API, uploads, internal
-  runner routes), C (apps/runner: clone, checks, Docker sandbox; `pnpm runner:image` builds
-  docker/sandbox), D (critique in apps/api/src/projects/critique.ts and claims.ts), E (web:
-  ProjectsPage with seven cards, ProjectPage and CritiquePanel routed; fake project routes in
-  apps/web/src/test/fake-projects.ts; ProjectPage.test.tsx renders a mocked critique fully,
-  with axe on every view).
-- Still open before 11 is marked done:
-  1. Browser width checks of /projects and /projects/:slug at 1440, 1024 and 390 px (no
-     horizontal scroll). They need the e2e database, so run them on a machine with Docker up.
-  2. The one real critique run (prompt 11 "Done when"). It needs LLM_API_KEY, LLM_MODEL and the
-     LLM_PRICE_* values in .env, plus RUNNER_TOKEN for the runner (see .env.example). Ask before
-     spending the key.
+- The one real critique run (prompt 11 "Done when"). It needs LLM_API_KEY, LLM_MODEL and the
+  LLM_PRICE_* values in .env, plus RUNNER_TOKEN for the runner (see .env.example). Ask before
+  spending the key.
+
+Prompt 12 (portfolio) shipped: User.username and User.pageLive, Submission.public, owner routes
+(/api/portfolio, /api/portfolio/settings, /api/submissions/:id/visibility and
+/api/submissions/:id/case-study.pdf), public routes (/api/public/:username, /:slug and its charts),
+web pages /p/:username and /p/:username/:slug outside sign-in, the Progress page portfolio card,
+and "projects shipped" counting projects with a portfolio-ready version. PDFs need Chromium:
+`pnpm --filter @forward-pass/api exec playwright install chromium` (CI installs it).
+
+Next is prompt 13 (author the remaining chapters), using the prompt 05 template.
+
 - Browser checks use a throwaway `forwardpass_e2e` database on API 4001 and web
-  127.0.0.1:5180 (a different host keeps the real session cookie on localhost untouched).
+  127.0.0.1:5180 (a different host keeps the real session cookie on localhost untouched). Seed it
+  with `pnpm content:ingest` and `pnpm db:seed --demo --password <test password>`.

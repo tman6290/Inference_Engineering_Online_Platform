@@ -73,6 +73,7 @@ export function projectRouter({
       gradedAt: row.gradedAt?.toISOString() ?? null,
       total: output?.success ? output.data.total : null,
       portfolioReady: output?.success ? output.data.portfolioReady : null,
+      public: row.public,
     };
   }
 

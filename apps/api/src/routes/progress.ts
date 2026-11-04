@@ -8,6 +8,7 @@ import {
   type StandingsResponse,
 } from '@forward-pass/shared';
 import { Router } from 'express';
+import { shippedProjects } from '../portfolio/views';
 import { authLocals, requireAuth } from '../auth/middleware';
 import { countWords, readingMinutes, stripPageHeader } from '../book/parse';
 import type { LoadedContent } from '../content/load';
@@ -272,7 +273,7 @@ export function progressRouter({ db, content, devRoutes }: ProgressRouterDeps): 
           isYou: user.id === userId,
           decoded: stats.decoded,
           acceptanceRate: stats.acceptanceRate,
-          projectsShipped: 0,
+          projectsShipped: (await shippedProjects(db, content, user.id)).length,
           uptime: stats.uptime,
           lastActivity: await lastActivity(user.id),
           duels: await duelRecord(db, user.id),
@@ -361,7 +362,7 @@ export function progressRouter({ db, content, devRoutes }: ProgressRouterDeps): 
       tiles: {
         decoded: me.decoded,
         acceptanceRate: me.acceptanceRate,
-        projectsShipped: 0,
+        projectsShipped: (await shippedProjects(db, content, userId)).length,
         projectsTotal: PROJECTS_TOTAL,
         weekMinutes: weekDays.reduce((sum, minutes) => sum + minutes, 0),
         weekDays,

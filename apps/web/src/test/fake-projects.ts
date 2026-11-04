@@ -1,12 +1,16 @@
 import type {
+  CaseStudy,
+  PortfolioResponse,
   ProjectCard,
   ProjectDetail,
+  PublicProfile,
   SubmissionDetail,
   SubmissionSummary,
 } from '@forward-pass/shared';
 
 // A toy projects backend for page tests. Project 01 has two graded versions, the latest with a
-// full critique; 02 is mid-critique; 03 is open and untouched; 04 to 07 are locked.
+// full critique; 02 is mid-critique; 03 is open and untouched; 04 to 07 are locked. It also plays
+// the portfolio: settings, public versions, and the public profile and case study.
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -24,6 +28,7 @@ function summary(overrides: Partial<SubmissionSummary>): SubmissionSummary {
     gradedAt: '2026-11-02T10:06:00.000Z',
     total: 62,
     portfolioReady: false,
+    public: false,
     ...overrides,
   };
 }
@@ -171,10 +176,11 @@ export function createFakeProjects() {
   };
   cards[2] = { ...cards[2]!, partner: { displayName: 'Friend', version: 1, total: null } };
 
-  const submissions: Record<string, SubmissionSummary[]> = {
+  const submissions: Record<string, SubmissionSummary[]> = structuredClone({
     '01-latency-budget-audit': [latestV2, summary({})],
     '02-roofline-calculator': [cards[1].mine!],
-  };
+  });
+  const settings = { username: null as string | null, pageLive: false };
   const details: Record<string, SubmissionDetail> = {
     'sub-2': critiqueOfV2,
     'sub-1': {
@@ -230,6 +236,59 @@ export function createFakeProjects() {
       };
       return json(201, created);
     }
+    if (path === '/api/portfolio' && method === 'GET') return json(200, portfolio());
+    if (path === '/api/portfolio/settings' && method === 'PUT') {
+      const next = body as { username: string | null; pageLive: boolean };
+      if (next.pageLive && !next.username) {
+        return json(400, {
+          error: 'invalid_request',
+          message: 'Pick a username before putting the page live.',
+        });
+      }
+      if (next.username === 'friend') {
+        return json(409, { error: 'username_taken', message: 'That username is taken.' });
+      }
+      settings.username = next.username ? next.username.toLowerCase() : null;
+      settings.pageLive = next.pageLive;
+      return json(200, portfolio());
+    }
+    const visibility = /^\/api\/submissions\/([^/]+)\/visibility$/.exec(path);
+    if (visibility && method === 'POST') {
+      const id = decodeURIComponent(visibility[1]!);
+      const slug = Object.keys(submissions).find((key) =>
+        submissions[key]!.some((row) => row.id === id),
+      );
+      const row = slug ? submissions[slug]!.find((entry) => entry.id === id) : undefined;
+      if (!slug || !row) return json(404, { error: 'not_found', message: 'No such submission.' });
+      const isPublic = (body as { public: boolean }).public;
+      if (isPublic && !(row.status === 'graded' && row.portfolioReady)) {
+        return json(409, {
+          error: 'not_ready',
+          message: 'Only a portfolio-ready version can be made public.',
+        });
+      }
+      for (const other of submissions[slug]!)
+        other.public = other.id === id ? isPublic : isPublic ? false : other.public;
+      return json(200, portfolio());
+    }
+    const publicPage = /^\/api\/public\/([^/]+)(?:\/([^/]+))?$/.exec(path);
+    if (publicPage) {
+      const live =
+        settings.pageLive && settings.username === decodeURIComponent(publicPage[1]!).toLowerCase();
+      const shown = submissions['01-latency-budget-audit']!.find((row) => row.public);
+      if (!live) return json(404, { error: 'not_found', message: 'There is no public page here.' });
+      if (!publicPage[2]) {
+        return json(200, {
+          ...publicProfile,
+          username: settings.username!,
+          projects: shown ? publicProfile.projects : [],
+        });
+      }
+      if (publicPage[2] !== '01-latency-budget-audit' || !shown) {
+        return json(404, { error: 'not_found', message: 'There is no public page here.' });
+      }
+      return json(200, { ...publicCaseStudy, username: settings.username! });
+    }
     const submission = /^\/api\/submissions\/([^/]+)$/.exec(path);
     if (submission) {
       const found = details[decodeURIComponent(submission[1]!)];
@@ -238,5 +297,70 @@ export function createFakeProjects() {
     return null;
   }
 
-  return { handle, posted };
+  function portfolio(): PortfolioResponse {
+    const shipped = Object.entries(submissions).flatMap(([slug, rows]) => {
+      const ready = rows.find((row) => row.status === 'graded' && row.portfolioReady);
+      const spec = cards.find((entry) => entry.slug === slug)!;
+      return ready
+        ? [
+            {
+              slug,
+              number: spec.number,
+              title: spec.title,
+              submissionId: ready.id,
+              version: ready.version,
+              total: ready.total!,
+              publicVersion: rows.find((row) => row.public)?.version ?? null,
+            },
+          ]
+        : [];
+    });
+    return { ...settings, shipped };
+  }
+
+  return { handle, posted, settings, submissions };
 }
+
+export const publicProfile: PublicProfile = {
+  username: 'tofa',
+  displayName: 'Tofa',
+  chaptersComplete: 1,
+  chaptersTotal: 7,
+  acceptanceRate: 0.83,
+  skills: ['latency percentiles', 'load generation'],
+  projects: [
+    {
+      slug: '01-latency-budget-audit',
+      number: 1,
+      title: 'Latency budget audit',
+      chapterNumber: 1,
+      total: 84,
+      decision: 'Budget 180 ms for TTFT and spend the rest on decode.',
+    },
+  ],
+};
+
+export const publicCaseStudy: CaseStudy = {
+  username: 'tofa',
+  displayName: 'Tofa',
+  slug: '01-latency-budget-audit',
+  number: 1,
+  title: 'Latency budget audit',
+  chapter: { number: 1, title: 'Prerequisites' },
+  decision: 'Budget 180 ms for TTFT and spend the rest on decode.',
+  charts: [
+    { name: 'latency.png', url: '/api/public/tofa/01-latency-budget-audit/charts/latency.png' },
+  ],
+  total: 84,
+  dimensions: [
+    { dimension: 'Measurement', score: 34, max: 40 },
+    { dimension: 'Analysis', score: 30, max: 35 },
+    { dimension: 'Write-up', score: 20, max: 25 },
+  ],
+  skillsDemonstrated: ['latency percentiles', 'load generation'],
+  right: ['Separates time to first token from time per output token (see 1.4.2).'],
+  repoUrl: REPO,
+  commitSha: 'b'.repeat(40),
+  version: 2,
+  gradedAt: '2026-11-03T09:07:00.000Z',
+};

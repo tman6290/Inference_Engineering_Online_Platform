@@ -5,6 +5,7 @@ import { ApiRequestError } from '../api/client';
 import { useProgress, useStartRecall } from '../features/progress/api';
 import { WEEKDAYS, percent, plural, shortDate } from '../features/progress/format';
 import { Heatmap } from '../features/progress/Heatmap';
+import { PortfolioCard } from '../features/portfolio/PortfolioCard';
 import { PageHeader } from '../shell/PageHeader';
 import { Button, Card, Eyebrow, StatTile } from '../ui';
 import styles from './ProgressPage.module.css';
@@ -264,20 +265,7 @@ export function ProgressPage() {
             <Mastery data={data!} />
             <div className={styles.column}>
               <Recall items={data!.recall} />
-              <Card
-                as="section"
-                variant="dashed"
-                padding="lg"
-                className={styles.card}
-                aria-labelledby="portfolio-title"
-              >
-                <h2 id="portfolio-title" className={styles.cardTitle}>
-                  Portfolio
-                </h2>
-                <p className={styles.muted}>
-                  Projects you mark portfolio-ready appear here once projects open.
-                </p>
-              </Card>
+              <PortfolioCard className={styles.card} />
             </div>
           </div>
         </div>

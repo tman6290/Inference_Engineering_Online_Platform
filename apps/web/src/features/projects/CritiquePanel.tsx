@@ -5,6 +5,7 @@ import {
 } from '@forward-pass/shared';
 import { Link } from 'react-router';
 import { Card, Chip, Eyebrow, ProgressBar } from '../../ui';
+import { pdfUrl } from '../portfolio/api';
 import styles from './CritiquePanel.module.css';
 
 const statusWords = {
@@ -178,6 +179,14 @@ export function CritiquePanel({ submission }: { submission: SubmissionDetail }) 
               }
             />
           </section>
+
+          {critique.portfolioReady ? (
+            <p className={styles.block}>
+              <a href={pdfUrl(submission.id)} download className={styles.pdf}>
+                Download the case study as a PDF
+              </a>
+            </p>
+          ) : null}
 
           <p className={styles.meta}>
             {critique.skillsDemonstrated.length
