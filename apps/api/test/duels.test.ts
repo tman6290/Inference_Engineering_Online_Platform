@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -229,6 +230,8 @@ describe.skipIf(noTestDatabase)('duels', () => {
     expect(played.status).toBe(200);
     expect(played.headers['content-type']).toBe('audio/webm');
     expect((played.body as Buffer).toString()).toBe('fake webm bytes');
+    // Stored in the database, not on the API's disk, which a host may wipe on restart.
+    expect(existsSync(path.join(dir, 'uploads'))).toBe(false);
   });
 
   it('expires duels after 48 hours for nobody, and draws fresh questions next time', async () => {

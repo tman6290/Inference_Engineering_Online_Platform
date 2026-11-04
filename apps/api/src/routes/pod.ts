@@ -1,7 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import { createReadStream, existsSync } from 'node:fs';
-import { mkdir, unlink, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import {
   createDuelRequestSchema,
   DUEL_HOURS,
@@ -17,6 +14,7 @@ import { sampleQuestions } from '../checkpoints/sample';
 import type { LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { sendError, sendValidationError } from '../http';
+import { teachBackAudioBytes } from '../storage/stored-files';
 import {
   duelsFor,
   duelView,
@@ -30,7 +28,7 @@ import {
 interface PodRouterDeps {
   db: Db;
   content: LoadedContent;
-  /** uploads/, gitignored. Teach-back audio goes in uploads/teach-backs. */
+  /** uploads/, gitignored. Recordings are stored in the database; older ones under uploads/teach-backs. */
   uploadsDir: string;
 }
 
@@ -47,7 +45,6 @@ const EXTENSIONS: Record<string, string> = {
 export function podRouter({ db, content, uploadsDir }: PodRouterDeps): Router {
   const router = Router();
   router.use('/duels', requireAuth);
-  const audioDir = path.join(uploadsDir, 'teach-backs');
 
   /** A duel the signed-in learner is in, or null after sending a 404. */
   async function ownDuel(res: Response, id: string) {
@@ -218,17 +215,20 @@ export function podRouter({ db, content, uploadsDir }: PodRouterDeps): Router {
       if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
         return sendError(res, 400, 'empty_audio', 'The recording is empty.');
       }
-      await mkdir(audioDir, { recursive: true });
-      const previous = await db.teachBack.findUnique({ where: { duelId: duel.id } });
+      // The bytes go in the database: the API's own disk may be wiped on any restart.
       const file = `${duel.id}.${EXTENSIONS[mime]}`;
-      await writeFile(path.join(audioDir, file), req.body);
-      if (previous?.audioFile && previous.audioFile !== file) {
-        await unlink(path.join(audioDir, previous.audioFile)).catch(() => undefined);
-      }
-      await db.teachBack.upsert({
-        where: { duelId: duel.id },
-        create: { duelId: duel.id, userId, entries: [], audioFile: file, audioMime: mime },
-        update: { audioFile: file, audioMime: mime },
+      const data = new Uint8Array(req.body);
+      await db.$transaction(async (tx) => {
+        const saved = await tx.teachBack.upsert({
+          where: { duelId: duel.id },
+          create: { duelId: duel.id, userId, entries: [], audioFile: file, audioMime: mime },
+          update: { audioFile: file, audioMime: mime },
+        });
+        await tx.teachBackAudio.upsert({
+          where: { teachBackId: saved.id },
+          create: { teachBackId: saved.id, data },
+          update: { data },
+        });
       });
       res.json(await viewOf(duel, userId));
     },
@@ -238,10 +238,10 @@ export function podRouter({ db, content, uploadsDir }: PodRouterDeps): Router {
     const found = await ownDuel(res, req.params.id);
     if (!found) return;
     const row = await db.teachBack.findUnique({ where: { duelId: found.duel.id } });
-    const file = row?.audioFile ? path.join(audioDir, row.audioFile) : null;
-    if (!file || !existsSync(file)) return sendError(res, 404, 'not_found', 'No recording.');
-    res.type(row!.audioMime ?? 'application/octet-stream');
-    createReadStream(file).pipe(res);
+    const bytes = row ? await teachBackAudioBytes(db, uploadsDir, row) : null;
+    if (!row || !bytes) return sendError(res, 404, 'not_found', 'No recording.');
+    res.type(row.audioMime ?? 'application/octet-stream');
+    res.send(bytes);
   });
 
   return router;

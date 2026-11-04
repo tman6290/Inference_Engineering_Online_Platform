@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import {
   CASE_STUDY_CHARTS,
   critiqueOutputSchema,
@@ -12,6 +10,7 @@ import {
 import type { LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { firstTryCounts } from '../progress/store';
+import { submissionFileBytes } from '../storage/stored-files';
 
 // What the public layer and the "projects shipped" count are built from. Public views are put
 // together field by field from the critique, so private fields never reach them.
@@ -20,9 +19,6 @@ type UserRow = NonNullable<Awaited<ReturnType<Db['user']['findUnique']>>>;
 type SubmissionWithCritique = NonNullable<Awaited<ReturnType<Db['submission']['findFirst']>>> & {
   critique: { json: unknown } | null;
 };
-
-export const submissionFilesDir = (uploadsDir: string, submissionId: string) =>
-  path.join(uploadsDir, 'submissions', submissionId);
 
 export function critiqueOf(row: { critique: { json: unknown } | null }): CritiqueOutput | null {
   if (!row.critique) return null;
@@ -197,7 +193,12 @@ export async function publicSubmission(db: Db, userId: string, slug: string) {
 }
 
 /** A chart's bytes as a data: URI, for the PDF. */
-export async function chartDataUri(uploadsDir: string, submissionId: string, name: string) {
-  const bytes = await readFile(path.join(submissionFilesDir(uploadsDir, submissionId), name));
+export async function chartDataUri(
+  db: Db,
+  uploadsDir: string,
+  file: { id: string; submissionId: string; name: string },
+) {
+  const bytes = await submissionFileBytes(db, uploadsDir, file);
+  if (!bytes) throw new Error(`The chart ${file.name} is missing.`);
   return `data:image/png;base64,${bytes.toString('base64')}`;
 }

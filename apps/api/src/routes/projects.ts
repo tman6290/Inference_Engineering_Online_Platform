@@ -1,7 +1,4 @@
 import { timingSafeEqual } from 'node:crypto';
-import { createReadStream, existsSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import {
   createSubmissionRequestSchema,
   CRITIQUES_PER_HOUR,
@@ -21,6 +18,7 @@ import { authLocals, requireAuth } from '../auth/middleware';
 import type { LoadedContent } from '../content/load';
 import type { Db } from '../db';
 import { sendError, sendValidationError } from '../http';
+import { submissionFileBytes } from '../storage/stored-files';
 
 /** Runs the critique for a checked submission. Injected so tests can fake the model. */
 export type CritiqueRunner = (submissionId: string) => Promise<void>;
@@ -50,7 +48,6 @@ export function projectRouter({
 }: ProjectRouterDeps): Router {
   const router = Router();
   router.use(['/projects', '/submissions'], requireAuth);
-  const filesDir = (id: string) => path.join(uploadsDir, 'submissions', id);
 
   /** Whether the learner passed the checkpoint that opens a project. */
   async function unlocked(userId: string, spec: ProjectSpec) {
@@ -291,12 +288,19 @@ export function projectRouter({
       if ((others._sum.size ?? 0) + body.length > SUBMISSION_FILES_MAX_BYTES) {
         return sendError(res, 413, 'too_large', 'Uploads are capped at 50 MB per submission.');
       }
-      await mkdir(filesDir(row.id), { recursive: true });
-      await writeFile(path.join(filesDir(row.id), name), body);
-      await db.submissionFile.upsert({
-        where: { submissionId_name: { submissionId: row.id, name } },
-        create: { submissionId: row.id, name, mime, size: body.length },
-        update: { mime, size: body.length },
+      // The bytes go in the database: the API's own disk may be wiped on any restart.
+      const data = new Uint8Array(body);
+      await db.$transaction(async (tx) => {
+        const saved = await tx.submissionFile.upsert({
+          where: { submissionId_name: { submissionId: row.id, name } },
+          create: { submissionId: row.id, name, mime, size: body.length },
+          update: { mime, size: body.length },
+        });
+        await tx.submissionFileBlob.upsert({
+          where: { fileId: saved.id },
+          create: { fileId: saved.id, data },
+          update: { data },
+        });
       });
       res.status(204).end();
     },
@@ -308,12 +312,11 @@ export function projectRouter({
     const file = await db.submissionFile.findUnique({
       where: { submissionId_name: { submissionId: row.id, name: req.params.name } },
     });
-    const full = file ? path.join(filesDir(row.id), file.name) : null;
-    if (!file || !full || !existsSync(full))
-      return sendError(res, 404, 'not_found', 'No such file.');
+    const bytes = file ? await submissionFileBytes(db, uploadsDir, file) : null;
+    if (!file || !bytes) return sendError(res, 404, 'not_found', 'No such file.');
     res.type(file.mime);
     res.attachment(file.name);
-    createReadStream(full).pipe(res);
+    res.send(bytes);
   });
 
   // ---------------------------------------------------------------------------------------------

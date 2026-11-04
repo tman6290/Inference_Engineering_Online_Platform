@@ -1,4 +1,5 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -31,6 +32,13 @@ const REPO = 'https://github.com/tofa/toy-batching';
 
 let dir: string;
 let content: LoadedContent;
+
+/** Collects a download's body as a Buffer, whatever its content type. */
+const bytes = (res: request.Response, done: (error: Error | null, body: Buffer) => void): void => {
+  const chunks: Buffer[] = [];
+  res.on('data', (chunk: Buffer) => chunks.push(chunk));
+  res.on('end', () => done(null, Buffer.concat(chunks)));
+};
 
 /** A passed 1.1 checkpoint, which opens the toy project. */
 async function pass11(email: string) {
@@ -181,9 +189,33 @@ describe.skipIf(noTestDatabase)('projects and submissions', () => {
     expect((await put('chart.pdf', 'image/png')).status).toBe(400);
     const detail = submissionDetailSchema.parse((await tofa.get(`/api/submissions/${id}`)).body);
     expect(detail.files.map((file) => file.name)).toEqual(['p95.png', 'notes.pdf']);
-    const download = await tofa.get(`/api/submissions/${id}/files/p95.png`);
+    const download = await tofa
+      .get(`/api/submissions/${id}/files/p95.png`)
+      .buffer(true)
+      .parse(bytes);
     expect(download.status).toBe(200);
     expect(download.headers['content-type']).toBe('image/png');
+    expect((download.body as Buffer).toString()).toBe('bytes');
+    // Stored in the database, not on the API's disk, which a host may wipe on restart.
+    expect(existsSync(path.join(dir, 'uploads'))).toBe(false);
+  });
+
+  it('still serves an upload saved on disk before uploads moved into the database', async () => {
+    const { tofa } = await pod();
+    await pass11('tofa@example.com');
+    const { id } = submissionSummarySchema.parse((await submit(tofa)).body);
+    await mkdir(path.join(dir, 'uploads', 'submissions', id), { recursive: true });
+    await writeFile(path.join(dir, 'uploads', 'submissions', id, 'old.png'), 'old bytes');
+    await testDb().submissionFile.create({
+      data: { submissionId: id, name: 'old.png', mime: 'image/png', size: 9 },
+    });
+
+    const download = await tofa
+      .get(`/api/submissions/${id}/files/old.png`)
+      .buffer(true)
+      .parse(bytes);
+    expect(download.status).toBe(200);
+    expect((download.body as Buffer).toString()).toBe('old bytes');
   });
 
   it('hands jobs to the runner once and stores what it reports', async () => {

@@ -1,5 +1,3 @@
-import { createReadStream, existsSync } from 'node:fs';
-import path from 'node:path';
 import {
   portfolioSettingsRequestSchema,
   visibilityRequestSchema,
@@ -20,8 +18,8 @@ import {
   profileOf,
   publicSubmission,
   shippedProjects,
-  submissionFilesDir,
 } from '../portfolio/views';
+import { submissionFileBytes } from '../storage/stored-files';
 
 interface PortfolioRouterDeps {
   db: Db;
@@ -118,11 +116,14 @@ export function portfolioRouter({
     const user = await db.user.findUniqueOrThrow({ where: { id: row.userId } });
     const study = await caseStudyOf(db, content, user, row, (name) => name);
     if (!study) return sendError(res, 404, 'not_found', 'No such project.');
+    const files = await chartsOf(db, row.id);
     const charts = await Promise.all(
-      study.charts.map(async (chart) => ({
-        name: chart.name,
-        src: await chartDataUri(uploadsDir, row.id, chart.name),
-      })),
+      files
+        .filter((file) => study.charts.some((chart) => chart.name === file.name))
+        .map(async (file) => ({
+          name: file.name,
+          src: await chartDataUri(db, uploadsDir, file),
+        })),
     );
     try {
       const bytes = await pdf(caseStudyHtml(study, charts));
@@ -167,12 +168,11 @@ export function portfolioRouter({
     const chart = row
       ? (await chartsOf(db, row.id)).find((file) => file.name === req.params.name)
       : undefined;
-    const full =
-      row && chart ? path.join(submissionFilesDir(uploadsDir, row.id), chart.name) : null;
-    if (!full || !existsSync(full)) return sendError(res, 404, 'not_found', NOT_FOUND);
+    const bytes = chart ? await submissionFileBytes(db, uploadsDir, chart) : null;
+    if (!bytes) return sendError(res, 404, 'not_found', NOT_FOUND);
     res.type('image/png');
     res.setHeader('cache-control', 'public, max-age=300');
-    createReadStream(full).pipe(res);
+    res.send(bytes);
   });
 
   return router;

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -78,10 +78,14 @@ async function graded(email: string, version: number, total: number, ready: bool
       },
     },
   });
-  await mkdir(path.join(dir, 'uploads', 'submissions', row.id), { recursive: true });
-  await writeFile(path.join(dir, 'uploads', 'submissions', row.id, 'throughput.png'), PNG);
   await testDb().submissionFile.create({
-    data: { submissionId: row.id, name: 'throughput.png', mime: 'image/png', size: PNG.length },
+    data: {
+      submissionId: row.id,
+      name: 'throughput.png',
+      mime: 'image/png',
+      size: PNG.length,
+      blob: { create: { data: new Uint8Array(PNG) } },
+    },
   });
   return row;
 }

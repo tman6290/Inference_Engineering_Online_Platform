@@ -310,10 +310,19 @@ model TeachBack {
   userId    String
   /// [{ questionId, text }] for the questions the author missed on the first try.
   entries   Json
-  /// File name under uploads/teach-backs, when audio was recorded.
+  /// The recording's file name, when audio was recorded. Its bytes are in TeachBackAudio (older
+  /// recordings may still be under uploads/teach-backs).
   audioFile String?
   audioMime String?
-  createdAt DateTime @default(now())
+  createdAt DateTime        @default(now())
+  audio     TeachBackAudio?
+}
+
+/// A teach-back recording's bytes, kept in the database so a host with a throwaway disk keeps them.
+model TeachBackAudio {
+  teachBackId String    @id
+  teachBack   TeachBack @relation(fields: [teachBackId], references: [id], onDelete: Cascade)
+  data        Bytes
 }
 
 // ---------------------------------------------------------------------------
@@ -364,17 +373,26 @@ model Submission {
   @@index([status, createdAt])
 }
 
-/// An upload beside the repo: a PDF, PNG, notebook or zip. Stored under uploads/submissions.
+/// An upload beside the repo: a PDF, PNG, notebook or zip. Its bytes are in SubmissionFileBlob
+/// (older uploads may still be under uploads/submissions).
 model SubmissionFile {
-  id           String     @id @default(uuid())
+  id           String              @id @default(uuid())
   submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submission   Submission          @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   name         String
   mime         String
   size         Int
-  createdAt    DateTime   @default(now())
+  createdAt    DateTime            @default(now())
+  blob         SubmissionFileBlob?
 
   @@unique([submissionId, name])
+}
+
+/// An upload's bytes, apart from SubmissionFile so listing files never loads them.
+model SubmissionFileBlob {
+  fileId String         @id
+  file   SubmissionFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  data   Bytes
 }
 
 model CheckResult {
