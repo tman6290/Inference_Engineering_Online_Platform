@@ -50,7 +50,7 @@ describe.skipIf(noTestDatabase)('book ingest', () => {
       figures: 4,
       glossaryTerms: 3,
     });
-    expect(report.figures).toEqual({ downloaded: 4, cached: 0, unnumberedImages: 1 });
+    expect(report.figures).toEqual({ downloaded: 4, cached: 0, stored: 4, unnumberedImages: 1 });
     expect(await testDb().bookPage.count()).toBe(2);
 
     const figures = await testDb().figure.findMany({ orderBy: { number: 'asc' } });
@@ -110,6 +110,7 @@ describe.skipIf(noTestDatabase)('book ingest', () => {
     expect(fetcher.calls).toEqual([]);
     expect(report.files).toEqual({ fetched: 0, cached: 7 });
     expect(report.figures.downloaded).toBe(0);
+    expect(report.figures.stored).toBe(0);
     expect(report.outlineChanged).toBe(false);
     expect(report.manifestChanged).toBe(false);
     for (const table of Object.values(report.database)) {
@@ -219,7 +220,25 @@ describe.skipIf(noTestDatabase)('book API', () => {
     expect((await agent.get('/api/figures/9.9')).status).toBe(404);
   });
 
-  it('404s a figure whose file was never downloaded', async () => {
+  it('serves a figure from the database on a host without content/figures', async () => {
+    const onDisk = await readFile(path.join(dirs().figuresDir, '1.1.png'));
+    const agent = await registeredAgent(testApp({ figuresDir: path.join(dir, 'missing') }));
+    const res = await agent
+      .get('/api/figures/1.1')
+      .buffer(true)
+      .parse((stream, done) => {
+        const chunks: Buffer[] = [];
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('end', () => done(null, Buffer.concat(chunks)));
+      });
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toBe('image/png');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+    expect(Buffer.compare(res.body as Buffer, onDisk)).toBe(0);
+  });
+
+  it('404s a figure that is neither in the database nor on disk', async () => {
+    await testDb().figureImage.deleteMany();
     const agent = await registeredAgent(testApp({ figuresDir: path.join(dir, 'missing') }));
     const res = await agent.get('/api/figures/1.1');
     expect(res.status).toBe(404);

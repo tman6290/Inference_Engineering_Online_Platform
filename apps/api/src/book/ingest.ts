@@ -77,7 +77,7 @@ export interface ParsedBook {
 
 export interface IngestReport {
   files: { fetched: number; cached: number };
-  figures: { downloaded: number; cached: number; unnumberedImages: number };
+  figures: { downloaded: number; cached: number; stored: number; unnumberedImages: number };
   counts: {
     chapters: number;
     sections: number;
@@ -210,7 +210,7 @@ export async function ingestBook(options: IngestOptions): Promise<IngestReport> 
     : [];
 
   // Figures: content/figures/<number>.<ext>
-  const figureStats = { downloaded: 0, cached: 0 };
+  const figureStats = { downloaded: 0, cached: 0, stored: 0 };
   const fileNames = new Map<string, string>();
   await mkdir(figuresDir, { recursive: true });
   for (const figure of book.figures) {
@@ -228,6 +228,24 @@ export async function ingestBook(options: IngestOptions): Promise<IngestReport> 
   }
 
   const database = await storeBook(db, book, fileNames);
+
+  // The image bytes also go in the database, so an API host without content/figures serves them.
+  // Only images the database lacks are sent, unless --force refetched everything.
+  const stored = new Set(
+    (await db.figureImage.findMany({ select: { figureNumber: true } })).map(
+      (row) => row.figureNumber,
+    ),
+  );
+  for (const [number, fileName] of fileNames) {
+    if (!force && stored.has(number)) continue;
+    const data = new Uint8Array(await readFile(path.join(figuresDir, fileName)));
+    await db.figureImage.upsert({
+      where: { figureNumber: number },
+      create: { figureNumber: number, data },
+      update: { data },
+    });
+    figureStats.stored++;
+  }
 
   const outline: Outline = outlineSchema.parse({
     source: indexUrl,

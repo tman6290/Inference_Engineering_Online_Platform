@@ -132,6 +132,15 @@ model Figure {
   section          Section?    @relation(fields: [sectionNumber], references: [number], onDelete: SetNull)
   subsectionNumber String?
   subsection       Subsection? @relation(fields: [subsectionNumber], references: [number], onDelete: SetNull)
+  image            FigureImage?
+}
+
+/// A figure's image bytes, written by the ingest, so a hosted API without content/figures can
+/// serve it. Like the book text, it lives only in the database and never in git.
+model FigureImage {
+  figureNumber String @id
+  figure       Figure @relation(fields: [figureNumber], references: [number], onDelete: Cascade)
+  data         Bytes
 }
 
 model GlossaryTerm {

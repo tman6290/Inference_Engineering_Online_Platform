@@ -1,3 +1,4 @@
+import path from 'node:path';
 import {
   figureNumberSchema,
   sectionNumberSchema,
@@ -202,8 +203,19 @@ export function bookRouter({ db, figuresDir, content = emptyContent() }: BookRou
     if (!parsed.success)
       return sendError(res, 400, 'invalid_figure', 'Use a figure number like 5.3.');
 
-    const figure = await db.figure.findUnique({ where: { number: parsed.data } });
+    const figure = await db.figure.findUnique({
+      where: { number: parsed.data },
+      include: { image: true },
+    });
     if (!figure) return sendError(res, 404, 'not_found', `No figure ${parsed.data}.`);
+
+    // The ingest stores the bytes in the database, so a host without content/figures serves them.
+    if (figure.image) {
+      res.type(path.extname(figure.fileName) || 'png');
+      res.setHeader('cache-control', 'public, max-age=86400');
+      res.setHeader('x-content-type-options', 'nosniff');
+      return res.send(Buffer.from(figure.image.data));
+    }
 
     // fileName comes from the ingest, never from the request; `root` keeps it inside figuresDir.
     res.sendFile(

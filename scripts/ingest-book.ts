@@ -33,7 +33,7 @@ async function main(): Promise<void> {
         `${force ? ' (--force refetches everything)' : ''}.`,
     );
     console.info(
-      `Figures: ${report.figures.downloaded} downloaded, ${report.figures.cached} already on disk.`,
+      `Figures: ${report.figures.downloaded} downloaded, ${report.figures.cached} already on disk, ${report.figures.stored} stored in the database.`,
     );
     if (report.figures.unnumberedImages > 0) {
       console.info(
