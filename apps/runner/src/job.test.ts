@@ -191,19 +191,19 @@ describe.skipIf(noDocker)('sandbox', () => {
     const { readFileSync } = await import('node:fs');
     const spec = JSON.parse(readFileSync(specFile, 'utf8'));
     const url = gitRepo((dir) => cpSync(fixture, dir, { recursive: true }));
-    const report = await runJob(
-      job(url, spec.checks, {
-        requiredFiles: spec.requiredFiles,
-        readmeSections: spec.readmeSections,
-        resultsSchema: spec.resultsSchema,
-      }),
-      options(),
-    );
+    const sample = job(url, spec.checks, {
+      requiredFiles: spec.requiredFiles,
+      readmeSections: spec.readmeSections,
+      resultsSchema: spec.resultsSchema,
+    });
+    const report = await runJob(sample, options());
     expect(report.error).toBeNull();
     for (const check of report.checks)
       expect([check.checkId, check.passed, check.log]).toEqual([check.checkId, true, check.log]);
     expect(report.artifacts.readme).not.toBeNull();
     expect(report.artifacts.sources.length).toBeGreaterThan(0);
+    // make check writes charts/ as the sandbox user; the job folder must still be removable.
+    expect(existsSync(path.join(jobsDir, sample.submissionId))).toBe(false);
   }, 600_000);
 
   it('reports a clone failure as an error, not a crash', async () => {

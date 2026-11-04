@@ -135,6 +135,8 @@ export async function runJob(job: RunnerJob, options: JobOptions): Promise<Runne
     results: null,
     sources: [],
   };
+  // Set once any container has run as the sandbox user, so cleanup knows to release its files.
+  let sandboxed = false;
 
   try {
     await rm(dir, { recursive: true, force: true });
@@ -181,6 +183,7 @@ export async function runJob(job: RunnerJob, options: JobOptions): Promise<Runne
       } else {
         // Requirements install once, wheels only, before the network is cut for the run.
         if (deps === undefined) {
+          sandboxed = true;
           try {
             deps = await installRequirements(repo, dir, hostDir, options, docker);
           } catch (error) {
@@ -200,6 +203,7 @@ export async function runJob(job: RunnerJob, options: JobOptions): Promise<Runne
         await chmod(out, 0o777);
         const name = `fp-job-${job.submissionId.slice(0, 12)}-${check.id}`.slice(0, 60);
         const timeoutSec = check.timeoutSec ?? DEFAULT_RUN_TIMEOUT_S;
+        sandboxed = true;
         const result = await exec(
           docker,
           sandboxArgs({
@@ -250,8 +254,45 @@ export async function runJob(job: RunnerJob, options: JobOptions): Promise<Runne
       error: `The runner failed: ${(error as Error).message}`,
     };
   } finally {
+    if (sandboxed) await releaseSandboxFiles(hostDir, options, docker);
     await rm(dir, { recursive: true, force: true }).catch(() => undefined);
   }
+}
+
+/**
+ * Sandbox containers write as uid 1000. When the runner is another non-root user (CI, or a
+ * runner started outside its root container on Linux), it cannot delete what they left in out-*
+ * and deps, e.g. a charts/ folder made with mode 755. Only the owner can loosen those modes, so
+ * one more container, as that user and with no network, opens them up before the folder is removed.
+ */
+async function releaseSandboxFiles(
+  hostDir: string,
+  options: JobOptions,
+  docker: string,
+): Promise<void> {
+  await exec(
+    docker,
+    [
+      'run',
+      '--rm',
+      '--network',
+      'none',
+      '--cap-drop',
+      'ALL',
+      '--security-opt',
+      'no-new-privileges',
+      '--user',
+      '1000:1000',
+      '-v',
+      `${hostDir}:/job:rw`,
+      options.image,
+      // Files the runner owns stay as they are; chmod reports those, and that is expected.
+      'sh',
+      '-c',
+      'chmod -R a+rwX /job 2>/dev/null; true',
+    ],
+    { timeoutMs: 60_000 },
+  ).catch(() => undefined);
 }
 
 /** pip installs requirements.txt into a deps folder from wheels only; null when there are none. */
