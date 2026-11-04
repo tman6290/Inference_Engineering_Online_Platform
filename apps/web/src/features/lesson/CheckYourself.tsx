@@ -145,8 +145,9 @@ export function CheckYourself({ lessonId, question, initial }: CheckYourselfProp
               result.accepted ? styles.feedbackRight : styles.feedbackWrong,
             ].join(' ')}
           >
-            {result.accepted ? 'Accepted. ' : 'Not yet. '}
-            {result.feedback}
+            {result.accepted ? 'Accepted.' : 'Not yet.'}{' '}
+            {/* The grader's text may open with its own verdict; don't say it twice. */}
+            {result.feedback.replace(/^(Accepted[.:]?|Not accepted\.)\s*/, '')}
           </p>
         ) : accepted ? (
           <p className={[styles.feedback, styles.feedbackRight].join(' ')}>Accepted.</p>
