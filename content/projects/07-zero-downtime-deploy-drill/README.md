@@ -18,7 +18,7 @@ You will build that rollout on one machine, then rehearse it twice under load: o
 
 ## The sandbox
 
-The grader runs `make check` in a `python:3.12-slim` container with `make` and `git`, 2 CPUs, 4 GB of memory and no network, with your repo mounted read-only. Loopback works; Docker does not. The dry run must finish in under 8 minutes.
+The grader runs `make check` in a `python:3.12` container with `make` and `git`, 2 CPUs, 4 GB of memory and no network, with your repo mounted read-only. Loopback works; Docker does not. The dry run must finish in under 8 minutes.
 
 ## Deliverables
 

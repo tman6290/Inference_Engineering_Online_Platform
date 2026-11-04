@@ -20,7 +20,7 @@ Nobody on the team knows where those lines fall for your workload. You will find
 
 ## The sandbox
 
-The grader runs `make check` in a `python:3.12-slim` container with `make` and `git`, 2 CPUs, 4 GB of memory, no GPU and no network, with your repo mounted read-only. It installs `requirements.txt` from wheels before cutting the network, so keep vLLM, SGLang and torch out of that file and list them in a separate file for the GPU run. The dry run must finish in under 8 minutes.
+The grader runs `make check` in a `python:3.12` container with `make` and `git`, 2 CPUs, 4 GB of memory, no GPU and no network, with your repo mounted read-only. It installs `requirements.txt` from wheels before cutting the network, so keep vLLM, SGLang and torch out of that file and list them in a separate file for the GPU run. The dry run must finish in under 8 minutes.
 
 ## Deliverables
 

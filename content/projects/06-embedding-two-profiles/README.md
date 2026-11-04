@@ -16,7 +16,7 @@ The decision: the configuration for each traffic profile, and whether to ship th
 
 ## The sandbox
 
-The grader runs `make check` in a `python:3.12-slim` container with `make` and `git`, 2 CPUs, 4 GB of memory, no GPU and no network, with your repo mounted read-only. It installs `requirements.txt` from wheels before cutting the network. Your dry run must not try to download a model, and must finish in under 8 minutes.
+The grader runs `make check` in a `python:3.12` container with `make` and `git`, 2 CPUs, 4 GB of memory, no GPU and no network, with your repo mounted read-only. It installs `requirements.txt` from wheels before cutting the network. Your dry run must not try to download a model, and must finish in under 8 minutes.
 
 ## Deliverables
 
