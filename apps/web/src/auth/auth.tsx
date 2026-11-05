@@ -7,7 +7,7 @@ import {
 } from '@forward-pass/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, type ReactNode } from 'react';
-import { api, ApiRequestError } from '../api/client';
+import { api, ApiRequestError, retryDelay, retryTransient } from '../api/client';
 
 const ME_KEY = ['me'] as const;
 
@@ -24,6 +24,8 @@ async function fetchMe(): Promise<MeResponse | null> {
 interface AuthContextValue {
   me: MeResponse | null;
   status: 'loading' | 'ready' | 'error';
+  /** Still loading after a failed try: the API host is probably waking up. */
+  waking: boolean;
   login: (input: LoginRequest) => Promise<void>;
   register: (input: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -35,11 +37,20 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ME_KEY, queryFn: fetchMe, staleTime: 60_000, retry: false });
+  const query = useQuery({
+    queryKey: ME_KEY,
+    queryFn: fetchMe,
+    staleTime: 60_000,
+    retry: retryTransient,
+    retryDelay,
+  });
 
   const value: AuthContextValue = {
     me: query.data ?? null,
-    status: query.isPending ? 'loading' : query.isError ? 'error' : 'ready',
+    // A failed background check (say, back on the tab while the API host wakes) keeps the session
+    // we already have; only a first load with no answer at all is an error.
+    status: query.isPending ? 'loading' : query.data === undefined ? 'error' : 'ready',
+    waking: query.isPending && query.failureCount > 0,
     async login(input) {
       const me = await api('/api/auth/login', {
         method: 'POST',

@@ -13,6 +13,22 @@ export class ApiRequestError extends Error {
   }
 }
 
+/**
+ * A failure worth retrying: no answer at all, or the host or its proxy failing (a sleeping API
+ * host takes up to a minute to wake). Answers the API itself gave, like 401 or 429, are final.
+ */
+export function isTransient(error: unknown): boolean {
+  if (!(error instanceof ApiRequestError)) return true;
+  return error.status === 408 || error.status >= 500;
+}
+
+/** Retry delays for transient failures: 1, 2, 4, 8, then 15 s, about a minute in all. */
+export const retryDelay = (attempt: number): number => Math.min(1000 * 2 ** attempt, 15_000);
+export const MAX_RETRIES = 6;
+
+export const retryTransient = (failureCount: number, error: unknown): boolean =>
+  failureCount < MAX_RETRIES && isTransient(error);
+
 interface RequestOptions<S extends z.ZodType | undefined> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
